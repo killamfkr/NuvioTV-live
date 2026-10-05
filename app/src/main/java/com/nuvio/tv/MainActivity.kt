@@ -176,7 +176,10 @@ import com.nuvio.tv.ui.components.LocalCardDepthStyle
 import com.nuvio.tv.ui.components.LocalLandscapePosterMode
 import com.nuvio.tv.ui.components.LocalAlwaysBackdropWithLogo
 import com.nuvio.tv.ui.components.ProfileAvatarCircle
+import com.nuvio.tv.core.device.DeviceFormFactor
+import com.nuvio.tv.ui.navigation.MobileBottomNavScaffold
 import com.nuvio.tv.ui.navigation.NuvioNavHost
+import com.nuvio.tv.ui.navigation.navigateToRootRoute
 import com.nuvio.tv.ui.navigation.Screen
 import com.nuvio.tv.ui.membership.LocalMemberAccess
 import com.nuvio.tv.ui.screens.account.AuthQrSignInScreen
@@ -857,6 +860,7 @@ open class MainActivity : ComponentActivity() {
                     val modernSidebarBlurEnabled =
                         mainUiPrefs.modernSidebarBlurPref && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
                     val hideBuiltInHeadersForFloatingPill = modernSidebarEnabled && !sidebarCollapsed
+                    val isTelevision = remember { DeviceFormFactor.isTelevision(context) }
 
                     val startDestination = when {
                         needsExperienceSelection -> Screen.ExperienceModeSelection.route
@@ -1185,7 +1189,18 @@ open class MainActivity : ComponentActivity() {
                             hasSelectedProfileThisSession = false
                         }
                         Box(modifier = Modifier.fillMaxSize()) {
-                            if (modernSidebarEnabled) {
+                            if (!isTelevision) {
+                                MobileBottomNavScaffold(
+                                    navController = navController,
+                                    startDestination = startDestination,
+                                    currentRoute = currentRoute,
+                                    rootRoutes = rootRoutes,
+                                    drawerItems = drawerItems,
+                                    selectedDrawerRoute = selectedDrawerRoute,
+                                    hideBuiltInHeaders = true,
+                                    onNavigate = { optimisticRoute = it }
+                                )
+                            } else if (modernSidebarEnabled) {
                                 ModernSidebarScaffold(
                                     longPressBackHeld = longPressBackHeld,
                                     navController = navController,
@@ -1626,7 +1641,7 @@ private fun LegacySidebarScaffold(
                                     onClick = {
                                         keyboardController?.hide()
                                         onNavigate(item.route)
-                                        navigateToDrawerRoute(
+                                        navigateToRootRoute(
                                             navController = navController,
                                             currentRoute = currentRoute,
                                             targetRoute = item.route
@@ -2216,7 +2231,7 @@ private fun ModernSidebarScaffold(
                         onDrawerItemClick = { targetRoute ->
                             keyboardController?.hide()
                             onNavigate(targetRoute)
-                            navigateToDrawerRoute(
+                            navigateToRootRoute(
                                 navController = navController,
                                 currentRoute = currentRoute,
                                 targetRoute = targetRoute
@@ -2371,38 +2386,6 @@ private fun CollapsedSidebarPill(
                 }
             }
         }
-    }
-}
-
-private fun navigateToDrawerRoute(
-    navController: NavHostController,
-    currentRoute: String?,
-    targetRoute: String
-) {
-    if (currentRoute == targetRoute) {
-        if (targetRoute == Screen.Home.route) {
-            // Scroll Home to top by clearing saved focus/scroll state on the ViewModel.
-            val homeEntry = try {
-                navController.getBackStackEntry(Screen.Home.route)
-            } catch (_: IllegalArgumentException) {
-                // "home" not yet on the back stack (e.g. nav graph not fully initialized).
-                return
-            }
-            val homeViewModel = androidx.lifecycle.ViewModelProvider(homeEntry)[com.nuvio.tv.ui.screens.home.HomeViewModel::class.java]
-            homeViewModel.requestScrollToTop()
-        }
-        return
-    }
-    try {
-        navController.navigate(targetRoute) {
-            popUpTo(navController.graph.startDestinationId) {
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
-    } catch (e: IllegalArgumentException) {
-        Log.w("NuvioNavigation", "Route not found in nav graph: $targetRoute", e)
     }
 }
 

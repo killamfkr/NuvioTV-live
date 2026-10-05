@@ -2,7 +2,7 @@
 
 # Nuvio + IPTV
 
-**Everything in Nuvio, plus everything IPTV: a TiviMate-style Live TV guide, catch-up, and your provider's movies and series, all in one app for Google TV, Android TV and Fire TV.**
+**Everything in Nuvio, plus everything IPTV: a TiviMate-style Live TV guide, catch-up, and your provider's movies and series, all in one app for Google TV, Android TV, Fire TV, and Android phones.**
 
 [![Latest release](https://img.shields.io/github/v/release/homelessbrian/NuvioTV?include_prereleases&label=latest&style=for-the-badge)](https://github.com/homelessbrian/NuvioTV/releases)
 [![Downloads](https://img.shields.io/github/downloads/homelessbrian/NuvioTV/total?style=for-the-badge)](https://github.com/homelessbrian/NuvioTV/releases)
@@ -117,9 +117,12 @@
 
    | Device | APK |
    |---|---|
+   | Android phones (most models from ~2018 onward) | `arm64-v8a` |
    | Most Google TV / Android TV devices | `arm64-v8a` |
    | Fire TV (all models), older or budget boxes | `armeabi-v7a` |
    | Not sure (works everywhere) | `universal` |
+
+   On **phones and tablets**, use the same APK: the app shows a bottom navigation bar and a touch-friendly Live TV channel list (the full TV-style guide remains on TV devices).
 
 3. Install it with a file manager or **Downloader**, allowing installs from unknown sources when asked.
 

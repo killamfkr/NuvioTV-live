@@ -87,7 +87,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.tv.LocalContentFocusRequester
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.livetv.data.CatchupUrlBuilder
+import androidx.compose.ui.platform.LocalContext
 import com.nuvio.tv.livetv.model.ChannelGroup
 import com.nuvio.tv.livetv.model.EpgProgram
 import com.nuvio.tv.livetv.model.LiveChannel
@@ -118,6 +120,15 @@ fun LiveTvGuideScreen(
     onOpenNuvioSearch: () -> Unit = onFindInNuvio,
     viewModel: LiveTvViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    if (!DeviceFormFactor.isTelevision(context)) {
+        LiveTvMobileScreen(
+            onOpenSettings = onOpenSettings,
+            onFindInNuvio = onFindInNuvio,
+            viewModel = viewModel
+        )
+        return
+    }
     // Full screen happens right here, TiviMate style: the same video view grows from the
     // preview window to the whole screen and back. The picture never moves to a different
     // view, which is what froze it (or left it loading) on some TVs.
