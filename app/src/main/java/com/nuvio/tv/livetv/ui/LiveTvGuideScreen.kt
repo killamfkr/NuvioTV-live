@@ -28,10 +28,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -48,6 +50,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.ManageSearch
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -112,6 +115,7 @@ private data class MenuTarget(val channel: LiveChannel, val block: GuideBlock?)
 
 private fun floorSlot(ms: Long) = ms - Math.floorMod(ms, SLOT_MS)
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun LiveTvGuideScreen(
     onOpenFullscreen: () -> Unit,
@@ -121,14 +125,7 @@ fun LiveTvGuideScreen(
     viewModel: LiveTvViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    if (!DeviceFormFactor.isTelevision(context)) {
-        LiveTvMobileScreen(
-            onOpenSettings = onOpenSettings,
-            onFindInNuvio = onFindInNuvio,
-            viewModel = viewModel
-        )
-        return
-    }
+    val isHandheld = !DeviceFormFactor.isTelevision(context)
     // Full screen happens right here, TiviMate style: the same video view grows from the
     // preview window to the whole screen and back. The picture never moves to a different
     // view, which is what froze it (or left it loading) on some TVs.
@@ -265,7 +262,7 @@ fun LiveTvGuideScreen(
         val toGroups = returning && viewModel.consumeGroupsOnReturn()
         if (returning && !toGroups) {
             nameFocus = viewModel.settings.value.browseByChannelName
-            runCatching { gridFocus.requestFocus() }
+            if (isHandheld) gridFocused = true else runCatching { gridFocus.requestFocus() }
         } else {
             val loaded = viewModel.awaitGroups()
             // "Open on last group" off: opening Live TV starts on the main group every time
@@ -273,8 +270,13 @@ fun LiveTvGuideScreen(
             if (!returning && !viewModel.settings.value.rememberLastGroup && loaded != null) {
                 viewModel.selectGroup(loaded.defaultGroupId)
             }
-            delay(100)
-            focusGroupsOnOpen = true
+            if (isHandheld) {
+                gridFocused = true
+                groupsOpen = false
+            } else {
+                delay(100)
+                focusGroupsOnOpen = true
+            }
         }
     }
     LaunchedEffect(numberBuffer) {
@@ -491,7 +493,9 @@ fun LiveTvGuideScreen(
     fun playChannel(ch: LiveChannel) {
         val alreadyPreviewing = playback.channelKey == ch.key && playback.catchupTitle == null
         viewModel.preview(ch)
-        if (!settings.showPreview || settings.openFullscreenOnSelect || alreadyPreviewing) goFullscreen()
+        val openFullscreen = settings.openFullscreenOnSelect || alreadyPreviewing ||
+            (isHandheld && !settings.showPreview)
+        if (!settings.showPreview || openFullscreen) goFullscreen()
     }
 
     fun activate() {
@@ -507,6 +511,34 @@ fun LiveTvGuideScreen(
             }
             else -> infoTarget = MenuTarget(ch, block)
         }
+    }
+
+    fun handheldSelectRow(index: Int) {
+        row = index
+        gridFocused = true
+    }
+
+    fun handheldTapChannel(index: Int, ch: LiveChannel) {
+        handheldSelectRow(index)
+        column = GuideColumn.CHANNEL
+        cursorMs = now
+        nameFocus = false
+        playChannel(ch)
+    }
+
+    fun handheldTapProgram(index: Int, program: EpgProgram) {
+        handheldSelectRow(index)
+        column = GuideColumn.PROGRAM
+        cursorMs = program.startMs
+        nameFocus = false
+        while (cursorMs >= windowStart + WINDOW_MS - SLOT_MS / 2) windowStart += SLOT_MS
+        while (cursorMs < windowStart) windowStart -= SLOT_MS
+        activate()
+    }
+
+    fun handheldLongPress(index: Int, ch: LiveChannel, block: GuideBlock?) {
+        handheldSelectRow(index)
+        menuTarget = MenuTarget(ch, block)
     }
 
     fun moveRow(delta: Int) {
@@ -672,21 +704,26 @@ fun LiveTvGuideScreen(
                 playlistName = if (settings.showPlaylistInInfo) headerChannel?.sourceId?.let { playlistNames[it] } else null,
                 settings = settings,
                 now = now,
-                showPreview = settings.showPreview,
+                showPreview = settings.showPreview && !isHandheld,
                 player = viewModel.playback.player,
                 playingKey = playback.channelKey,
                 playbackBuffering = playback.isBuffering,
                 playbackError = playback.error,
                 catchupTitle = playback.catchupTitle,
-                status = status.message.takeIf { status.loading }
+                status = status.message.takeIf { status.loading },
+                compactLayout = isHandheld
             )
+
+            val timelineScroll = rememberScrollState()
+            val handheldTimelineWidth = 960.dp
+            val guideLeadingPadding = if (isHandheld) 4.dp else 56.dp
 
             // ---------------------------------------------------------------- groups + guide
             Row(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(start = 56.dp)
+                    .padding(start = guideLeadingPadding)
             ) {
                 val groupsWidth by androidx.compose.animation.core.animateDpAsState(
                     targetValue = if (groupsOpen) 190.dp else 0.dp,
@@ -767,40 +804,76 @@ fun LiveTvGuideScreen(
                 )
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     // ---------------------------------------------------------------- time ruler
-                    val channelColWidth = channelColumnWidth(settings)
+                    val channelColWidth = channelColumnWidth(settings, compact = isHandheld)
                     // Tight rows so at least 8 channels fit even with the info panel and preview on.
-                    val rowHeight = if (settings.compactRows) 32.dp else 38.dp
+                    val rowHeight = when {
+                        isHandheld -> 36.dp
+                        settings.compactRows -> 32.dp
+                        else -> 38.dp
+                    }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(26.dp)
-                            .padding(end = 24.dp),
+                            .padding(end = if (isHandheld) 8.dp else 24.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Date and time above the channels (like TiviMate), or the Unassigned filter.
-                        Box(Modifier.width(channelColWidth).padding(start = 8.dp)) {
+                        Row(
+                            modifier = Modifier.width(channelColWidth).padding(start = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (isHandheld) {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Groups",
+                                    tint = NuvioTheme.colors.TextSecondary,
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .combinedClickable(
+                                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                            indication = null,
+                                            onClick = {
+                                                groupsOpen = !groupsOpen
+                                                focusGroupsOnOpen = false
+                                            }
+                                        )
+                                )
+                                Spacer(Modifier.width(6.dp))
+                            }
                             LiveText(
-                                if (epgUnassignedOnly) "Unassigned channels"
+                                if (epgUnassignedOnly) "Unassigned"
                                 else java.text.SimpleDateFormat("EEE, MMM d", java.util.Locale.getDefault()).format(java.util.Date(now)) +
                                     ", " + formatClock(now, settings.use24HourClock),
                                 color = NuvioTheme.colors.Secondary,
-                                size = 13.sp,
-                                weight = FontWeight.SemiBold
+                                size = if (isHandheld) 12.sp else 13.sp,
+                                weight = FontWeight.SemiBold,
+                                maxLines = 2
                             )
                         }
-                        BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                            val w = maxWidth
-                            for (i in 0 until (WINDOW_MS / SLOT_MS).toInt()) {
-                                val t = windowStart + i * SLOT_MS
-                                LiveText(
-                                    text = formatDayClock(t, now, settings.use24HourClock),
-                                    modifier = Modifier
-                                        .offset(x = w * (i * SLOT_MS / WINDOW_MS.toFloat()))
-                                        .align(Alignment.CenterStart)
-                                        .padding(start = 6.dp),
-                                    color = NuvioTheme.colors.TextSecondary,
-                                    size = 13.sp
-                                )
+                        val timelineModifier = if (isHandheld) {
+                            Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .horizontalScroll(timelineScroll)
+                        } else {
+                            Modifier.weight(1f).fillMaxHeight()
+                        }
+                        BoxWithConstraints(modifier = timelineModifier) {
+                            val w = if (isHandheld) handheldTimelineWidth else maxWidth
+                            Box(Modifier.width(w).fillMaxHeight()) {
+                                for (i in 0 until (WINDOW_MS / SLOT_MS).toInt()) {
+                                    val t = windowStart + i * SLOT_MS
+                                    LiveText(
+                                        text = formatDayClock(t, now, settings.use24HourClock),
+                                        modifier = Modifier
+                                            .offset(x = w * (i * SLOT_MS / WINDOW_MS.toFloat()))
+                                            .align(Alignment.CenterStart)
+                                            .padding(start = 6.dp),
+                                        color = NuvioTheme.colors.TextSecondary,
+                                        size = 13.sp
+                                    )
+                                }
                             }
                         }
                     }
@@ -1003,11 +1076,15 @@ fun LiveTvGuideScreen(
                             )
                             channels.isEmpty() -> EmptyGuideMessage(
                                 title = "No channels in this group",
-                                body = "Press left to pick another group.",
+                                body = if (isHandheld) "Tap the menu icon to pick another group." else "Press left to pick another group.",
                                 action = null
                             )
                             else -> {
-                                LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), userScrollEnabled = false) {
+                                LazyColumn(
+                                    state = listState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    userScrollEnabled = isHandheld
+                                ) {
                                     itemsIndexed(channels, key = { _, c -> c.key }) { index, ch ->
                                         GuideRow(
                                             channel = ch,
@@ -1024,25 +1101,49 @@ fun LiveTvGuideScreen(
                                             focusedBlock = if (index == row) focusedBlock else null,
                                             visible = if (visibilityMode) ch.key !in pendingHidden else null,
                                             moving = reorderKey == ch.key,
-                                            quality = if (settings.showQualityBadges) user.channelQuality[ch.key] else null
+                                            quality = if (settings.showQualityBadges) user.channelQuality[ch.key] else null,
+                                            timelineScroll = if (isHandheld) timelineScroll else null,
+                                            timelineWidth = if (isHandheld) handheldTimelineWidth else null,
+                                            onChannelClick = if (isHandheld) {
+                                                { handheldTapChannel(index, ch) }
+                                            } else null,
+                                            onProgramClick = if (isHandheld) {
+                                                { program -> handheldTapProgram(index, program) }
+                                            } else null,
+                                            onLongPress = if (isHandheld) {
+                                                { block -> handheldLongPress(index, ch, block) }
+                                            } else null
                                         )
                                     }
                                 }
                                 // "Now" line across the program area (can be hidden in settings).
                                 if (settings.showNowLine && now in windowStart until windowStart + WINDOW_MS) {
-                                    BoxWithConstraints(
-                                        modifier = Modifier
+                                    val nowLineModifier = if (isHandheld) {
+                                        Modifier
                                             .fillMaxSize()
                                             .padding(start = channelColWidth)
-                                    ) {
-                                        val x = maxWidth * ((now - windowStart) / WINDOW_MS.toFloat())
+                                            .horizontalScroll(timelineScroll)
+                                    } else {
+                                        Modifier
+                                            .fillMaxSize()
+                                            .padding(start = channelColWidth)
+                                    }
+                                    BoxWithConstraints(modifier = nowLineModifier) {
+                                        val w = if (isHandheld) handheldTimelineWidth else maxWidth
+                                        val x = w * ((now - windowStart) / WINDOW_MS.toFloat())
                                         Box(
                                             modifier = Modifier
-                                                .offset(x = x)
-                                                .width(2.dp)
+                                                .width(w)
                                                 .fillMaxHeight()
-                                                .background(NuvioTheme.colors.FocusRing.copy(alpha = 0.85f))
-                                        )
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .offset(x = x)
+                                                    .width(2.dp)
+                                                    .fillMaxHeight()
+                                                    .background(NuvioTheme.colors.FocusRing.copy(alpha = 0.85f))
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -1503,12 +1604,12 @@ fun LiveTvGuideScreen(
     }
 }
 
-private fun channelColumnWidth(s: LiveTvSettings): Dp {
-    var w = 16.dp
-    if (s.showChannelNumbers) w += 52.dp
-    if (s.showChannelLogos) w += 72.dp
-    if (s.showChannelNames) w += 150.dp
-    return w.coerceAtLeast(80.dp)
+private fun channelColumnWidth(s: LiveTvSettings, compact: Boolean = false): Dp {
+    var w = if (compact) 8.dp else 16.dp
+    if (s.showChannelNumbers) w += if (compact) 36.dp else 52.dp
+    if (s.showChannelLogos) w += if (compact) 48.dp else 72.dp
+    if (s.showChannelNames) w += if (compact) 88.dp else 150.dp
+    return w.coerceAtLeast(if (compact) 72.dp else 80.dp)
 }
 
 // ==================================================================== header
@@ -1529,15 +1630,18 @@ private fun GuideHeader(
     playbackError: String?,
     catchupTitle: String?,
     status: String?,
+    compactLayout: Boolean = false,
     /** The preview took over the picture (the player checks the picture actually starts). */
     onSurfaceAttached: () -> Unit = {},
     /** Where the preview window is on screen (null when it isn't shown). */
     onPreviewBounds: (androidx.compose.ui.geometry.Rect?) -> Unit = {}
 ) {
+    val headerStartPad = if (compactLayout) 8.dp else 64.dp
+    val headerEndPad = if (compactLayout) 8.dp else 32.dp
     if (!settings.showProgramDetails && !showPreview) {
         Row(
             // Info panel and preview both off: just a slim bar with the clock.
-            modifier = Modifier.fillMaxWidth().padding(start = 64.dp, end = 32.dp, top = 8.dp, bottom = 2.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = headerStartPad, end = headerEndPad, top = 8.dp, bottom = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             LiveText("Live TV", size = 16.sp, weight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -1548,12 +1652,17 @@ private fun GuideHeader(
         return
     }
     // Standard or small ("Small info & preview"): the small one leaves room for more channels.
-    val small = settings.smallHeader
+    val small = settings.smallHeader || compactLayout
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (small) 110.dp else 176.dp)
-            .padding(start = 64.dp, end = 32.dp, top = if (small) 12.dp else 20.dp, bottom = if (small) 4.dp else 6.dp),
+            .height(if (small) 110.dp else if (compactLayout) 140.dp else 176.dp)
+            .padding(
+                start = headerStartPad,
+                end = headerEndPad,
+                top = if (small) 12.dp else 20.dp,
+                bottom = if (small) 4.dp else 6.dp
+            ),
         horizontalArrangement = Arrangement.spacedBy(if (small) 16.dp else 20.dp)
     ) {
         // Posters off: just the channel logo, in a logo-shaped space (not a poster box).
@@ -1702,6 +1811,7 @@ internal fun ProgressBar(
 
 // ==================================================================== rows
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun GuideRow(
     channel: LiveChannel,
@@ -1722,7 +1832,12 @@ private fun GuideRow(
     /** "Browse by channel name": this row's channel name has the highlight. */
     nameFocused: Boolean = false,
     /** Picture quality seen when this channel last played ("4K", "FHD", "HD", "SD"). */
-    quality: String? = null
+    quality: String? = null,
+    timelineScroll: androidx.compose.foundation.ScrollState? = null,
+    timelineWidth: Dp? = null,
+    onChannelClick: (() -> Unit)? = null,
+    onProgramClick: ((EpgProgram) -> Unit)? = null,
+    onLongPress: ((GuideBlock?) -> Unit)? = null
 ) {
     val windowEnd = windowStart + WINDOW_MS
     val cellShape = RoundedCornerShape(6.dp)
@@ -1737,7 +1852,17 @@ private fun GuideRow(
         // The channel cell is never highlighted; the program under the cursor is.
         // …except while it's being moved with Reorder channels.
         val channelFocused = moving || nameFocused
-        val cell = liveCellColors(focused = moving || nameFocused, idle = guideSurface())
+        val cell = liveCellColors(focused = channelFocused, idle = guideSurface())
+        val channelClickModifier = if (onChannelClick != null) {
+            Modifier.combinedClickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null,
+                onClick = onChannelClick,
+                onLongClick = { onLongPress?.invoke(focusedBlock) }
+            )
+        } else {
+            Modifier
+        }
         Row(
             modifier = Modifier
                 .width(channelColWidth)
@@ -1746,6 +1871,7 @@ private fun GuideRow(
                 .clip(cellShape)
                 .background(cell.background)
                 .border(2.dp, cell.border, cellShape)
+                .then(channelClickModifier)
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1827,63 +1953,95 @@ private fun GuideRow(
         }
 
         // Program blocks
-        BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            val totalW = maxWidth
+        val programAreaModifier = if (timelineScroll != null) {
+            Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .horizontalScroll(timelineScroll)
+        } else {
+            Modifier.weight(1f).fillMaxHeight()
+        }
+        BoxWithConstraints(modifier = programAreaModifier) {
+            val totalW = timelineWidth ?: maxWidth
             fun xOf(t: Long): Dp = totalW * ((t.coerceIn(windowStart, windowEnd) - windowStart) / WINDOW_MS.toFloat())
 
-            val visible = programs.filter { it.stopMs > windowStart && it.startMs < windowEnd }
-            if (visible.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 1.dp)
-                        .clip(cellShape)
-                        .background(guideSurface().copy(alpha = 0.55f))
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    LiveText(channel.name, color = NuvioTheme.colors.TextTertiary, size = 14.sp)
+            Box(Modifier.width(totalW).fillMaxHeight()) {
+                val visible = programs.filter { it.stopMs > windowStart && it.startMs < windowEnd }
+                if (visible.isEmpty()) {
+                    val emptyClick = if (onChannelClick != null) {
+                        Modifier.combinedClickable(
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                            indication = null,
+                            onClick = onChannelClick,
+                            onLongClick = { onLongPress?.invoke(null) }
+                        )
+                    } else {
+                        Modifier
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 1.dp)
+                            .clip(cellShape)
+                            .background(guideSurface().copy(alpha = 0.55f))
+                            .then(emptyClick)
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        LiveText(channel.name, color = NuvioTheme.colors.TextTertiary, size = 14.sp)
+                    }
                 }
-            }
-            visible.forEach { p ->
-                val x = xOf(p.startMs)
-                val w = (xOf(p.stopMs) - x).coerceAtLeast(2.dp)
-                val live = now >= p.startMs && now < p.stopMs
-                val past = p.stopMs <= now
-                val isFocused = focusColumn != null && focusedBlock?.program == p
-                val colors = liveCellColors(
-                    focused = isFocused,
-                    idle = when {
-                        live -> guideSurfaceVariant()
-                        past -> guideSurface().copy(alpha = 0.5f)
-                        else -> guideSurface()
-                    },
-                    idleText = if (past) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary
-                )
-                ProgramBlock(
-                    title = p.title,
-                    subtitle = null,
-                    x = x, width = w,
-                    colors = colors,
-                    focused = isFocused,
-                    progress = if (live) p.progress(now) else null,
-                    continuesLeft = p.startMs < windowStart
-                )
-            }
-            // Highlight for an empty slot under the cursor.
-            if (focusColumn != null && focusedBlock != null && focusedBlock.program == null) {
-                val x = xOf(focusedBlock.startMs)
-                val w = (xOf(focusedBlock.stopMs) - x).coerceAtLeast(2.dp)
-                ProgramBlock(
-                    title = "No information", subtitle = null, x = x, width = w,
-                    colors = liveCellColors(focused = true, idle = guideSurface()),
-                    focused = true, progress = null, continuesLeft = false
-                )
+                visible.forEach { p ->
+                    val x = xOf(p.startMs)
+                    val w = (xOf(p.stopMs) - x).coerceAtLeast(2.dp)
+                    val live = now >= p.startMs && now < p.stopMs
+                    val past = p.stopMs <= now
+                    val isFocused = focusColumn != null && focusedBlock?.program == p
+                    val colors = liveCellColors(
+                        focused = isFocused,
+                        idle = when {
+                            live -> guideSurfaceVariant()
+                            past -> guideSurface().copy(alpha = 0.5f)
+                            else -> guideSurface()
+                        },
+                        idleText = if (past) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary
+                    )
+                    ProgramBlock(
+                        title = p.title,
+                        subtitle = null,
+                        x = x,
+                        width = w,
+                        colors = colors,
+                        focused = isFocused,
+                        progress = if (live) p.progress(now) else null,
+                        continuesLeft = p.startMs < windowStart,
+                        onClick = onProgramClick?.let { { it(p) } },
+                        onLongClick = onLongPress?.let { { it(GuideBlock(p.startMs, p.stopMs, p)) } }
+                    )
+                }
+                // Highlight for an empty slot under the cursor.
+                if (focusColumn != null && focusedBlock != null && focusedBlock.program == null) {
+                    val x = xOf(focusedBlock.startMs)
+                    val w = (xOf(focusedBlock.stopMs) - x).coerceAtLeast(2.dp)
+                    ProgramBlock(
+                        title = "No information",
+                        subtitle = null,
+                        x = x,
+                        width = w,
+                        colors = liveCellColors(focused = true, idle = guideSurface()),
+                        focused = true,
+                        progress = null,
+                        continuesLeft = false,
+                        onClick = onChannelClick,
+                        onLongClick = onLongPress?.let { { it(focusedBlock) } }
+                    )
+                }
             }
         }
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun ProgramBlock(
     title: String,
@@ -1893,9 +2051,21 @@ private fun ProgramBlock(
     colors: LiveCellColors,
     focused: Boolean,
     progress: Float?,
-    continuesLeft: Boolean
+    continuesLeft: Boolean,
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
     val shape = RoundedCornerShape(6.dp)
+    val touchModifier = if (onClick != null) {
+        Modifier.combinedClickable(
+            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+            indication = null,
+            onClick = onClick,
+            onLongClick = onLongClick
+        )
+    } else {
+        Modifier
+    }
     Box(
         modifier = Modifier
             .offset(x = x)
@@ -1905,6 +2075,7 @@ private fun ProgramBlock(
             .clip(shape)
             .background(colors.background)
             .border(2.dp, colors.border, shape)
+            .then(touchModifier)
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),

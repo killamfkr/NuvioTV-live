@@ -122,7 +122,7 @@
    | Fire TV (all models), older or budget boxes | `armeabi-v7a` |
    | Not sure (works everywhere) | `universal` |
 
-   On **phones and tablets**, use the same APK: the app shows a bottom navigation bar and a touch-friendly Live TV channel list (the full TV-style guide remains on TV devices).
+   On **phones and tablets**, use the same APK: the app shows a bottom navigation bar and the same **TiviMate-style TV guide** with touch scrolling (swipe channels, swipe the timeline, tap to play).
 
 3. Install it with a file manager or **Downloader**, allowing installs from unknown sources when asked.
 
