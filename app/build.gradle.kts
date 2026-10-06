@@ -147,9 +147,17 @@ android {
         buildConfigField("String", "SPONSOR_NAMES", buildConfigString(sponsorNames))
         buildConfigField("String", "SENTRY_DSN", buildConfigString(sentryDsn))
 
-        // In-app updater (GitHub Releases)
-        buildConfigField("String", "GITHUB_OWNER", "\"homelessbrian\"")
-        buildConfigField("String", "GITHUB_REPO", "\"NuvioTV\"")
+        // In-app updater (GitHub Releases) — override in local.properties for other forks.
+        buildConfigField(
+            "String",
+            "GITHUB_OWNER",
+            buildConfigString(localProperties.getProperty("GITHUB_OWNER", "killamfkr"))
+        )
+        buildConfigField(
+            "String",
+            "GITHUB_REPO",
+            buildConfigString(localProperties.getProperty("GITHUB_REPO", "NuvioTV-live"))
+        )
     }
 
     flavorDimensions += "distribution"

@@ -92,9 +92,15 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Build APK
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleFullRelease --stacktrace
+          VERSION="${TAG#v}"
+          BUILD_NUM="$(printf '%s' "$VERSION" | sed -n 's/.*\.//p' | grep -E '^[0-9]+$' || echo 0)"
+          ./gradlew :app:assembleFullRelease --stacktrace \
+            -PlivetvVersionName="$VERSION" \
+            -PlivetvBuildNumber="$BUILD_NUM"
 
       - name: Collect APKs
         run: |

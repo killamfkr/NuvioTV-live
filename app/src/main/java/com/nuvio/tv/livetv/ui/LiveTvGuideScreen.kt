@@ -81,6 +81,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -1058,7 +1059,7 @@ fun LiveTvGuideScreen(
                                     else -> false
                                 }
                             }
-                            .focusable()
+                            .then(if (isHandheld) Modifier else Modifier.focusable())
                     ) {
                         when {
                             !ui.hasSources -> EmptyGuideMessage(
@@ -1128,7 +1129,9 @@ fun LiveTvGuideScreen(
                                             .fillMaxSize()
                                             .padding(start = channelColWidth)
                                     }
-                                    BoxWithConstraints(modifier = nowLineModifier) {
+                                    BoxWithConstraints(
+                                        modifier = nowLineModifier.pointerInteropFilter { false }
+                                    ) {
                                         val w = if (isHandheld) handheldTimelineWidth else maxWidth
                                         val x = w * ((now - windowStart) / WINDOW_MS.toFloat())
                                         Box(
