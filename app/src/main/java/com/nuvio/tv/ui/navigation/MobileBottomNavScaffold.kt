@@ -19,13 +19,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.nuvio.tv.DrawerItem
+import com.nuvio.tv.livetv.ui.LiveTvFullscreen
+import com.nuvio.tv.ui.system.HandheldImmersiveSystemBarsEffect
 import com.nuvio.tv.LocalContentFocusRequester
 import com.nuvio.tv.LocalOpenSidebar
 import com.nuvio.tv.LocalSidebarExpanded
@@ -44,7 +47,12 @@ fun MobileBottomNavScaffold(
     hideBuiltInHeaders: Boolean,
     onNavigate: (String) -> Unit,
 ) {
-    val showBottomBar = currentRoute in rootRoutes
+    val liveTvFullscreen by LiveTvFullscreen.active.collectAsStateWithLifecycle()
+    val onVodPlayer = currentRoute?.startsWith("player/") == true ||
+        currentRoute?.startsWith("stream/") == true
+    val immersive = liveTvFullscreen || onVodPlayer
+    HandheldImmersiveSystemBarsEffect(enabled = immersive)
+    val showBottomBar = currentRoute in rootRoutes && !immersive
     val contentFocusRequester = remember { FocusRequester() }
 
     Scaffold(
@@ -96,9 +104,13 @@ fun MobileBottomNavScaffold(
         }
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = if (immersive) {
+                Modifier.fillMaxSize()
+            } else {
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            }
         ) {
             CompositionLocalProvider(
                 LocalSidebarExpanded provides false,
