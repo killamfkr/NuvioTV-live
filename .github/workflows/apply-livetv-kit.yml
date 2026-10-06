@@ -2,8 +2,11 @@ name: Apply Live TV kit
 
 # Upload nuvio-livetv-kit.zip to the root of the repo and this runs automatically.
 # It unzips the kit over the repo, commits the result and removes the zip.
+# Branch-only: tag pushes ignore path filters and would run this without the zip file.
 on:
   push:
+    branches:
+      - "**"
     paths:
       - "nuvio-livetv-kit.zip"
   workflow_dispatch:
@@ -13,6 +16,7 @@ permissions:
 
 jobs:
   apply:
+    if: github.event_name == 'workflow_dispatch' || github.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
