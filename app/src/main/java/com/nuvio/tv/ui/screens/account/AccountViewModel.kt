@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nuvio.tv.R
 import com.nuvio.tv.core.auth.AuthManager
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.core.auth.diagnostics.AuthDiagnosticsSession
 import com.nuvio.tv.core.logging.bodySnippetForLog
 import com.nuvio.tv.core.logging.diagnosticSummary
@@ -321,7 +322,7 @@ class AccountViewModel @Inject constructor(
             authManager.startDeviceLoginSession(
                 deviceNonce = nonce,
                 deviceName = Build.MODEL,
-                deviceType = "tv",
+                deviceType = if (DeviceFormFactor.isTelevision(context)) "tv" else "android",
                 redirectBaseUrl = serverConfiguration.deviceLoginWebBaseUrl.orEmpty(),
                 legacyRedirectBaseUrl = serverConfiguration.tvLoginWebBaseUrl.orEmpty(),
                 traceId = traceId,
