@@ -47,6 +47,7 @@ scripts/*
 !scripts/release_notes/
 !scripts/release_notes/*.py
 !scripts/release-metadata.sh
+!scripts/release-livetv-local.sh
 !scripts/release_beta.py
 !scripts/tests/
 !scripts/tests/*.py
