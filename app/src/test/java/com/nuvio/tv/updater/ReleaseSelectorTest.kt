@@ -48,6 +48,19 @@ class ReleaseSelectorTest {
     }
 
     @Test
+    fun `utility tags like downloader are excluded`() {
+        val releases = listOf(
+            release("downloader"),
+            release("1.1.0-beta.4.5", prerelease = true),
+            release("1.1.0-beta.4.4")
+        )
+
+        val selected = ReleaseSelector.eligibleReleases(releases, UpdateChannel.BETA)
+
+        assertEquals(listOf("1.1.0-beta.4.5", "1.1.0-beta.4.4"), selected.map { it.tagName })
+    }
+
+    @Test
     fun `drafts and invalid tags are excluded`() {
         val releases = listOf(
             release("1.2.0", draft = true),

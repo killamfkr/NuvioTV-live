@@ -39,4 +39,10 @@ class VersionUtilsTest {
     fun `current beta naming is recognized as prerelease`() {
         assertTrue(VersionUtils.isPrerelease("0.8.12-beta"))
     }
+
+    @Test
+    fun `fork livetv patch releases compare numerically`() {
+        assertTrue(VersionUtils.isRemoteNewer("1.1.0-beta.4.5", "1.1.0-beta.4.4"))
+        assertTrue(VersionUtils.isRemoteNewer("v1.1.0-beta.4.5", "1.1.0-beta.4.4"))
+    }
 }
