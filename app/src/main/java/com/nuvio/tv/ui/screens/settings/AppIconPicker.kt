@@ -89,7 +89,7 @@ internal fun AppIconPickerDialog(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     options.forEach { option ->
-                        AppIconOptionCard(
+                        AppIconOptionSettingsCard(
                             option = option,
                             iptv = state.iptvBranding,
                             selected = state.selected == option,
@@ -164,7 +164,7 @@ internal fun AppIconChangeConfirmationDialog(
 }
 
 @Composable
-private fun AppIconOptionCard(
+private fun AppIconOptionSettingsCard(
     option: AppIconOption,
     selected: Boolean,
     enabled: Boolean,
@@ -173,7 +173,7 @@ private fun AppIconOptionCard(
     iptv: Boolean = false
 ) {
     val shape = RoundedCornerShape(12.dp)
-    Card(
+    SettingsCard(
         onClick = { if (enabled) onClick() },
         modifier = modifier.alpha(if (enabled) 1f else 0.55f),
         colors = CardDefaults.colors(

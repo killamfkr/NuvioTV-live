@@ -83,7 +83,7 @@ internal fun ThemeColorPicker(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             colorSwatches.forEachIndexed { index, swatch ->
-                Card(
+                SettingsCard(
                     onClick = { onColorChanged(swatch) },
                     modifier = Modifier
                         .size(30.dp)
@@ -143,7 +143,7 @@ private fun ColorChannelSlider(
     step: Int = 1
 ) {
     val shape = RoundedCornerShape(10.dp)
-    Card(
+    SettingsCard(
         onClick = {},
         modifier = Modifier
             .fillMaxWidth()

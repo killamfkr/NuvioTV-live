@@ -239,7 +239,7 @@ private fun AttributionDetailRow(
 ) {
     val context = LocalContext.current
 
-    Card(
+    SettingsCard(
         onClick = {
             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
         },

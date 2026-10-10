@@ -185,7 +185,7 @@ internal fun ColorSelectionDialog(
                     color = NuvioTheme.colors.TextSecondary,
                     modifier = Modifier.width(70.dp)
                 )
-                Card(
+                SettingsCard(
                     onClick = { alphaPercent = (alphaPercent - 10).coerceAtLeast(0) },
                     colors = CardDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -226,7 +226,7 @@ internal fun ColorSelectionDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = NuvioTheme.colors.TextPrimary
                 )
-                Card(
+                SettingsCard(
                     onClick = { alphaPercent = (alphaPercent + 10).coerceAtMost(100) },
                     colors = CardDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -255,7 +255,7 @@ internal fun ColorSelectionDialog(
                 horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Card(
+                SettingsCard(
                     onClick = onDismiss,
                     colors = CardDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -280,7 +280,7 @@ internal fun ColorSelectionDialog(
                         textAlign = TextAlign.Center
                     )
                 }
-                Card(
+                SettingsCard(
                     onClick = { onColorSelected(currentChipColor.copy(alpha = alphaPercent / 100f)) },
                     colors = CardDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -324,7 +324,7 @@ private fun ColorOption(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .size(NuvioTheme.spacing.xxxl)

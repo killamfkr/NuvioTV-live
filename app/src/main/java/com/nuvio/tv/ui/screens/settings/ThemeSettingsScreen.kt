@@ -272,7 +272,7 @@ fun ThemeSettingsContent(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     uiState.availableSettingsUiStyles.forEach { style ->
-                        SettingsStyleOptionCard(
+                        SettingsStyleOptionSettingsCard(
                             style = style,
                             isSelected = style == uiState.settingsUiStyle,
                             onClick = { viewModel.onEvent(ThemeSettingsEvent.SelectSettingsUiStyle(style)) },
@@ -428,7 +428,7 @@ private fun ThemeSwatchChip(
     val palette = remember(theme, customColors) { ThemeColors.getColorPalette(theme, customColors) }
     val chipShape = RoundedCornerShape(18.dp)
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier
             .width(96.dp)
@@ -488,7 +488,7 @@ private fun ThemeSwatchChip(
 }
 
 @Composable
-private fun SettingsStyleOptionCard(
+private fun SettingsStyleOptionSettingsCard(
     style: SettingsUiStyle,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -497,7 +497,7 @@ private fun SettingsStyleOptionCard(
     var isFocused by remember { mutableStateOf(false) }
     val cardShape = RoundedCornerShape(18.dp)
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier
             .onFocusChanged { state ->

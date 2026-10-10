@@ -190,7 +190,7 @@ internal fun CustomThemeEditor(
                     firstSwatchFocusRequester = firstSwatchFocusRequester
                 )
 
-                Card(
+                SettingsCard(
                     onClick = { restoreHexFocus = true; showHexEditor = true },
                     modifier = Modifier.fillMaxWidth().focusRequester(hexFocusRequester),
                     colors = CardDefaults.colors(
@@ -280,7 +280,7 @@ private fun ThemeColorSlot(
 ) {
     val shape = RoundedCornerShape(12.dp)
     val label = stringResource(R.string.custom_theme_color_number, index + 1)
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier.semantics {
             this.selected = selected

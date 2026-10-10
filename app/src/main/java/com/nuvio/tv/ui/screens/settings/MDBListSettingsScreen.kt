@@ -199,7 +199,7 @@ private fun MDBListApiKeyDialog(
         subtitle = stringResource(R.string.mdblist_ratings_key_override_subtitle),
         width = 700.dp
     ) {
-        Card(
+        SettingsCard(
             onClick = { inputFocusRequester.requestFocus() },
             modifier = Modifier
                 .fillMaxWidth()

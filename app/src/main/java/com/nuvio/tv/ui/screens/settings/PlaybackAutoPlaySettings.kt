@@ -558,7 +558,7 @@ private fun StreamAutoPlayProviderSelectionDialog(
                 .heightIn(max = 420.dp),
             verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Card(
+            SettingsCard(
                 onClick = { selected = emptySet() },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -610,7 +610,7 @@ private fun StreamAutoPlayProviderSelectionDialog(
                         key = { it }
                     ) { item ->
                         val isSelected = item in selected
-                        Card(
+                        SettingsCard(
                             onClick = {
                                 selected = if (isSelected) {
                                     selected - item
@@ -741,7 +741,7 @@ private fun StreamRegexDialog(
                         key = { _, preset -> preset.first }
                     ) { presetIndex, (label, pattern) ->
                         var isFocused by remember { mutableStateOf(false) }
-                        Card(
+                        SettingsCard(
                             onClick = {
                                 regex = pattern
                                 regexError = null
@@ -778,7 +778,7 @@ private fun StreamRegexDialog(
                     }
                 }
 
-                Card(
+                SettingsCard(
                     onClick = { inputFocusRequester.requestFocus() },
                     modifier = Modifier
                         .fillMaxWidth()
