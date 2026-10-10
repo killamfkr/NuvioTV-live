@@ -183,6 +183,8 @@ data class LiveTvSettings(
     val channelSort: ChannelSort = ChannelSort.PLAYLIST,
     /** Fill the focused cell with the accent color instead of outlining it. */
     val solidHighlight: Boolean = false,
+    /** Guide look: [com.nuvio.tv.livetv.ui.LiveGuideAppearance] storage key ("classic" or "hulu"). */
+    val guideAppearance: String = "hulu",
     /** Show matching channels and programs in Nuvio's search. */
     val showInSearch: Boolean = true,
     val showAllChannelsGroup: Boolean = true,

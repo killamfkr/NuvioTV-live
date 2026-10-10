@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -198,6 +199,11 @@ internal fun LiveTvOverlayMode(
         viewModel.selectGroup(groups[groupIndex].id)
     }
 
+    val guideAppearance = LiveGuideAppearance.fromKey(settings.guideAppearance)
+    CompositionLocalProvider(
+        LocalGuideAppearance provides guideAppearance,
+        LocalLiveSolidHighlight provides effectiveSolidHighlight(settings, guideAppearance)
+    ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -297,7 +303,14 @@ internal fun LiveTvOverlayMode(
                     LiveText(range, color = NuvioTheme.colors.TextSecondary, size = 14.sp)
                     if (live) {
                         Spacer(Modifier.width(10.dp))
-                        ProgressBar(p.progress(now), Modifier.width(60.dp))
+                        if (isHuluGuide()) LiveOnAirBadge()
+                        Spacer(Modifier.width(10.dp))
+                        ProgressBar(
+                            p.progress(now),
+                            Modifier.width(60.dp),
+                            color = guideAccent(),
+                            trackColor = Color.White.copy(alpha = 0.2f)
+                        )
                         Spacer(Modifier.width(10.dp))
                         LiveText(minutesLeftLabel(p.stopMs, now), color = NuvioTheme.colors.TextSecondary, size = 14.sp)
                     }
@@ -343,6 +356,7 @@ internal fun LiveTvOverlayMode(
     }
     LaunchedEffect(futurePrompt) {
         if (futurePrompt == null) { delay(60); runCatching { focus.requestFocus() } }
+    }
     }
 }
 

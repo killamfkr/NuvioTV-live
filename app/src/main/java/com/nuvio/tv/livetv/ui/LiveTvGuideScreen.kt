@@ -616,7 +616,11 @@ fun LiveTvGuideScreen(
         if (now >= landed.startMs && now < landed.stopMs && ch.catchup == null) resetToNow()
     }
 
-    CompositionLocalProvider(LocalLiveSolidHighlight provides settings.solidHighlight) {
+    val guideAppearance = LiveGuideAppearance.fromKey(settings.guideAppearance)
+    CompositionLocalProvider(
+        LocalGuideAppearance provides guideAppearance,
+        LocalLiveSolidHighlight provides effectiveSolidHighlight(settings, guideAppearance)
+    ) {
     val hostActivity = androidx.compose.ui.platform.LocalContext.current as? com.nuvio.tv.MainActivity
     // Where the preview window is (the video view sits there when not full screen).
     var rootBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
@@ -629,7 +633,7 @@ fun LiveTvGuideScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .background(guideScreenBackground())
             .onGloballyPositioned { rootBounds = it.boundsInRoot() }
             .onPreviewKeyEvent { e ->
                 // Full screen handles its own keys.
@@ -846,7 +850,7 @@ fun LiveTvGuideScreen(
                                 if (epgUnassignedOnly) "Unassigned"
                                 else java.text.SimpleDateFormat("EEE, MMM d", java.util.Locale.getDefault()).format(java.util.Date(now)) +
                                     ", " + formatClock(now, settings.use24HourClock),
-                                color = NuvioTheme.colors.Secondary,
+                                color = guideAccent(),
                                 size = if (isHandheld) 12.sp else 13.sp,
                                 weight = FontWeight.SemiBold,
                                 maxLines = 2
@@ -871,7 +875,7 @@ fun LiveTvGuideScreen(
                                             .offset(x = w * (i * SLOT_MS / WINDOW_MS.toFloat()))
                                             .align(Alignment.CenterStart)
                                             .padding(start = 6.dp),
-                                        color = NuvioTheme.colors.TextSecondary,
+                                        color = guideTimelineLabelColor(),
                                         size = 13.sp
                                     )
                                 }
@@ -1144,7 +1148,7 @@ fun LiveTvGuideScreen(
                                                     .offset(x = x)
                                                     .width(2.dp)
                                                     .fillMaxHeight()
-                                                    .background(NuvioTheme.colors.FocusRing.copy(alpha = 0.85f))
+                                                    .background(guideAccent().copy(alpha = 0.9f))
                                             )
                                         }
                                     }
@@ -1647,7 +1651,12 @@ private fun GuideHeader(
             modifier = Modifier.fillMaxWidth().padding(start = headerStartPad, end = headerEndPad, top = 8.dp, bottom = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LiveText("Live TV", size = 16.sp, weight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            LiveText(
+                if (isHuluGuide()) "Live guide" else "Live TV",
+                size = 16.sp,
+                weight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
             status?.let { LiveText(it, color = NuvioTheme.colors.TextSecondary, size = 13.sp) }
             Spacer(Modifier.width(16.dp))
             LiveText(formatClock(now, settings.use24HourClock), size = 16.sp, weight = FontWeight.SemiBold)
@@ -1717,14 +1726,21 @@ private fun GuideHeader(
                     Spacer(Modifier.height(6.dp))
                 }
                 val p = rememberShowDetails(channel.key, block?.program)
-                LiveText(
-                    text = p?.title ?: channel.name,
-                    modifier = Modifier.fillMaxWidth(),
-                    size = if (small) 20.sp else 24.sp,
-                    weight = FontWeight.Bold,
-                    maxLines = 1,
-                    marquee = true
-                )
+                val onAir = block != null && now in block.startMs until block.stopMs
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    LiveText(
+                        text = p?.title ?: channel.name,
+                        modifier = Modifier.weight(1f, fill = false),
+                        size = if (small) 20.sp else 24.sp,
+                        weight = FontWeight.Bold,
+                        maxLines = 1,
+                        marquee = true
+                    )
+                    if (onAir && isHuluGuide()) {
+                        Spacer(Modifier.width(10.dp))
+                        LiveOnAirBadge()
+                    }
+                }
                 Spacer(Modifier.height(if (small) 2.dp else 4.dp))
                 if (block != null) {
                     val meta = buildList {
@@ -1739,7 +1755,11 @@ private fun GuideHeader(
                     LiveText(meta, color = NuvioTheme.colors.TextSecondary, size = if (small) 13.sp else 14.sp)
                     if (now in block.startMs until block.stopMs) {
                         Spacer(Modifier.height(if (small) 4.dp else 6.dp))
-                        ProgressBar(fraction = ((now - block.startMs).toFloat() / (block.stopMs - block.startMs).coerceAtLeast(1)).coerceIn(0f, 1f))
+                        ProgressBar(
+                            fraction = ((now - block.startMs).toFloat() / (block.stopMs - block.startMs).coerceAtLeast(1)).coerceIn(0f, 1f),
+                            color = guideAccent(),
+                            trackColor = if (isHuluGuide()) Color.White.copy(alpha = 0.18f) else null
+                        )
                     }
                 }
                 Spacer(Modifier.height(if (small) 4.dp else 6.dp))
@@ -1759,7 +1779,7 @@ private fun GuideHeader(
                 modifier = Modifier
                     .fillMaxHeight()
                     .aspectRatio(16f / 9f)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(if (isHuluGuide()) 8.dp else 12.dp))
                     .background(Color.Black)
             ) {
                 // The video itself is drawn by the guide, over this spot (one view for the
@@ -1843,7 +1863,7 @@ private fun GuideRow(
     onLongPress: ((GuideBlock?) -> Unit)? = null
 ) {
     val windowEnd = windowStart + WINDOW_MS
-    val cellShape = RoundedCornerShape(6.dp)
+    val cellShape = RoundedCornerShape(guideCellCornerRadius())
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -1855,7 +1875,11 @@ private fun GuideRow(
         // The channel cell is never highlighted; the program under the cursor is.
         // …except while it's being moved with Reorder channels.
         val channelFocused = moving || nameFocused
-        val cell = liveCellColors(focused = channelFocused, idle = guideSurface())
+        val channelIdle = when {
+            isHuluGuide() && !channelFocused -> Color.Transparent
+            else -> guideSurface()
+        }
+        val cell = liveCellColors(focused = channelFocused, idle = channelIdle)
         val channelClickModifier = if (onChannelClick != null) {
             Modifier.combinedClickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
@@ -1937,7 +1961,7 @@ private fun GuideRow(
             // While moving, only the move marker shows (no playing dot or star in the way).
             if (isPlaying && !moving) {
                 Spacer(Modifier.width(4.dp))
-                Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(NuvioTheme.colors.Error))
+                Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(guideAccent()))
             }
             if (moving) {
                 Spacer(Modifier.width(6.dp))
@@ -2004,7 +2028,7 @@ private fun GuideRow(
                         focused = isFocused,
                         idle = when {
                             live -> guideSurfaceVariant()
-                            past -> guideSurface().copy(alpha = 0.5f)
+                            past -> guideSurfacePast()
                             else -> guideSurface()
                         },
                         idleText = if (past) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary
@@ -2016,6 +2040,7 @@ private fun GuideRow(
                         width = w,
                         colors = colors,
                         focused = isFocused,
+                        isLive = live,
                         progress = if (live) p.progress(now) else null,
                         continuesLeft = p.startMs < windowStart,
                         onClick = onProgramClick?.let { { it(p) } },
@@ -2033,6 +2058,7 @@ private fun GuideRow(
                         width = w,
                         colors = liveCellColors(focused = true, idle = guideSurface()),
                         focused = true,
+                        isLive = false,
                         progress = null,
                         continuesLeft = false,
                         onClick = onChannelClick,
@@ -2053,12 +2079,13 @@ private fun ProgramBlock(
     width: Dp,
     colors: LiveCellColors,
     focused: Boolean,
+    isLive: Boolean,
     progress: Float?,
     continuesLeft: Boolean,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null
 ) {
-    val shape = RoundedCornerShape(6.dp)
+    val shape = RoundedCornerShape(guideCellCornerRadius())
     val touchModifier = if (onClick != null) {
         Modifier.combinedClickable(
             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
@@ -2074,12 +2101,19 @@ private fun ProgramBlock(
             .offset(x = x)
             .width(width)
             .fillMaxHeight()
-            .padding(horizontal = 1.5.dp)
+            .padding(horizontal = guideProgramHorizontalGap())
             .clip(shape)
             .background(colors.background)
             .border(2.dp, colors.border, shape)
             .then(touchModifier)
     ) {
+        if (isLive && isHuluGuide() && !focused) {
+            LiveOnAirBadge(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 3.dp, end = 6.dp)
+            )
+        }
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
             verticalArrangement = Arrangement.Center
@@ -2108,7 +2142,7 @@ private fun ProgramBlock(
                     .align(Alignment.BottomStart)
                     .fillMaxWidth(it)
                     .height(2.dp)
-                    .background(NuvioTheme.colors.Secondary.copy(alpha = 0.8f))
+                    .background(guideAccent().copy(alpha = 0.85f))
             )
         }
     }
@@ -2820,12 +2854,12 @@ private fun menuItemColors(style: LiveMenuStyle, focused: Boolean, selected: Boo
         // Classic drawer: theme focus fill; the current choice filled with the accent.
         when {
             focused -> MenuItemColors(colors.FocusBackground, colors.TextPrimary, colors.TextSecondary)
-            selected -> MenuItemColors(colors.Secondary, colors.OnSecondary, colors.OnSecondary.copy(alpha = 0.8f))
+            selected -> MenuItemColors(guideAccent(), guideAccentOn(), guideAccentOn().copy(alpha = 0.8f))
             else -> MenuItemColors(Color.Transparent, colors.TextSecondary, colors.TextTertiary)
         }
     } else {
         // Modern panel: soft white when focused, accent tint and accent text for the current choice.
-        val accent = NuvioTheme.palette.secondary
+        val accent = guideAccent()
         MenuItemColors(
             background = when {
                 focused && selected -> accent.copy(alpha = 0.28f)
