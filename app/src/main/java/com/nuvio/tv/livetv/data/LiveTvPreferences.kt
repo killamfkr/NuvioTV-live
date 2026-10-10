@@ -78,6 +78,7 @@ class LiveTvPreferences @Inject constructor(
         val autoReconnect = booleanPreferencesKey("auto_reconnect")
         val channelSort = stringPreferencesKey("channel_sort")
         val solidHighlight = booleanPreferencesKey("solid_highlight")
+        val guideAppearance = stringPreferencesKey("guide_appearance")
         val showInSearch = booleanPreferencesKey("show_in_search")
         val showAllGroup = booleanPreferencesKey("show_all_group")
         val resumeInPreview = booleanPreferencesKey("resume_in_preview")
@@ -175,6 +176,7 @@ class LiveTvPreferences @Inject constructor(
             autoReconnect = p[Keys.autoReconnect] ?: d.autoReconnect,
             channelSort = p[Keys.channelSort]?.let { runCatching { ChannelSort.valueOf(it) }.getOrNull() } ?: d.channelSort,
             solidHighlight = p[Keys.solidHighlight] ?: d.solidHighlight,
+            guideAppearance = p[Keys.guideAppearance] ?: d.guideAppearance,
             showInSearch = p[Keys.showInSearch] ?: d.showInSearch,
             showAllChannelsGroup = p[Keys.showAllGroup] ?: d.showAllChannelsGroup,
             resumeLastInPreview = p[Keys.resumeInPreview] ?: d.resumeLastInPreview,
@@ -290,6 +292,7 @@ class LiveTvPreferences @Inject constructor(
         p[Keys.autoReconnect] = s.autoReconnect
         p[Keys.channelSort] = s.channelSort.name
         p[Keys.solidHighlight] = s.solidHighlight
+        p[Keys.guideAppearance] = s.guideAppearance
         p[Keys.showInSearch] = s.showInSearch
         p[Keys.showAllGroup] = s.showAllChannelsGroup
         p[Keys.resumeInPreview] = s.resumeLastInPreview

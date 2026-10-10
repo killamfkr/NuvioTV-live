@@ -220,7 +220,11 @@ fun LiveTvPlayerScreen(
 
     BackHandler(enabled = listVisible) { listVisible = false }
 
-    CompositionLocalProvider(LocalLiveSolidHighlight provides settings.solidHighlight) {
+    val guideAppearance = LiveGuideAppearance.fromKey(settings.guideAppearance)
+    CompositionLocalProvider(
+        LocalGuideAppearance provides guideAppearance,
+        LocalLiveSolidHighlight provides effectiveSolidHighlight(settings, guideAppearance)
+    ) {
     Box(
         modifier = Modifier
             .fillMaxSize()

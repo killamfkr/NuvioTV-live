@@ -41,6 +41,7 @@ import com.nuvio.tv.livetv.model.EpgSource
 import com.nuvio.tv.livetv.model.LiveTvSettings
 import com.nuvio.tv.livetv.model.PlaylistSource
 import com.nuvio.tv.livetv.model.ZapMode
+import com.nuvio.tv.livetv.ui.LiveGuideAppearance
 import com.nuvio.tv.livetv.ui.LiveTvSettingsViewModel
 import com.nuvio.tv.livetv.ui.TextInputDialog
 import com.nuvio.tv.ui.components.NuvioDialog
@@ -83,6 +84,7 @@ private sealed interface LiveDialog {
     data object PastHours : LiveDialog
     data object SortChoice : LiveDialog
     data object HighlightChoice : LiveDialog
+    data object GuideAppearanceChoice : LiveDialog
     data object CustomGroups : LiveDialog
     data object ConfirmRestore : LiveDialog
     data object PinCheck : LiveDialog
@@ -259,6 +261,12 @@ fun LiveTvSettingsContent(
             // ------------------------------------------------------------ guide layout
             item(key = "layout") {
                 SettingsGroupCard(title = "Guide layout", subtitle = "What the TV guide shows, and how much fits on screen") {
+                    SettingsActionRow(
+                        title = "Guide style",
+                        subtitle = "Hulu + Live TV uses Hulu's dark guide, green focus, and LIVE badges",
+                        value = LiveGuideAppearance.fromKey(s.guideAppearance).label,
+                        onClick = { dialog = LiveDialog.GuideAppearanceChoice }
+                    )
                     SettingsToggleRow(
                         "Hide preview window",
                         "Removes the small video of the highlighted channel from the top-right corner",
@@ -1104,6 +1112,24 @@ fun LiveTvSettingsContent(
             ),
             selectedValue = s.solidHighlight,
             onOptionSelected = { v -> update { it.copy(solidHighlight = v) }; close() },
+            onDismiss = close
+        )
+        LiveDialog.GuideAppearanceChoice -> SettingsSingleChoiceDialog(
+            title = "Guide style",
+            options = LiveGuideAppearance.entries.map { appearance ->
+                SettingsPickerOption(
+                    appearance.key,
+                    appearance.label,
+                    when (appearance) {
+                        LiveGuideAppearance.HULU ->
+                            "Dark grid, Hulu green highlights, LIVE badges, and solid focus cells"
+                        LiveGuideAppearance.CLASSIC ->
+                            "Original Nuvio + IPTV guide that follows your theme colors"
+                    }
+                )
+            },
+            selectedValue = s.guideAppearance,
+            onOptionSelected = { v -> update { it.copy(guideAppearance = v) }; close() },
             onDismiss = close
         )
         LiveDialog.CustomGroups -> UnhideDialog(

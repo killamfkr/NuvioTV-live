@@ -103,14 +103,22 @@ internal fun LiveText(
  */
 @Composable
 internal fun guideSurface(): Color {
+    if (isHuluGuide()) return HuluGuidePalette.Surface
     val c = NuvioTheme.colors.Surface
     return if (c.luminance() < 0.01f) Color(0xFF1C1C1F) else c
 }
 
 @Composable
 internal fun guideSurfaceVariant(): Color {
+    if (isHuluGuide()) return HuluGuidePalette.SurfaceLive
     val c = NuvioTheme.colors.SurfaceVariant
     return if (c.luminance() < 0.01f) Color(0xFF2B2B30) else c
+}
+
+@Composable
+internal fun guideSurfacePast(): Color {
+    if (isHuluGuide()) return HuluGuidePalette.SurfacePast
+    return guideSurface().copy(alpha = 0.5f)
 }
 
 /** Background / border / text colors for a focused or unfocused guide cell. */
@@ -120,7 +128,7 @@ internal data class LiveCellColors(val background: Color, val border: Color, val
 internal fun liveCellColors(focused: Boolean, idle: Color, idleText: Color = NuvioTheme.colors.TextPrimary): LiveCellColors {
     if (!focused) return LiveCellColors(idle, Color.Transparent, idleText)
     return if (LocalLiveSolidHighlight.current) {
-        LiveCellColors(NuvioTheme.colors.Secondary, Color.Transparent, NuvioTheme.colors.OnSecondary)
+        LiveCellColors(guideAccent(), Color.Transparent, guideAccentOn())
     } else {
         LiveCellColors(NuvioTheme.colors.FocusBackground, NuvioTheme.colors.FocusRing, NuvioTheme.colors.TextPrimary)
     }
