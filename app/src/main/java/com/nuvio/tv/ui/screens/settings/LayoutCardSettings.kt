@@ -98,7 +98,7 @@ internal fun LayoutContinueWatchingSection(
                 ContinueWatchingCardStyle.WIDE,
                 ContinueWatchingCardStyle.POSTER
             ).forEachIndexed { index, style ->
-                CwStyleCard(
+                CwStyleSettingsCard(
                     style = style,
                     isSelected = uiState.continueWatchingCardStyle == style,
                     onClick = { onEvent(LayoutSettingsEvent.SetContinueWatchingCardStyle(style)) },
@@ -383,7 +383,7 @@ internal fun LayoutCustomPosterSection(
 }
 
 @Composable
-private fun CwStyleCard(
+private fun CwStyleSettingsCard(
     style: ContinueWatchingCardStyle,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -391,7 +391,7 @@ private fun CwStyleCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier.onFocusChanged { state ->
             val nowFocused = state.isFocused

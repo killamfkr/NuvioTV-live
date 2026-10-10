@@ -52,7 +52,7 @@ internal fun DebugMemberTierCard(
             options.forEach { (tier, label) ->
                 val selected = tier == selectedTier
                 val shape = RoundedCornerShape(NuvioTheme.radii.sm)
-                Card(
+                SettingsCard(
                     onClick = { onTierSelected(tier) },
                     modifier = Modifier.weight(1f),
                     colors = CardDefaults.colors(

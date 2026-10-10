@@ -491,6 +491,7 @@
     <string name="settings_network_subtitle">Latency and download diagnostics</string>
     <string name="settings_advanced">Advanced</string>
     <string name="settings_advanced_subtitle">Performance, navigation, cache, and diagnostics</string>
+    <string name="settings_category_list_title">Settings</string>
     <string name="experience_mode_essential">Essential</string>
     <string name="experience_mode_advanced">Advanced</string>
     <string name="experience_mode_choose_title">Choose your Nuvio experience</string>

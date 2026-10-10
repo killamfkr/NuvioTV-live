@@ -141,7 +141,7 @@ private fun SliderSettingsItemLayout(
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val shape = settingsTallRowShape()
 
-    Card(
+    SettingsCard(
         onClick = { },
         modifier = modifier
             .fillMaxWidth()
@@ -265,7 +265,7 @@ private fun SliderStepButton(
     val contentAlpha = if (enabled) 1f else 0.4f
     val flat = isFlatSettingsStyle()
 
-    Card(
+    SettingsCard(
         onClick = { if (enabled) onClick() },
         modifier = Modifier.onFocusChanged { state ->
             val nowFocused = state.isFocused
@@ -318,7 +318,7 @@ internal fun ColorSettingsItem(
     var isFocused by remember { mutableStateOf(false) }
     val contentAlpha = if (enabled) 1f else 0.4f
 
-    Card(
+    SettingsCard(
         onClick = { if (enabled) onClick() },
         modifier = Modifier
             .fillMaxWidth()

@@ -149,7 +149,7 @@ private fun AnimeSkipClientIdDialog(
         subtitle = stringResource(R.string.animeskip_dialog_subtitle),
         width = 700.dp
     ) {
-        Card(
+        SettingsCard(
             onClick = { inputFocusRequester.requestFocus() },
             modifier = Modifier.fillMaxWidth().onFocusChanged { isInputFocused = it.isFocused || it.hasFocus },
             colors = CardDefaults.colors(
