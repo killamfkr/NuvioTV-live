@@ -736,26 +736,27 @@ open class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.fillMaxSize()) {
 
                     var startupDestination = StartupDestination.Loading
+                    val authOnboardingGateActive = hasSeenAuthQrOnFirstLaunch == false &&
+                        authState !is AuthState.FullAccount &&
+                        !onboardingCompletedThisSession
                     val surfaceContentReady = hasSeenAuthQrOnFirstLaunch != null &&
-                        authState !is AuthState.Loading
+                        (authState !is AuthState.Loading || !authOnboardingGateActive)
 
                     if (!surfaceContentReady) {
                         // Still loading auth state; nothing to show yet.
-                    } else if (
-                        hasSeenAuthQrOnFirstLaunch == false &&
-                        authState !is AuthState.FullAccount &&
-                        !onboardingCompletedThisSession
-                    ) {
+                    } else if (authOnboardingGateActive) {
                         startupDestination = StartupDestination.Setup
                         AuthQrSignInScreen(
                             onBackPress = { finish() },
                             onContinue = {
+                                onboardingCompletedThisSession = true
                                 lifecycleScope.launch {
+                                    appOnboardingDataStore.setHasSeenAuthQrOnFirstLaunch(true)
+
                                     val shouldRunRemoteOnboardingSync =
                                         authManager.authState.value is AuthState.FullAccount
 
-                                    if (shouldRunRemoteOnboardingSync) {
-                                        if (onboardingProfileSyncInProgress) return@launch
+                                    if (shouldRunRemoteOnboardingSync && !onboardingProfileSyncInProgress) {
                                         onboardingProfileSyncInProgress = true
                                         val maxAttempts = 3
                                         var synced = false
@@ -775,10 +776,8 @@ open class MainActivity : ComponentActivity() {
                                                 "Onboarding profile sync failed after retries; continuing"
                                             )
                                         }
+                                        onboardingProfileSyncInProgress = false
                                     }
-                                    appOnboardingDataStore.setHasSeenAuthQrOnFirstLaunch(true)
-                                    onboardingCompletedThisSession = true
-                                    onboardingProfileSyncInProgress = false
                                 }
                                 if (authManager.authState.value is AuthState.FullAccount) {
                                     startupSyncService.requestSyncNow()

@@ -117,9 +117,6 @@ fun AuthQrSignInScreen(
 
     fun continueFromAuthScreen() {
         exitRequested = true
-        if (onContinue != null && !isSignedIn) {
-            viewModel.signOut()
-        }
         viewModel.clearQrLoginSession()
         if (onContinue != null) {
             onContinue()
