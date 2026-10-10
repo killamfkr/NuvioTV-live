@@ -6,6 +6,7 @@ import com.nuvio.tv.ui.theme.NuvioTheme
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.nuvio.tv.core.device.DeviceFormFactor
+import androidx.compose.material3.Card as M3Card
+import androidx.compose.material3.CardDefaults as M3CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -58,6 +64,9 @@ fun LayoutSelectionScreen(
     viewModel: LayoutSettingsViewModel = hiltViewModel(),
     onContinue: () -> Unit
 ) {
+    val context = LocalContext.current
+    val touchPreferred = DeviceFormFactor.prefersTouchGuide(context)
+    val isHandheld = !DeviceFormFactor.isTelevision(context)
     val uiState by viewModel.uiState.collectAsState()
     var selectedLayout by remember { mutableStateOf(HomeLayout.MODERN) }
     val continueFocusRequester = remember { FocusRequester() }
@@ -66,8 +75,10 @@ fun LayoutSelectionScreen(
         selectedLayout = uiState.selectedLayout
     }
 
-    LaunchedEffect(Unit) {
-        continueFocusRequester.requestFocus()
+    LaunchedEffect(touchPreferred) {
+        if (!touchPreferred) {
+            continueFocusRequester.requestFocus()
+        }
     }
 
     Box(
@@ -77,7 +88,10 @@ fun LayoutSelectionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 80.dp, vertical = NuvioTheme.spacing.xxxl),
+                .padding(
+                    horizontal = if (isHandheld) NuvioTheme.spacing.lg else 80.dp,
+                    vertical = NuvioTheme.spacing.xxxl
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header
@@ -108,6 +122,7 @@ fun LayoutSelectionScreen(
                     layout = HomeLayout.MODERN,
                     isSelected = selectedLayout == HomeLayout.MODERN,
                     onSelect = { selectedLayout = HomeLayout.MODERN },
+                    touchPreferred = touchPreferred,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -115,6 +130,7 @@ fun LayoutSelectionScreen(
                     layout = HomeLayout.GRID,
                     isSelected = selectedLayout == HomeLayout.GRID,
                     onSelect = { selectedLayout = HomeLayout.GRID },
+                    touchPreferred = touchPreferred,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -122,6 +138,7 @@ fun LayoutSelectionScreen(
                     layout = HomeLayout.CLASSIC,
                     isSelected = selectedLayout == HomeLayout.CLASSIC,
                     onSelect = { selectedLayout = HomeLayout.CLASSIC },
+                    touchPreferred = touchPreferred,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -129,11 +146,30 @@ fun LayoutSelectionScreen(
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
 
             // Continue button
+            val onContinueClick = {
+                viewModel.onEvent(LayoutSettingsEvent.SelectLayout(selectedLayout))
+                onContinue()
+            }
+            if (touchPreferred) {
+                androidx.compose.material3.Button(
+                    onClick = onContinueClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(NuvioTheme.spacing.xxxl),
+                    shape = RoundedCornerShape(NuvioTheme.spacing.xl),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = NuvioTheme.colors.Primary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.layout_selection_continue),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            } else {
             Button(
-                onClick = {
-                    viewModel.onEvent(LayoutSettingsEvent.SelectLayout(selectedLayout))
-                    onContinue()
-                },
+                onClick = onContinueClick,
                 modifier = Modifier
                     .width(200.dp)
                     .height(NuvioTheme.spacing.xxxl)
@@ -163,37 +199,25 @@ fun LayoutSelectionScreen(
                     )
                 }
             }
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LayoutOptionCard(
     layout: HomeLayout,
     isSelected: Boolean,
     onSelect: () -> Unit,
+    touchPreferred: Boolean,
     modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    val shape = RoundedCornerShape(NuvioTheme.radii.xl)
 
-    Card(
-        onClick = onSelect,
-        modifier = modifier
-            .onFocusChanged { isFocused = it.isFocused },
-        colors = CardDefaults.colors(
-            containerColor = NuvioTheme.colors.BackgroundCard,
-            focusedContainerColor = NuvioTheme.colors.BackgroundCard
-        ),
-        border = CardDefaults.border(
-            border = Border.None,
-            focusedBorder = Border(
-                border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
-                shape = RoundedCornerShape(NuvioTheme.radii.xl)
-            )
-        ),
-        shape = CardDefaults.shape(RoundedCornerShape(NuvioTheme.radii.xl)),
-        scale = CardDefaults.scale(focusedScale = 1.03f)
-    ) {
+    val cardModifier = modifier.onFocusChanged { isFocused = it.isFocused }
+    val inner: @Composable () -> Unit = {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
@@ -201,7 +225,6 @@ private fun LayoutOptionCard(
                     .padding(NuvioTheme.spacing.lg),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Animated preview
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -232,17 +255,17 @@ private fun LayoutOptionCard(
                     color = if (isSelected || isFocused) NuvioTheme.colors.TextPrimary else NuvioTheme.colors.TextSecondary
                 )
 
-            Spacer(modifier = Modifier.height(NuvioTheme.spacing.xs))
+                Spacer(modifier = Modifier.height(NuvioTheme.spacing.xs))
 
-            Text(
-                text = when (layout) {
-                    HomeLayout.CLASSIC -> stringResource(R.string.layout_classic_desc)
-                    HomeLayout.GRID -> stringResource(R.string.layout_grid_desc)
-                    HomeLayout.MODERN -> stringResource(R.string.layout_modern_desc)
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = NuvioTheme.colors.TextTertiary
-            )
+                Text(
+                    text = when (layout) {
+                        HomeLayout.CLASSIC -> stringResource(R.string.layout_classic_desc)
+                        HomeLayout.GRID -> stringResource(R.string.layout_grid_desc)
+                        HomeLayout.MODERN -> stringResource(R.string.layout_modern_desc)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NuvioTheme.colors.TextTertiary
+                )
             }
 
             if (isSelected) {
@@ -257,5 +280,44 @@ private fun LayoutOptionCard(
                 )
             }
         }
+    }
+
+    if (touchPreferred) {
+        M3Card(
+            onClick = onSelect,
+            modifier = cardModifier.focusable(),
+            shape = shape,
+            colors = M3CardDefaults.cardColors(
+                containerColor = NuvioTheme.colors.BackgroundCard
+            ),
+            border = if (isSelected) {
+                BorderStroke(NuvioTheme.spacing.xxs, NuvioTheme.colors.FocusRing)
+            } else {
+                BorderStroke(NuvioTheme.spacing.hairline, NuvioTheme.colors.Border)
+            }
+        ) {
+            inner()
+        }
+        return
+    }
+
+    Card(
+        onClick = onSelect,
+        modifier = cardModifier,
+        colors = CardDefaults.colors(
+            containerColor = NuvioTheme.colors.BackgroundCard,
+            focusedContainerColor = NuvioTheme.colors.BackgroundCard
+        ),
+        border = CardDefaults.border(
+            border = Border.None,
+            focusedBorder = Border(
+                border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
+                shape = RoundedCornerShape(NuvioTheme.radii.xl)
+            )
+        ),
+        shape = CardDefaults.shape(shape),
+        scale = CardDefaults.scale(focusedScale = 1.03f)
+    ) {
+        inner()
     }
 }
