@@ -87,14 +87,12 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.LocalTextStyle
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
 import androidx.tv.material3.Switch
 import androidx.tv.material3.SwitchDefaults
 import androidx.tv.material3.Text
@@ -103,6 +101,8 @@ import com.nuvio.tv.domain.model.CatalogDescriptor
 import com.nuvio.tv.domain.model.ExperienceMode
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.NuvioDialog
+import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvSurface
 import com.nuvio.tv.ui.util.contentTextDirection
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -305,7 +305,7 @@ fun AddonManagerScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 // Surface always stays in the tree for stable D-pad focus
-                                Surface(
+                                TouchTvSurface(
                                     onClick = { isEditing = true },
                                     modifier = Modifier
                                         .weight(1f)
@@ -374,7 +374,7 @@ fun AddonManagerScreen(
                                     }
                                 }
 
-                                Button(
+                                TouchTvButton(
                                     onClick = {
                                         viewModel.installAddon()
                                         isEditing = false
@@ -538,13 +538,13 @@ fun AddonManagerScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md, Alignment.End)
                 ) {
-                    Button(
+                    TouchTvButton(
                         onClick = { addonUrlPendingDeletion = null },
                         modifier = Modifier.focusRequester(deleteDialogFocusRequester)
                     ) {
                         Text(stringResource(R.string.addon_delete_no))
                     }
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             viewModel.removeAddon(addonUrl)
                             addonUrlPendingDeletion = null
@@ -581,7 +581,7 @@ internal fun AddonMessageOverlay(
             exit = fadeOut()
         ) {
             val visibleMessage = message ?: return@AnimatedVisibility
-            Surface(
+            TouchTvSurface(
                 onClick = { },
                 colors = ClickableSurfaceDefaults.colors(
                     containerColor = if (isError) {
@@ -621,7 +621,7 @@ private fun ManageFromPhoneCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Surface(
+    TouchTvSurface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -682,7 +682,7 @@ private fun ManageFromPhoneCard(
 private fun CatalogOrderEntryCard(onClick: () -> Unit) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Surface(
+    TouchTvSurface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -743,7 +743,7 @@ private fun CatalogOrderEntryCard(onClick: () -> Unit) {
 private fun CollectionsEntryCard(onClick: () -> Unit) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Surface(
+    TouchTvSurface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -808,7 +808,7 @@ private fun RefreshAddonsEntryCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Surface(
+    TouchTvSurface(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
@@ -924,7 +924,7 @@ internal fun QrCodeOverlay(
 
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
 
-            Surface(
+            TouchTvSurface(
                 onClick = onClose,
                 modifier = Modifier.focusRequester(focusRequester),
                 colors = ClickableSurfaceDefaults.colors(
@@ -984,7 +984,7 @@ internal fun ConfirmAddonChangesDialog(
             .background(Color.Black.copy(alpha = 0.8f)),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        TouchTvSurface(
             onClick = { },
             modifier = Modifier
                 .width(560.dp)
@@ -1188,7 +1188,7 @@ internal fun ConfirmAddonChangesDialog(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
                     ) {
-                        Surface(
+                        TouchTvSurface(
                             onClick = onReject,
                             colors = ClickableSurfaceDefaults.colors(
                                 containerColor = NuvioTheme.colors.Surface,
@@ -1221,7 +1221,7 @@ internal fun ConfirmAddonChangesDialog(
                             }
                         }
 
-                        Surface(
+                        TouchTvSurface(
                             onClick = onConfirm,
                             modifier = Modifier.focusRequester(focusRequester),
                             colors = ClickableSurfaceDefaults.colors(
@@ -1265,7 +1265,7 @@ private fun AddonCard(
     toggleFocusRequester: FocusRequester? = null
 ) {
     if (isReadOnly) {
-        Surface(
+        TouchTvSurface(
             onClick = { },
             modifier = modifier
                 .fillMaxWidth()
@@ -1366,7 +1366,7 @@ private fun AddonCardContent(
                     horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
+                    TouchTvSurface(
                         onClick = { onEnabledChange(!addon.enabled) },
                         modifier = Modifier
                             .focusRequester(toggleFocusRequester ?: remember { FocusRequester() }),
@@ -1398,7 +1398,7 @@ private fun AddonCardContent(
                         }
                     }
                     if (showReorder) {
-                        Button(
+                        TouchTvButton(
                             onClick = onMoveUp,
                             enabled = canMoveUp,
                             colors = ButtonDefaults.colors(
@@ -1411,7 +1411,7 @@ private fun AddonCardContent(
                         ) {
                             Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = stringResource(R.string.cd_move_up))
                         }
-                        Button(
+                        TouchTvButton(
                             onClick = onMoveDown,
                             enabled = canMoveDown,
                             colors = ButtonDefaults.colors(
@@ -1425,7 +1425,7 @@ private fun AddonCardContent(
                             Icon(imageVector = Icons.Default.ArrowDownward, contentDescription = stringResource(R.string.cd_move_down))
                         }
                     }
-                    Button(
+                    TouchTvButton(
                         onClick = onRemove,
                         colors = ButtonDefaults.colors(
                             containerColor = NuvioTheme.colors.BackgroundCard,

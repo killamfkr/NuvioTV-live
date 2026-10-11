@@ -95,6 +95,11 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.onPlaced
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
+import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvCard
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -2664,12 +2669,14 @@ private fun ControlButton(
     onFocused: (() -> Unit)? = null
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    val touchPreferred = prefersTouchCards()
 
     IconButton(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
         enabled = enabled,
         modifier = Modifier
             .size(NuvioTheme.spacing.xxxl)
+            .tvCardTouchClick(enabled = enabled, onClick = onClick)
             .then(
                 if (focusRequester != null) Modifier.focusRequester(focusRequester)
                 else Modifier
@@ -3230,15 +3237,18 @@ private fun SubtitleDelayOverlay(
 
         Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
 
+        val touchPreferred = prefersTouchCards()
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Card(
-                onClick = onResetDelay,
+                onClick = tvCardRemoteClick(touchPreferred, onClick = onResetDelay),
                 modifier = Modifier
                     .weight(1f)
+                    .tvCardTouchClick(onClick = onResetDelay)
                     .focusRequester(resetFocusRequester)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
@@ -3272,9 +3282,10 @@ private fun SubtitleDelayOverlay(
             }
 
             Card(
-                onClick = onOpenSyncByLine,
+                onClick = tvCardRemoteClick(touchPreferred, onClick = onOpenSyncByLine),
                 modifier = Modifier
                     .weight(1f)
+                    .tvCardTouchClick(onClick = onOpenSyncByLine)
                     .focusRequester(syncLineFocusRequester)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
@@ -3544,7 +3555,7 @@ internal fun PlayerOverlayButton(
     enabled: Boolean = true
 ) {
     val shape = RoundedCornerShape(NuvioTheme.spacing.xxl)
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
@@ -3681,7 +3692,7 @@ private fun MoreActionItem(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -3710,7 +3721,7 @@ private fun SpeedItem(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
@@ -3754,7 +3765,7 @@ internal fun DialogButton(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,

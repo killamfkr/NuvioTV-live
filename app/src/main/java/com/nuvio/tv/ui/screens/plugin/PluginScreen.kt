@@ -78,13 +78,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
 import androidx.tv.material3.Switch
 import androidx.tv.material3.SwitchDefaults
 import androidx.tv.material3.Text
@@ -92,6 +90,8 @@ import com.nuvio.tv.domain.model.LocalScraperResult
 import com.nuvio.tv.domain.model.PluginRepository
 import com.nuvio.tv.domain.model.ScraperInfo
 import com.nuvio.tv.ui.components.LoadingIndicator
+import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvSurface
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -322,7 +322,7 @@ private fun PluginStreamGroupingCard(
     isReadOnly: Boolean,
     onGroupStreamsByRepositoryChange: (Boolean) -> Unit
 ) {
-    Surface(
+    TouchTvSurface(
         onClick = {
             if (!isReadOnly) {
                 onGroupStreamsByRepositoryChange(!groupStreamsByRepository)
@@ -383,7 +383,7 @@ private fun PluginsEnabledCard(
     isReadOnly: Boolean,
     onPluginsEnabledChange: (Boolean) -> Unit
 ) {
-    Surface(
+    TouchTvSurface(
         onClick = {
             if (!isReadOnly) {
                 onPluginsEnabledChange(!pluginsEnabled)
@@ -476,7 +476,7 @@ private fun AddRepositoryInline(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Surface always stays in the tree for stable D-pad focus
-                Surface(
+                TouchTvSurface(
                     onClick = { isEditing = true },
                     modifier = Modifier.weight(1f),
                     colors = ClickableSurfaceDefaults.colors(
@@ -542,7 +542,7 @@ private fun AddRepositoryInline(
                     }
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = {
                         onConfirm()
                         isEditing = false
@@ -584,7 +584,7 @@ private fun AddRepositoryInline(
 private fun ManageFromPhoneCard(onClick: () -> Unit) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Surface(
+    TouchTvSurface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -697,7 +697,7 @@ private fun QrCodeOverlay(
 
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
 
-            Surface(
+            TouchTvSurface(
                 onClick = onClose,
                 modifier = Modifier.focusRequester(focusRequester),
                 colors = ClickableSurfaceDefaults.colors(
@@ -755,7 +755,7 @@ private fun ConfirmRepoChangesDialog(
             .background(Color.Black.copy(alpha = 0.8f)),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        TouchTvSurface(
             onClick = { },
             modifier = Modifier
                 .width(560.dp)
@@ -869,7 +869,7 @@ private fun ConfirmRepoChangesDialog(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
                     ) {
-                        Surface(
+                        TouchTvSurface(
                             onClick = onReject,
                             colors = ClickableSurfaceDefaults.colors(
                                 containerColor = NuvioTheme.colors.Surface,
@@ -901,7 +901,7 @@ private fun ConfirmRepoChangesDialog(
                             }
                         }
 
-                        Surface(
+                        TouchTvSurface(
                             onClick = onConfirm,
                             modifier = Modifier.focusRequester(focusRequester),
                             colors = ClickableSurfaceDefaults.colors(
@@ -949,7 +949,7 @@ private fun ConfirmScraperEnableDialog(
             .background(Color.Black.copy(alpha = 0.8f)),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        TouchTvSurface(
             onClick = { },
             modifier = Modifier.width(560.dp),
             colors = ClickableSurfaceDefaults.colors(
@@ -979,7 +979,7 @@ private fun ConfirmScraperEnableDialog(
                 Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)) {
-                    Surface(
+                    TouchTvSurface(
                         onClick = onDismiss,
                         colors = ClickableSurfaceDefaults.colors(
                             containerColor = NuvioTheme.colors.Surface,
@@ -1011,7 +1011,7 @@ private fun ConfirmScraperEnableDialog(
                         }
                     }
 
-                    Surface(
+                    TouchTvSurface(
                         onClick = onConfirm,
                         modifier = Modifier.focusRequester(focusRequester),
                         colors = ClickableSurfaceDefaults.colors(
@@ -1123,7 +1123,7 @@ private fun RepositoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (repoScrapers.isNotEmpty()) {
-                    Surface(
+                    TouchTvSurface(
                         onClick = { onToggleAll(!anyEnabled) },
                         modifier = Modifier.onFocusChanged { isToggleFocused = it.isFocused },
                         colors = ClickableSurfaceDefaults.colors(
@@ -1161,7 +1161,7 @@ private fun RepositoryCard(
                     }
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onRefresh,
                     enabled = !isLoading,
                     modifier = Modifier.onFocusChanged { isRefreshFocused = it.isFocused },
@@ -1179,7 +1179,7 @@ private fun RepositoryCard(
                     )
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onRemove,
                     enabled = !isLoading,
                     modifier = Modifier.onFocusChanged { isRemoveFocused = it.isFocused },
@@ -1287,7 +1287,7 @@ private fun ScraperCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Test button
-                    Button(
+                    TouchTvButton(
                         onClick = onTest,
                         enabled = !isTesting && scraper.enabled,
                         modifier = Modifier.onFocusChanged { isTestFocused = it.isFocused },
@@ -1314,7 +1314,7 @@ private fun ScraperCard(
 
                     // Enable toggle
                     if (!isReadOnly) {
-                        Surface(
+                        TouchTvSurface(
                             onClick = { onToggle(!scraper.enabled) },
                             modifier = Modifier.onFocusChanged { isToggleFocused = it.isFocused },
                             colors = ClickableSurfaceDefaults.colors(
@@ -1358,7 +1358,7 @@ private fun ScraperCard(
                     // Diagnostic steps — collapsible, click to expand/collapse
                     if (testDiagnostics != null && testDiagnostics.steps.isNotEmpty()) {
                         var diagnosticsExpanded by remember { mutableStateOf(false) }
-                        Surface(
+                        TouchTvSurface(
                             onClick = { diagnosticsExpanded = !diagnosticsExpanded },
                             colors = ClickableSurfaceDefaults.colors(
                                 containerColor = NuvioTheme.colors.Surface,
@@ -1523,7 +1523,7 @@ private fun MessageOverlay(
             val isSuccess = successMessage != null
             val message = successMessage ?: errorMessage ?: ""
 
-            Surface(
+            TouchTvSurface(
                 onClick = { },
                 colors = ClickableSurfaceDefaults.colors(
                     containerColor = if (isSuccess)
