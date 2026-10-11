@@ -35,6 +35,7 @@ import com.nuvio.tv.core.device.DeviceFormFactor
 import androidx.compose.material3.Card as M3Card
 import androidx.compose.material3.CardDefaults as M3CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text as M3Text
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -159,12 +160,13 @@ fun LayoutSelectionScreen(
                     shape = RoundedCornerShape(NuvioTheme.spacing.xl),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                         containerColor = NuvioTheme.colors.Primary,
-                        contentColor = Color.White
+                        contentColor = NuvioTheme.colors.OnPrimary
                     )
                 ) {
-                    Text(
+                    M3Text(
                         text = stringResource(R.string.layout_selection_continue),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = NuvioTheme.colors.OnPrimary
                     )
                 }
             } else {

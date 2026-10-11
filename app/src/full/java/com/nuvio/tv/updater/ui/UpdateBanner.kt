@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button as M3Button
 import androidx.compose.material3.ButtonDefaults as M3ButtonDefaults
+import androidx.compose.material3.Text as M3Text
 import androidx.compose.material3.IconButton as M3IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -196,7 +197,11 @@ internal fun UpdateBanner(
                         disabledContentColor = NuvioTheme.colors.OnSecondary.copy(alpha = 0.6f)
                     )
                 ) {
-                    Text(text = primaryLabel, fontWeight = FontWeight.SemiBold)
+                    M3Text(
+                        text = primaryLabel,
+                        fontWeight = FontWeight.SemiBold,
+                        color = NuvioTheme.colors.OnSecondary
+                    )
                 }
             } else {
                 Button(

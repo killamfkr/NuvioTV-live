@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.Button as M3Button
 import androidx.compose.material3.ButtonDefaults as M3ButtonDefaults
+import androidx.compose.material3.Text as M3Text
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -539,15 +540,19 @@ private fun AuthHandheldButton(
             )
         } else {
             M3ButtonDefaults.buttonColors(
-                containerColor = AuthSecondaryButtonBackground,
+                containerColor = Color.White.copy(alpha = 0.12f),
                 contentColor = AuthTextPrimary,
-                disabledContainerColor = AuthSecondaryButtonBackground.copy(alpha = 0.45f),
+                disabledContainerColor = Color.White.copy(alpha = 0.08f),
                 disabledContentColor = AuthTextPrimary.copy(alpha = 0.45f)
             )
         },
         border = if (filled) null else androidx.compose.foundation.BorderStroke(1.dp, AuthSecondaryButtonBorder)
     ) {
-        Text(text, fontWeight = FontWeight.SemiBold)
+        M3Text(
+            text = text,
+            fontWeight = FontWeight.SemiBold,
+            color = if (filled) Color.Black else AuthTextPrimary
+        )
     }
 }
 
