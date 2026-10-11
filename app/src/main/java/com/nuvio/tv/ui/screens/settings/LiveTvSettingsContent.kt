@@ -31,7 +31,9 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.nuvio.tv.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -786,7 +788,14 @@ fun LiveTvSettingsContent(
     }
 
     drive.signIn?.let { prompt ->
-        DriveSignInDialog(prompt = prompt, onCancel = { viewModel.driveSync.cancelSignIn() })
+        com.nuvio.tv.ui.components.CollectDriveVerificationUrlLauncher(viewModel.driveSync.openVerificationUrl)
+        com.nuvio.tv.ui.components.GoogleDeviceCodeSignInDialog(
+            title = stringResource(R.string.auth_drive_link_title),
+            prompt = prompt,
+            instruction = stringResource(R.string.account_drive_sync_instruction),
+            waitingMessage = stringResource(R.string.account_drive_sync_waiting),
+            onCancel = { viewModel.driveSync.cancelSignIn() }
+        )
     }
 
     // ---------------------------------------------------------------- dialogs
@@ -1228,65 +1237,6 @@ private fun DriveSyncCard(
             }
             state.message?.let {
                 Text(text = it, style = MaterialTheme.typography.bodySmall, color = NuvioTheme.colors.TextSecondary)
-            }
-        }
-    }
-}
-
-@Composable
-private fun DriveSignInDialog(prompt: com.nuvio.tv.livetv.sync.SignInPrompt, onCancel: () -> Unit) {
-    val cancelFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        delay(80)
-        runCatching { cancelFocus.requestFocus() }
-    }
-    // Same layout as Nuvio's other QR sign-ins (debrid, Simkl): instructions, QR code, then the code.
-    val qrBitmap = remember(prompt.qrUrl) {
-        runCatching { com.nuvio.tv.core.qr.QrCodeGenerator.generate(prompt.qrUrl, 420, margin = 1) }.getOrNull()
-    }
-    val shortUrl = prompt.url.removePrefix("https://").removePrefix("http://")
-    NuvioDialog(onDismiss = onCancel, title = "Connect Google Drive", width = 560.dp) {
-        Text(
-            text = "Scan the QR code with your phone, or go to $shortUrl, then enter the code below and allow access.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = NuvioTheme.colors.TextSecondary,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (qrBitmap != null) {
-            androidx.compose.foundation.Image(
-                bitmap = qrBitmap.asImageBitmap(),
-                contentDescription = "QR code",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(196.dp),
-                contentScale = androidx.compose.ui.layout.ContentScale.Fit
-            )
-        }
-        Text(
-            text = prompt.userCode,
-            style = MaterialTheme.typography.displaySmall,
-            color = NuvioTheme.colors.Secondary,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Text(
-            text = shortUrl,
-            style = MaterialTheme.typography.titleMedium,
-            color = NuvioTheme.colors.TextPrimary,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Text(
-            text = "Waiting for you to allow access… this screen continues by itself.",
-            style = MaterialTheme.typography.bodySmall,
-            color = NuvioTheme.colors.TextSecondary,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        SettingsDialogActionRow(horizontalAlignment = Alignment.CenterHorizontally) {
-            androidx.compose.foundation.layout.Box(Modifier.focusRequester(cancelFocus)) {
-                SettingsDialogActionButton(text = "Cancel", onClick = onCancel)
             }
         }
     }

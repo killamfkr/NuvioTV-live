@@ -68,6 +68,8 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.BuildConfig
 import com.nuvio.tv.core.device.DeviceFormFactor
+import com.nuvio.tv.ui.components.CollectDriveVerificationUrlLauncher
+import com.nuvio.tv.ui.components.GoogleDeviceCodeSignInDialog
 import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.AuthState
 import com.nuvio.tv.ui.components.BrandWordmark
@@ -105,6 +107,8 @@ fun AuthQrSignInScreen(
     var onboardingTransitionHandled by remember(isOnboardingMode) { mutableStateOf(false) }
     var exitRequested by remember { mutableStateOf(false) }
     var showSignOutConfirmation by remember { mutableStateOf(false) }
+    var onboardingDriveLinkStarted by remember(isOnboardingMode) { mutableStateOf(false) }
+    CollectDriveVerificationUrlLauncher(viewModel.driveOpenVerificationUrl)
     val loginFocusRequester = remember { FocusRequester() }
     val context = LocalContext.current
     val isHandheld = !DeviceFormFactor.isTelevision(context)
@@ -117,7 +121,9 @@ fun AuthQrSignInScreen(
 
     fun continueFromAuthScreen() {
         exitRequested = true
+        onboardingTransitionHandled = true
         viewModel.clearQrLoginSession()
+        viewModel.cancelDriveSignIn()
         if (onContinue != null) {
             onContinue()
         } else {
@@ -161,14 +167,21 @@ fun AuthQrSignInScreen(
         }
     }
 
-    LaunchedEffect(isOnboardingMode, isSignedIn) {
+    val driveState = uiState.driveSyncState
+    LaunchedEffect(isOnboardingMode, isSignedIn, driveState?.connected, driveState?.available, driveState?.signIn) {
         if (!isOnboardingMode || onboardingTransitionHandled) return@LaunchedEffect
-        if (isSignedIn) {
-            onboardingTransitionHandled = true
-            exitRequested = true
-            viewModel.clearQrLoginSession()
-            onContinue.invoke()
+        if (!isSignedIn) return@LaunchedEffect
+        val drive = driveState
+        if (drive != null && drive.available && !drive.connected && !onboardingDriveLinkStarted) {
+            onboardingDriveLinkStarted = true
+            viewModel.beginDriveSignIn()
+            return@LaunchedEffect
         }
+        if (drive?.signIn != null || drive?.busy == true) return@LaunchedEffect
+        onboardingTransitionHandled = true
+        exitRequested = true
+        viewModel.clearQrLoginSession()
+        onContinue.invoke()
     }
 
     val nowMillis by produceState(initialValue = System.currentTimeMillis(), key1 = uiState.qrLoginCode) {
@@ -294,6 +307,16 @@ fun AuthQrSignInScreen(
         }
     }
 
+    driveState?.signIn?.let { prompt ->
+        GoogleDeviceCodeSignInDialog(
+            title = stringResource(R.string.auth_drive_link_title),
+            prompt = prompt,
+            instruction = stringResource(R.string.account_drive_sync_instruction),
+            waitingMessage = stringResource(R.string.account_drive_sync_waiting),
+            onCancel = { viewModel.cancelDriveSignIn() }
+        )
+    }
+
     if (showSignOutConfirmation) {
         AccountSignOutConfirmationDialog(
             onConfirm = {
@@ -411,8 +434,14 @@ private fun AuthQrLoginPane(
                 isLoading = uiState.isStatsLoading
             )
         } else if (isSignedIn && isOnboardingMode) {
+            val drive = uiState.driveSyncState
+            val drivePending = drive?.signIn != null || (drive?.available == true && !drive.connected)
             StatusPill(
-                text = stringResource(R.string.auth_qr_finishing),
+                text = if (drivePending) {
+                    stringResource(R.string.account_drive_sync_waiting)
+                } else {
+                    stringResource(R.string.auth_qr_finishing)
+                },
                 containerColor = AuthSecondaryButtonBackground,
                 contentColor = AuthTextSecondary
             )

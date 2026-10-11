@@ -17,6 +17,10 @@ if ! grep -q '^sdk\.dir=' local.properties; then
   exit 1
 fi
 
+if ! grep -qE '^GOOGLE_DRIVE_CLIENT_ID=.+$' local.properties 2>/dev/null; then
+  echo "Note: GOOGLE_DRIVE_CLIENT_ID is not set — Google Drive sync will be disabled in this build." >&2
+fi
+
 BASE="$(grep -m1 -E '^\s*versionName = "' app/build.gradle.kts | sed -E 's/.*"(.*)".*/\1/')"
 if [[ -z "$BASE" ]]; then
   echo "Could not read versionName from app/build.gradle.kts" >&2

@@ -33,6 +33,7 @@ import com.nuvio.tv.data.repository.AuthDiagnosticReportRepository
 import com.nuvio.tv.data.repository.LibraryRepositoryImpl
 import com.nuvio.tv.data.repository.WatchProgressRepositoryImpl
 import com.nuvio.tv.domain.model.AuthState
+import com.nuvio.tv.livetv.sync.LiveTvDriveSync
 import com.nuvio.tv.domain.model.ServerConfiguration
 import com.nuvio.tv.domain.repository.SyncRepository
 import io.github.jan.supabase.postgrest.Postgrest
@@ -83,8 +84,11 @@ class AccountViewModel @Inject constructor(
     private val profileManager: ProfileManager,
     private val authDiagnosticReportRepository: AuthDiagnosticReportRepository,
     private val serverConfiguration: ServerConfiguration,
+    private val liveTvDriveSync: LiveTvDriveSync,
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    val driveOpenVerificationUrl = liveTvDriveSync.openVerificationUrl
 
     private val _uiState = MutableStateFlow(AccountUiState())
     val uiState: StateFlow<AccountUiState> = _uiState.asStateFlow()
@@ -100,6 +104,23 @@ class AccountViewModel @Inject constructor(
     init {
         observeAuthState()
         observeProfileNames()
+        observeDriveSync()
+    }
+
+    private fun observeDriveSync() {
+        viewModelScope.launch {
+            liveTvDriveSync.state.collect { drive ->
+                _uiState.update { it.copy(driveSyncState = drive) }
+            }
+        }
+    }
+
+    fun beginDriveSignIn() {
+        liveTvDriveSync.beginSignIn()
+    }
+
+    fun cancelDriveSignIn() {
+        liveTvDriveSync.cancelSignIn()
     }
 
     private fun observeAuthState() {
