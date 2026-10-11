@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.foundation.lazy.LazyColumn
@@ -153,7 +154,7 @@ fun StreamScreen(
         initialValue = StreamBadgeSettings()
     )
     val scope = rememberCoroutineScope()
-    val touchPhonePicker = prefersTouchCards() && !DeviceFormFactor.isTelevision(context)
+    val handheldStreamUi = DeviceFormFactor.useHandheldStreamUi(context)
     val streamHazeState = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) HazeState() else null
     }
@@ -398,7 +399,7 @@ fun StreamScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         // Full screen backdrop
-        val useMinimalStreamBackdrop = touchPhonePicker && uiState.autoPlayDecided && !showOverlay
+        val useMinimalStreamBackdrop = handheldStreamUi && !showOverlay
         StreamBackdrop(
             backdrop = uiState.backdrop ?: uiState.poster,
             isLoading = uiState.isLoading,
@@ -411,8 +412,36 @@ fun StreamScreen(
         )
 
         if (!uiState.autoPlayDecided) {
-            // Don't render overlay or stream list until ViewModel decides
-            // whether direct autoplay is active — prevents single-frame flash.
+            if (handheldStreamUi) {
+                MobileStreamPicker(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(1f),
+                    title = uiState.title,
+                    isEpisode = uiState.isEpisode,
+                    season = uiState.season,
+                    episode = uiState.episode,
+                    episodeName = uiState.episodeName,
+                    year = uiState.year,
+                    isLoading = true,
+                    error = null,
+                    streams = emptyList(),
+                    availableAddons = uiState.availableAddons,
+                    sourceChips = uiState.sourceChips,
+                    selectedAddonFilter = uiState.selectedAddonFilter,
+                    showFileSizeBadges = streamBadgeSettings.showFileSizeBadges,
+                    showAddonLogo = streamBadgeSettings.showAddonLogo,
+                    badgePlacement = streamBadgeSettings.badgePlacement,
+                    hasBadgeRules = streamBadgeSettings.rules.hasImport,
+                    onBack = onBackPress,
+                    onStreamSelected = { },
+                    onAddonFilterSelected = { },
+                    onRefresh = { viewModel.onEvent(StreamScreenEvent.OnRefresh) },
+                    onRetry = { },
+                    onExpandStreams = { }
+                )
+            }
+            // TV: wait until autoplay is decided to avoid a single-frame list flash.
         } else if (showOverlay) {
             LoadingOverlay(
                 visible = true,
@@ -473,14 +502,16 @@ fun StreamScreen(
                     onRetry = { viewModel.onEvent(StreamScreenEvent.OnRetry) },
                     onExpandStreams = { viewModel.expandFilteredStreamsIfNeeded() },
                     hazeState = streamHazeState,
-                    touchPhoneLayout = touchPhonePicker,
+                    touchPhoneLayout = handheldStreamUi,
                     modifier = sectionModifier
                 )
             }
 
-            if (touchPhonePicker) {
+            if (handheldStreamUi) {
                 MobileStreamPicker(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(1f),
                     title = uiState.title,
                     isEpisode = uiState.isEpisode,
                     season = uiState.season,
@@ -1418,12 +1449,14 @@ private fun StreamCard(
             .fillMaxWidth()
             .then(if (touchPhoneLayout) Modifier.heightIn(min = 72.dp) else Modifier)
             .then(
-                if (useContentTouch && touchPhoneLayout) {
-                    Modifier.focusProperties { canFocus = false }
-                } else if (!useContentTouch) {
-                    Modifier.tvCardTouchClick(onClick = onClick)
-                } else {
-                    Modifier
+                when {
+                    useContentTouch && touchPhoneLayout -> {
+                        Modifier
+                            .tvCardTouchClick(onClick = onClick)
+                            .focusProperties { canFocus = false }
+                    }
+                    !useContentTouch -> Modifier.tvCardTouchClick(onClick = onClick)
+                    else -> Modifier
                 }
             )
             .then(
@@ -1474,7 +1507,14 @@ private fun StreamCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (useContentTouch) Modifier.tvCardContentTouchClick(onClick = onClick) else Modifier)
+                .heightIn(min = if (touchPhoneLayout) 72.dp else 0.dp)
+                .then(
+                    if (useContentTouch && !touchPhoneLayout) {
+                        Modifier.tvCardContentTouchClick(onClick = onClick)
+                    } else {
+                        Modifier
+                    }
+                )
                 .padding(if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg)

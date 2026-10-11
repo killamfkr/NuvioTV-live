@@ -34,4 +34,28 @@ class DeviceFormFactorTest {
 
         assertFalse(DeviceFormFactor.isTelevision(context))
     }
+
+    @Test
+    fun `useHandheldStreamUi is true for typical phone`() {
+        val context = mockk<Context>(relaxed = true)
+        val pm = mockk<PackageManager>()
+        val configuration = Configuration()
+        configuration.uiMode = Configuration.UI_MODE_TYPE_NORMAL
+        every { context.packageManager } returns pm
+        every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns false
+        every { context.resources.configuration } returns configuration
+
+        assertTrue(DeviceFormFactor.useHandheldStreamUi(context))
+    }
+
+    @Test
+    fun `useHandheldStreamUi is false for leanback TV`() {
+        val context = mockk<Context>(relaxed = true)
+        val pm = mockk<PackageManager>()
+        every { context.packageManager } returns pm
+        every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns true
+        every { context.resources.configuration } returns Configuration()
+
+        assertFalse(DeviceFormFactor.useHandheldStreamUi(context))
+    }
 }

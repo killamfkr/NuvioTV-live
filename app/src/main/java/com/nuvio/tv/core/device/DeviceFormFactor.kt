@@ -21,4 +21,9 @@ object DeviceFormFactor {
     fun prefersTouchGuide(context: Context): Boolean {
         return !isTelevision(context) || supportsTouchscreen(context)
     }
+
+    /** Full-screen phone/tablet stream picker (stacked list), not the TV side-by-side layout. */
+    fun useHandheldStreamUi(context: Context): Boolean {
+        return !isTelevision(context)
+    }
 }

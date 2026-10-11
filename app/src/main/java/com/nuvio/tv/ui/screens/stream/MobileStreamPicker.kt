@@ -3,6 +3,7 @@
 package com.nuvio.tv.ui.screens.stream
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -26,9 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card as M3Card
-import androidx.compose.material3.CardDefaults as M3CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -128,6 +129,7 @@ internal fun MobileStreamPicker(
         modifier = modifier
             .fillMaxSize()
             .statusBarsPadding()
+            .navigationBarsPadding()
             .background(NuvioTheme.colors.Background)
     ) {
         Row(
@@ -357,20 +359,19 @@ private fun MobileStreamLinkCard(
         }
     }
 
-    M3Card(
-        onClick = onClick,
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 76.dp),
+            .heightIn(min = 80.dp)
+            .clip(shape)
+            .clickable(onClick = onClick),
         shape = shape,
-        colors = M3CardDefaults.cardColors(
-            containerColor = NuvioTheme.colors.BackgroundCard
-        ),
-        border = M3CardDefaults.outlinedCardBorder(
-            enabled = true,
+        color = NuvioTheme.colors.BackgroundCard,
+        shadowElevation = 2.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
             color = NuvioTheme.colors.TextPrimary.copy(alpha = 0.18f)
-        ),
-        elevation = M3CardDefaults.cardElevation(defaultElevation = 2.dp)
+        )
     ) {
         Row(
             modifier = Modifier
