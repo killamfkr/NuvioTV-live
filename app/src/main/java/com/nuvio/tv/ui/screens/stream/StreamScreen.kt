@@ -86,7 +86,11 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.core.player.ExternalPlayerLauncher
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.core.streams.StreamBadgePlacement
 import com.nuvio.tv.core.streams.StreamBadgeSettings
 import com.nuvio.tv.data.local.PlayerPreference
@@ -145,6 +149,7 @@ fun StreamScreen(
         initialValue = StreamBadgeSettings()
     )
     val scope = rememberCoroutineScope()
+    val touchPhonePicker = prefersTouchCards() && !DeviceFormFactor.isTelevision(context)
     val streamHazeState = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) HazeState() else null
     }
@@ -417,27 +422,35 @@ fun StreamScreen(
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Content overlay
-            Row(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Left side - Title/Logo (centered vertically)
-                LeftContentSection(
-                    title = uiState.title,
-                    logo = uiState.logo,
-                    isEpisode = uiState.isEpisode,
-                    season = uiState.season,
-                    episode = uiState.episode,
-                    episodeName = uiState.episodeName,
-                    runtime = uiState.runtime,
-                    genres = uiState.genres,
-                    year = uiState.year,
-                    modifier = Modifier
-                        .weight(0.4f)
-                        .fillMaxHeight()
-                )
-
-                // Right side - Streams container
+            val onStreamPicked: (Stream) -> Unit = { stream ->
+                val currentIndex = uiState.filteredStreams.indexOfFirst {
+                    it.url == stream.url &&
+                        it.infoHash == stream.infoHash &&
+                        it.ytId == stream.ytId &&
+                        it.addonName == stream.addonName
+                }
+                if (currentIndex >= 0) {
+                    focusedStreamIndex = currentIndex
+                }
+                scope.coroutineLaunch {
+                    val playbackInfo = viewModel.resolveStreamForPlayback(stream)
+                    if (playbackInfo != null) {
+                        pendingRestoreOnResume = true
+                        routePlayback(playbackInfo)
+                        viewModel.onEvent(StreamScreenEvent.OnAutoPlayConsumed)
+                    }
+                }
+            }
+            val rightSectionModifier = if (touchPhonePicker) {
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            } else {
+                Modifier
+                    .weight(0.6f)
+                    .fillMaxHeight()
+            }
+            val rightStreamSection = @Composable {
                 RightStreamSection(
                     isLoading = uiState.isLoading,
                     error = uiState.error,
@@ -451,25 +464,7 @@ fun StreamScreen(
                     hasBadgeRules = streamBadgeSettings.rules.hasImport,
                     onAddonFilterSelected = { viewModel.onEvent(StreamScreenEvent.OnAddonFilterSelected(it)) },
                     onRefresh = { viewModel.onEvent(StreamScreenEvent.OnRefresh) },
-                    onStreamSelected = { stream ->
-                        val currentIndex = uiState.filteredStreams.indexOfFirst {
-                            it.url == stream.url &&
-                                it.infoHash == stream.infoHash &&
-                                it.ytId == stream.ytId &&
-                                it.addonName == stream.addonName
-                        }
-                        if (currentIndex >= 0) {
-                            focusedStreamIndex = currentIndex
-                        }
-                        scope.coroutineLaunch {
-                            val playbackInfo = viewModel.resolveStreamForPlayback(stream)
-                            if (playbackInfo != null) {
-                                pendingRestoreOnResume = true
-                                routePlayback(playbackInfo)
-                                viewModel.onEvent(StreamScreenEvent.OnAutoPlayConsumed)
-                            }
-                        }
-                    },
+                    onStreamSelected = onStreamPicked,
                     focusedStreamIndex = focusedStreamIndex,
                     shouldRestoreFocusedStream = restoreFocusedStream,
                     onRestoreFocusedStreamHandled = {
@@ -481,10 +476,46 @@ fun StreamScreen(
                     onRetry = { viewModel.onEvent(StreamScreenEvent.OnRetry) },
                     onExpandStreams = { viewModel.expandFilteredStreamsIfNeeded() },
                     hazeState = streamHazeState,
-                    modifier = Modifier
-                        .weight(0.6f)
-                        .fillMaxHeight()
+                    touchPhoneLayout = touchPhonePicker,
+                    modifier = rightSectionModifier
                 )
+            }
+
+            if (touchPhonePicker) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    LeftContentSection(
+                        title = uiState.title,
+                        logo = uiState.logo,
+                        isEpisode = uiState.isEpisode,
+                        season = uiState.season,
+                        episode = uiState.episode,
+                        episodeName = uiState.episodeName,
+                        runtime = uiState.runtime,
+                        genres = uiState.genres,
+                        year = uiState.year,
+                        compact = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    rightStreamSection()
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    LeftContentSection(
+                        title = uiState.title,
+                        logo = uiState.logo,
+                        isEpisode = uiState.isEpisode,
+                        season = uiState.season,
+                        episode = uiState.episode,
+                        episodeName = uiState.episodeName,
+                        runtime = uiState.runtime,
+                        genres = uiState.genres,
+                        year = uiState.year,
+                        modifier = Modifier
+                            .weight(0.4f)
+                            .fillMaxHeight()
+                    )
+                    rightStreamSection()
+                }
             }
         }
 
@@ -618,6 +649,7 @@ private fun LeftContentSection(
     runtime: Int?,
     genres: String?,
     year: String?,
+    compact: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -634,14 +666,16 @@ private fun LeftContentSection(
     val infoText = remember(genres, year) {
         listOfNotNull(genres, year).joinToString(" • ")
     }
+    val horizontalPadding = if (compact) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
+    val endPadding = if (compact) NuvioTheme.spacing.md else NuvioTheme.spacing.xl
     Box(
-        modifier = modifier.padding(start = NuvioTheme.spacing.xxxl, end = NuvioTheme.spacing.xl),
-        contentAlignment = Alignment.CenterStart
+        modifier = modifier.padding(start = horizontalPadding, end = endPadding, top = if (compact) NuvioTheme.spacing.md else 0.dp),
+        contentAlignment = if (compact) Alignment.TopStart else Alignment.CenterStart
     ) {
         Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth(0.8f)
+            verticalArrangement = if (compact) Arrangement.Top else Arrangement.Center,
+            horizontalAlignment = if (compact) Alignment.Start else Alignment.CenterHorizontally,
+            modifier = if (compact) Modifier.fillMaxWidth() else Modifier.fillMaxWidth(0.8f)
         ) {
             if (logoModel != null && !logoLoadFailed) {
                 AsyncImage(
@@ -649,19 +683,19 @@ private fun LeftContentSection(
                     contentDescription = title,
                     onError = { logoLoadFailed = true },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
+                        .fillMaxWidth(if (compact) 0.55f else 1f)
+                        .height(if (compact) 72.dp else 120.dp),
                     contentScale = ContentScale.Fit,
                     alignment = Alignment.Center
                 )
             } else {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.displaySmall,
+                    style = if (compact) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.displaySmall,
                     color = NuvioTheme.colors.TextPrimary,
-                    maxLines = 3,
+                    maxLines = if (compact) 2 else 3,
                     overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
+                    textAlign = if (compact) TextAlign.Start else TextAlign.Center
                 )
             }
 
@@ -740,6 +774,7 @@ private fun RightStreamSection(
     onRetry: () -> Unit,
     onExpandStreams: () -> Unit = {},
     hazeState: HazeState?,
+    touchPhoneLayout: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
@@ -825,11 +860,12 @@ private fun RightStreamSection(
         }
     }
 
+    val sectionPadding = if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
     Column(
         modifier = modifier
-            .padding(top = NuvioTheme.spacing.xxxl, end = NuvioTheme.spacing.xxxl, bottom = NuvioTheme.spacing.xxxl)
+            .padding(top = sectionPadding, end = sectionPadding, bottom = sectionPadding)
     ) {
-        val chipRowHeight = NuvioTheme.spacing.huge
+        val chipRowHeight = if (touchPhoneLayout) NuvioTheme.spacing.xxxl else NuvioTheme.spacing.huge
 
         // Addon filter chips
         Box(modifier = Modifier.height(chipRowHeight)) {
@@ -884,10 +920,10 @@ private fun RightStreamSection(
                         }
                     )
                     .background(
-                        if (hazeState != null) {
-                            Color(0xFF1C1C1E).copy(alpha = 0.65f)
-                        } else {
-                            NuvioTheme.colors.BackgroundCard.copy(alpha = 0.5f)
+                        when {
+                            touchPhoneLayout -> NuvioTheme.colors.BackgroundCard.copy(alpha = 0.92f)
+                            hazeState != null -> Color(0xFF1C1C1E).copy(alpha = 0.65f)
+                            else -> NuvioTheme.colors.BackgroundCard.copy(alpha = 0.5f)
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -926,7 +962,8 @@ private fun RightStreamSection(
                                 userMovedFromFirstResult = true
                             },
                             onFocusChanged = { listHasFocus = it },
-                            onExpandStreams = onExpandStreams
+                            onExpandStreams = onExpandStreams,
+                            touchPhoneLayout = touchPhoneLayout
                         )
                     }
                 }
@@ -1042,7 +1079,8 @@ private fun StreamsList(
     onRequestChipFocus: (Int) -> Unit = {},
     onUserNavigatedFromFirstResult: () -> Unit = {},
     onFocusChanged: (Boolean) -> Unit = {},
-    onExpandStreams: () -> Unit = {}
+    onExpandStreams: () -> Unit = {},
+    touchPhoneLayout: Boolean = false
 ) {
     val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
     val lastKeyRepeatDispatchRef = remember { java.util.concurrent.atomic.AtomicLong(0L) }
@@ -1174,19 +1212,25 @@ private fun StreamsList(
                     else -> false
                 }
             },
-        verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md),
-        contentPadding = PaddingValues(start = NuvioTheme.spacing.sm, end = NuvioTheme.spacing.sm, top = NuvioTheme.spacing.sm, bottom = NuvioTheme.spacing.xxl)
+        verticalArrangement = Arrangement.spacedBy(if (touchPhoneLayout) NuvioTheme.spacing.sm else NuvioTheme.spacing.md),
+        contentPadding = PaddingValues(
+            start = NuvioTheme.spacing.sm,
+            end = NuvioTheme.spacing.sm,
+            top = NuvioTheme.spacing.sm,
+            bottom = if (touchPhoneLayout) NuvioTheme.spacing.xxxl else NuvioTheme.spacing.xxl
+        )
     ) {
         itemsIndexed(streams, key = { index, _ ->
             streamKeys[index]
         }) { index, stream ->
-            Box(modifier = Modifier.padding(vertical = NuvioTheme.spacing.xs)) {
+            Box(modifier = Modifier.padding(vertical = if (touchPhoneLayout) NuvioTheme.spacing.xxs else NuvioTheme.spacing.xs)) {
                 StreamCard(
                     stream = stream,
                     showFileSizeBadges = showFileSizeBadges,
                     showAddonLogo = showAddonLogo,
                     badgePlacement = badgePlacement,
                     reserveBadgeSpace = hasBadgeRules && stream.badges.isEmpty(),
+                    touchPhoneLayout = touchPhoneLayout,
                     onClick = { onStreamSelected(stream) },
                     focusRequester = when {
                         shouldRestoreFocusedStream && index == focusedStreamIndex.coerceIn(0, (streams.lastIndex).coerceAtLeast(0)) -> restoreFocusRequester
@@ -1219,6 +1263,7 @@ private fun StreamCard(
     showAddonLogo: Boolean,
     badgePlacement: StreamBadgePlacement,
     reserveBadgeSpace: Boolean = false,
+    touchPhoneLayout: Boolean = false,
     onClick: () -> Unit,
     focusRequester: FocusRequester? = null,
     onFocusChanged: ((Boolean) -> Unit)? = null,
@@ -1226,6 +1271,7 @@ private fun StreamCard(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val touchPreferred = prefersTouchCards()
     val unknownStreamLabel = stringResource(R.string.stream_unknown)
     val streamName = remember(stream, unknownStreamLabel) { stream.getDisplayNameOrNull() ?: unknownStreamLabel }
     val streamDescription = remember(stream) { stream.getDisplayDescription() }
@@ -1257,9 +1303,10 @@ private fun StreamCard(
     }
 
     Card(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .fillMaxWidth()
+            .tvCardTouchClick(onClick = onClick)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
                 isFocused = it.isFocused
@@ -1271,28 +1318,40 @@ private fun StreamCard(
                 } else false
             } else Modifier),
         colors = CardDefaults.colors(
-            containerColor = NuvioTheme.colors.BackgroundElevated,
-            focusedContainerColor = NuvioTheme.colors.BackgroundElevated
+            containerColor = if (touchPhoneLayout) NuvioTheme.colors.BackgroundCard else NuvioTheme.colors.BackgroundElevated,
+            focusedContainerColor = if (touchPhoneLayout) NuvioTheme.colors.SurfaceVariant else NuvioTheme.colors.BackgroundElevated
         ),
         shape = CardDefaults.shape(shape = cardShape),
-        border = if (hasGradientFocusRing) {
-            CardDefaults.border(
+        border = when {
+            touchPhoneLayout -> CardDefaults.border(
+                border = Border(
+                    border = BorderStroke(
+                        NuvioTheme.spacing.hairline,
+                        NuvioTheme.colors.TextPrimary.copy(alpha = 0.14f)
+                    ),
+                    shape = cardShape
+                ),
                 focusedBorder = Border(
                     border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
                     shape = cardShape
                 )
             )
-        } else {
-            CardDefaults.border()
+            hasGradientFocusRing -> CardDefaults.border(
+                focusedBorder = Border(
+                    border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
+                    shape = cardShape
+                )
+            )
+            else -> CardDefaults.border()
         },
         scale = CardDefaults.scale(focusedScale = 1f)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(NuvioTheme.spacing.lg),
+                .padding(if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
+            horizontalArrangement = Arrangement.spacedBy(if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg)
         ) {
             Column(
                 modifier = Modifier.weight(1f),
@@ -1316,10 +1375,12 @@ private fun StreamCard(
                 Text(
                     text = streamName,
                     modifier = Modifier.align(streamName.contentTextDirection().toAbsoluteAlignment()),
-                    style = MaterialTheme.typography.titleMedium.copy(
+                    style = (if (touchPhoneLayout) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium).copy(
                         textDirection = streamName.contentTextDirection()
                     ),
-                    color = NuvioTheme.colors.TextPrimary
+                    color = NuvioTheme.colors.TextPrimary,
+                    maxLines = if (touchPhoneLayout) 3 else Int.MAX_VALUE,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 streamDescription?.let { description ->
@@ -1327,10 +1388,16 @@ private fun StreamCard(
                         Text(
                             text = description,
                             modifier = Modifier.align(description.contentTextDirection().toAbsoluteAlignment()),
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            style = (if (touchPhoneLayout) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall).copy(
                                 textDirection = description.contentTextDirection()
                             ),
-                            color = NuvioTheme.extendedColors.textSecondary
+                            color = if (touchPhoneLayout) {
+                                NuvioTheme.colors.TextPrimary.copy(alpha = 0.82f)
+                            } else {
+                                NuvioTheme.extendedColors.textSecondary
+                            },
+                            maxLines = if (touchPhoneLayout) 2 else Int.MAX_VALUE,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -1370,10 +1437,10 @@ private fun StreamCard(
 
                     Text(
                         text = stream.addonName,
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        style = (if (touchPhoneLayout) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelSmall).copy(
                             textDirection = stream.addonName.contentTextDirection()
                         ),
-                        color = NuvioTheme.extendedColors.textTertiary,
+                        color = if (touchPhoneLayout) NuvioTheme.extendedColors.textSecondary else NuvioTheme.extendedColors.textTertiary,
                         maxLines = 1
                     )
                 }

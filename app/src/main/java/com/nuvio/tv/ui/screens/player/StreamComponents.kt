@@ -72,6 +72,10 @@ import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.launch as coroutineLaunch
 import com.nuvio.tv.ui.components.RefreshFilterChip
 import com.nuvio.tv.R
+import com.nuvio.tv.core.device.DeviceFormFactor
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 
 @Composable
 internal fun StreamItem(
@@ -88,6 +92,8 @@ internal fun StreamItem(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val touchPreferred = prefersTouchCards()
+    val touchPhoneLayout = touchPreferred && !DeviceFormFactor.isTelevision(context)
     val unknownStreamLabel = stringResource(R.string.stream_unknown)
     val streamName = remember(stream, unknownStreamLabel) { stream.getDisplayNameOrNull() ?: unknownStreamLabel }
     val streamDescription = remember(stream) { stream.getDisplayDescription() }
@@ -109,9 +115,10 @@ internal fun StreamItem(
     }
 
     Card(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .fillMaxWidth()
+            .tvCardTouchClick(onClick = onClick)
             .then(if (focusRequester != null && requestInitialFocus) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
                 onFocusChanged?.invoke(it.isFocused)
@@ -123,15 +130,19 @@ internal fun StreamItem(
                 } else false
             } else Modifier),
         colors = CardDefaults.colors(
-            containerColor = NuvioTheme.colors.BackgroundElevated,
-            focusedContainerColor = NuvioTheme.colors.BackgroundElevated
+            containerColor = if (touchPhoneLayout) NuvioTheme.colors.BackgroundCard else NuvioTheme.colors.BackgroundElevated,
+            focusedContainerColor = if (touchPhoneLayout) NuvioTheme.colors.SurfaceVariant else NuvioTheme.colors.BackgroundElevated
         ),
         shape = CardDefaults.shape(shape = RoundedCornerShape(NuvioTheme.radii.md)),
         border = CardDefaults.border(
             border = Border(
                 border = BorderStroke(
                     NuvioTheme.spacing.hairline,
-                    if (isCurrentStream) NuvioTheme.colors.Primary.copy(alpha = 0.65f) else Color.Transparent
+                    when {
+                        isCurrentStream -> NuvioTheme.colors.Primary.copy(alpha = 0.65f)
+                        touchPhoneLayout -> NuvioTheme.colors.TextPrimary.copy(alpha = 0.14f)
+                        else -> Color.Transparent
+                    }
                 ),
                 shape = RoundedCornerShape(NuvioTheme.radii.md)
             ),
@@ -170,10 +181,12 @@ internal fun StreamItem(
                     ) {
                         Text(
                             text = streamName,
-                            style = MaterialTheme.typography.titleMedium.copy(
+                            style = (if (touchPhoneLayout) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium).copy(
                                 textDirection = streamName.contentTextDirection()
                             ),
-                            color = NuvioTheme.colors.TextPrimary
+                            color = NuvioTheme.colors.TextPrimary,
+                            maxLines = if (touchPhoneLayout) 3 else Int.MAX_VALUE,
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         if (isCurrentStream) {
@@ -198,10 +211,16 @@ internal fun StreamItem(
                         Text(
                             text = description,
                             modifier = Modifier.align(description.contentTextDirection().toAbsoluteAlignment()),
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            style = (if (touchPhoneLayout) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall).copy(
                                 textDirection = description.contentTextDirection()
                             ),
-                            color = NuvioTheme.extendedColors.textSecondary
+                            color = if (touchPhoneLayout) {
+                                NuvioTheme.colors.TextPrimary.copy(alpha = 0.82f)
+                            } else {
+                                NuvioTheme.extendedColors.textSecondary
+                            },
+                            maxLines = if (touchPhoneLayout) 2 else Int.MAX_VALUE,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
