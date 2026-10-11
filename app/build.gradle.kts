@@ -36,10 +36,10 @@ fun cmakePath(path: String): String {
 }
 
 /** Public official Nuvio backend when local.properties / CI omit Supabase keys (client anon JWT). */
-private const val OFFICIAL_NUVIO_SUPABASE_URL = "https://api.nuvio.tv"
-private const val OFFICIAL_NUVIO_SUPABASE_ANON_KEY =
+val officialNuvioSupabaseUrl = "https://api.nuvio.tv"
+val officialNuvioSupabaseAnonKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgxNTIxMzQ2LCJleHAiOjE5MzkyMDEzNDZ9.tmQaj682pwzehpqlgCDMnySOqiUvpgRbrE43T4VJpDI"
-private const val OFFICIAL_NUVIO_AVATAR_PUBLIC_BASE_URL =
+val officialNuvioAvatarPublicBaseUrl =
     "https://api.nuvio.tv/storage/v1/object/public/avatars"
 
 val localProperties = Properties().apply {
@@ -221,14 +221,14 @@ android {
                 "String",
                 "SUPABASE_URL",
                 buildConfigString(
-                    resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL", OFFICIAL_NUVIO_SUPABASE_URL)
+                    resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL", officialNuvioSupabaseUrl)
                 )
             )
             buildConfigField(
                 "String",
                 "SUPABASE_ANON_KEY",
                 buildConfigString(
-                    resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_ANON_KEY", OFFICIAL_NUVIO_SUPABASE_ANON_KEY)
+                    resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_ANON_KEY", officialNuvioSupabaseAnonKey)
                 )
             )
             buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_FALLBACK_URL")))
@@ -268,14 +268,14 @@ android {
                 "String",
                 "SUPABASE_URL",
                 buildConfigString(
-                    resolveProperty(Properties(), localProperties, "NUVIO_SUPABASE_URL", OFFICIAL_NUVIO_SUPABASE_URL)
+                    resolveProperty(Properties(), localProperties, "NUVIO_SUPABASE_URL", officialNuvioSupabaseUrl)
                 )
             )
             buildConfigField(
                 "String",
                 "SUPABASE_ANON_KEY",
                 buildConfigString(
-                    resolveProperty(Properties(), localProperties, "NUVIO_SUPABASE_ANON_KEY", OFFICIAL_NUVIO_SUPABASE_ANON_KEY)
+                    resolveProperty(Properties(), localProperties, "NUVIO_SUPABASE_ANON_KEY", officialNuvioSupabaseAnonKey)
                 )
             )
             buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_FALLBACK_URL", "")))
@@ -291,7 +291,7 @@ android {
             buildConfigField(
                 "String",
                 "AVATAR_PUBLIC_BASE_URL",
-                "\"${localProperties.getProperty("AVATAR_PUBLIC_BASE_URL", OFFICIAL_NUVIO_AVATAR_PUBLIC_BASE_URL)}\""
+                "\"${localProperties.getProperty("AVATAR_PUBLIC_BASE_URL", officialNuvioAvatarPublicBaseUrl)}\""
             )
             buildConfigField("String", "UNIQUE_CONTRIBUTIONS_BASE_URL", "\"${localProperties.getProperty("UNIQUE_CONTRIBUTIONS_BASE_URL", "")}\"")
             buildConfigField("String", "PLAYBACK_REPORTS_BASE_URL", buildConfigString(localProperties.getProperty("PLAYBACK_REPORTS_BASE_URL", "")))

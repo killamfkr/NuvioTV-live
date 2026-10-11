@@ -72,6 +72,7 @@ import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.AuthState
 import com.nuvio.tv.ui.components.BrandWordmark
 import com.nuvio.tv.ui.components.SkeletonBar
+import com.nuvio.tv.ui.components.rememberOpenExternalUrl
 import com.nuvio.tv.ui.components.rememberShimmerBrush
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import kotlin.math.PI
@@ -393,6 +394,8 @@ private fun AuthQrLoginPane(
                 stringResource(R.string.auth_qr_synced_data)
             } else if (useEmailLogin) {
                 stringResource(R.string.auth_email_instruction)
+            } else if (isHandheld) {
+                stringResource(R.string.auth_handheld_sign_in_hint)
             } else {
                 stringResource(R.string.auth_qr_scan_instruction)
             },
@@ -646,40 +649,87 @@ private fun AuthQrCodeBlock(
     remainingMillis: Long,
     isHandheld: Boolean
 ) {
-    val qrBitmap = uiState.qrLoginBitmap
-    if (qrBitmap != null) {
-        Image(
-            bitmap = qrBitmap.asImageBitmap(),
-            contentDescription = stringResource(R.string.cd_qr_login),
-            modifier = Modifier
-                .size(206.dp)
-                .background(Color.White, RoundedCornerShape(8.dp))
-                .padding(8.dp),
-            contentScale = ContentScale.Fit
+    var showQrOnHandheld by remember { mutableStateOf(false) }
+    val openUrl = rememberOpenExternalUrl()
+    val browserUrl = uiState.qrLoginUrl?.takeIf { it.isNotBlank() }
+
+    if (isHandheld) {
+        Text(
+            text = stringResource(R.string.auth_handheld_sign_in_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = AuthTextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
-    } else {
-        Box(
-            modifier = Modifier
-                .size(206.dp)
-                .background(AuthSecondaryButtonBackground, RoundedCornerShape(8.dp))
-                .border(1.dp, AuthSecondaryButtonBorder, RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = if (uiState.isLoading) stringResource(R.string.auth_qr_generating) else stringResource(R.string.auth_qr_unavailable),
-                color = AuthTextSecondary,
-                textAlign = TextAlign.Center
+        Spacer(modifier = Modifier.height(16.dp))
+        AuthHandheldButton(
+            text = stringResource(R.string.auth_sign_in_open_browser),
+            onClick = { browserUrl?.let(openUrl) },
+            enabled = browserUrl != null && !uiState.isLoading,
+            filled = true
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        AuthHandheldButton(
+            text = if (showQrOnHandheld) {
+                stringResource(R.string.auth_sign_in_hide_qr)
+            } else {
+                stringResource(R.string.auth_sign_in_show_qr)
+            },
+            onClick = { showQrOnHandheld = !showQrOnHandheld },
+            enabled = !uiState.isLoading,
+            filled = false
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    val showQrImage = !isHandheld || showQrOnHandheld
+    if (showQrImage) {
+        val qrBitmap = uiState.qrLoginBitmap
+        if (qrBitmap != null) {
+            Image(
+                bitmap = qrBitmap.asImageBitmap(),
+                contentDescription = stringResource(R.string.cd_qr_login),
+                modifier = Modifier
+                    .size(206.dp)
+                    .background(Color.White, RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                contentScale = ContentScale.Fit
             )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(206.dp)
+                    .background(AuthSecondaryButtonBackground, RoundedCornerShape(8.dp))
+                    .border(1.dp, AuthSecondaryButtonBorder, RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (uiState.isLoading) stringResource(R.string.auth_qr_generating) else stringResource(R.string.auth_qr_unavailable),
+                    color = AuthTextSecondary,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 
-    AuthQrManualCodeDetails(
-        verificationUri = uiState.qrLoginVerificationUri,
-        qrLoginCode = uiState.qrLoginUserCode ?: uiState.qrLoginCode,
-        expiresAtMillis = uiState.qrLoginExpiresAtMillis,
-        remainingMillis = remainingMillis,
-        isLoading = uiState.isLoading
-    )
+    if (!isHandheld || showQrOnHandheld) {
+        AuthQrManualCodeDetails(
+            verificationUri = uiState.qrLoginVerificationUri,
+            qrLoginCode = uiState.qrLoginUserCode ?: uiState.qrLoginCode,
+            expiresAtMillis = uiState.qrLoginExpiresAtMillis,
+            remainingMillis = remainingMillis,
+            isLoading = uiState.isLoading
+        )
+    } else if (uiState.qrLoginExpiresAtMillis != null) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.auth_qr_expires, formatDuration(remainingMillis)),
+            style = MaterialTheme.typography.bodySmall,
+            color = AuthTextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 
     Spacer(modifier = Modifier.height(12.dp))
     AuthTermsAcknowledgement(isHandheld = isHandheld)

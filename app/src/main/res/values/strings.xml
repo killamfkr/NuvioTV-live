@@ -500,6 +500,12 @@
     <string name="drive_device_code_instruction">On your phone or computer, open google.com/device (or scan the QR code), enter the code below, choose your Google account, and allow access to your Drive app folder.</string>
     <string name="drive_device_code_waiting">Waiting for you to enter the code and allow access…</string>
     <string name="auth_drive_link_title">Connect Google Drive</string>
+    <string name="auth_sign_in_open_browser">Sign in with browser</string>
+    <string name="auth_sign_in_show_qr">Show QR for another device</string>
+    <string name="auth_sign_in_hide_qr">Hide QR code</string>
+    <string name="auth_handheld_sign_in_hint">On this phone, use the browser—no need to scan a QR code on the same screen.</string>
+    <string name="drive_sign_in_open_browser">Open Google sign-in page</string>
+    <string name="drive_device_code_instruction_handheld">Tap Open Google sign-in page, sign in, and allow access. You can also enter the code at google.com/device if you prefer.</string>
     <string name="experience_mode_essential">Essential</string>
     <string name="experience_mode_advanced">Advanced</string>
     <string name="experience_mode_choose_title">Choose your Nuvio experience</string>
