@@ -103,6 +103,7 @@ import androidx.tv.material3.IconButtonDefaults as TvIconButtonDefaults
 import androidx.tv.material3.Text
 import com.nuvio.tv.ui.components.CatalogRowSection
 import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import com.nuvio.tv.ui.components.prefersTouchCards
 import com.nuvio.tv.ui.components.tvCardRemoteClick
 import com.nuvio.tv.ui.components.tvCardTouchClick

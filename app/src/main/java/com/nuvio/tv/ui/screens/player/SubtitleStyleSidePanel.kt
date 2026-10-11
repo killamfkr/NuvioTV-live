@@ -377,7 +377,7 @@ private fun SubtitleStyleStepperButton(
 ) {
     val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = touchTvRemoteClick(touchPreferred, onClick = onClick),
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = modifier
             .size(NuvioTheme.spacing.xxl)
             .tvCardTouchClick(onClick = onClick),
@@ -430,7 +430,7 @@ private fun SubtitleStyleColorChip(
 
     val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = touchTvRemoteClick(touchPreferred, onClick = onClick),
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .size(30.dp)
             .then(borderModifier)

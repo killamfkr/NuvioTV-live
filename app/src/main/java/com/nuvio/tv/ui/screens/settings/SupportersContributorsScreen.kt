@@ -1050,7 +1050,7 @@ private fun SponsorDetailsDialog(
         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
             TouchTvButton(
                 onClick = {
-                    val channelUrl = sponsor.channelUrl ?: return@Button
+                    val channelUrl = sponsor.channelUrl ?: return@TouchTvButton
                     runCatching {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(channelUrl)))
                     }
@@ -1234,7 +1234,7 @@ private fun ContributorDetailsDialog(
         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
             TouchTvButton(
                 onClick = {
-                    val profileUrl = contributor.profileUrl ?: return@Button
+                    val profileUrl = contributor.profileUrl ?: return@TouchTvButton
                     runCatching {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse(profileUrl))

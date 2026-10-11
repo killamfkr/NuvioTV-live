@@ -100,7 +100,6 @@ import androidx.compose.ui.layout.onPlaced
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.components.TouchTvButton
 import com.nuvio.tv.ui.components.TouchTvCard
-import com.nuvio.tv.ui.components.TouchTvIconButton
 import com.nuvio.tv.ui.components.prefersTouchCards
 import com.nuvio.tv.ui.components.tvCardRemoteClick
 import com.nuvio.tv.ui.components.tvCardTouchClick
@@ -126,6 +125,7 @@ import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
+import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -2675,10 +2675,12 @@ private fun ControlButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    TouchTvIconButton(
-        onClick = onClick,
+    val touchPreferred = prefersTouchCards()
+    IconButton(
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
         enabled = enabled,
         modifier = Modifier
+            .tvCardTouchClick(enabled = enabled, onClick = onClick)
             .size(NuvioTheme.spacing.xxxl)
             .then(
                 if (focusRequester != null) Modifier.focusRequester(focusRequester)

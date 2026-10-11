@@ -2,6 +2,7 @@
 
 package com.nuvio.tv.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,6 +20,7 @@ import androidx.tv.material3.Card
 import androidx.tv.material3.CardBorder
 import androidx.tv.material3.CardColors
 import androidx.tv.material3.CardDefaults
+import androidx.tv.material3.CardGlow
 import androidx.tv.material3.CardScale
 import androidx.tv.material3.CardShape
 import androidx.tv.material3.ClickableSurfaceBorder
@@ -107,19 +109,25 @@ fun TouchTvCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    onLongClick: (() -> Unit)? = null,
+    interactionSource: MutableInteractionSource? = null,
     shape: CardShape = CardDefaults.shape(),
     colors: CardColors = CardDefaults.colors(),
     border: CardBorder = CardDefaults.border(),
     scale: CardScale = CardDefaults.scale(),
+    glow: CardGlow = CardDefaults.glow(),
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
         onClick = if (enabled) touchTvRemoteClick(enabled, onClick) else ({ }),
+        onLongClick = onLongClick,
+        interactionSource = interactionSource,
         modifier = modifier.touchTvClick(enabled, onClick),
         shape = shape,
         colors = colors,
         border = border,
-        scale = scale
+        scale = scale,
+        glow = glow
     ) {
         androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxWidth()) {
             content()

@@ -887,7 +887,7 @@ private fun StreamRegexDialog(
                                 val valid = runCatching { Regex(value, RegexOption.IGNORE_CASE) }.isSuccess
                                 if (!valid) {
                                     regexError = strInvalidRegex
-                                    return@Button
+                                    return@TouchTvButton
                                 }
                             }
                             onSave(value)
