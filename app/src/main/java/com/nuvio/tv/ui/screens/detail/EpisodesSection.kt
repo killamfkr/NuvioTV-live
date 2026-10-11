@@ -142,14 +142,14 @@ fun SeasonTabs(
     )
     val tabScale = CardDefaults.scale(focusedScale = 1.0f)
     val typography = MaterialTheme.typography
+    val touchPreferred = prefersTouchCards()
+    val touchPhoneSeasonTabs = touchPreferred && !com.nuvio.tv.core.device.DeviceFormFactor.isTelevision(LocalContext.current)
     val tabTextStyle = remember(typography, touchPhoneSeasonTabs) {
         if (touchPhoneSeasonTabs) typography.titleLarge else typography.titleMedium
     }
     val textSecondary = NuvioTheme.extendedColors.textSecondary
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val lazyListState = rememberLazyListState()
-    val touchPreferred = prefersTouchCards()
-    val touchPhoneSeasonTabs = touchPreferred && !com.nuvio.tv.core.device.DeviceFormFactor.isTelevision(LocalContext.current)
     val seasonTabPadding = if (touchPreferred) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
 
     var suppressFocusSwitch by remember { mutableStateOf(false) }

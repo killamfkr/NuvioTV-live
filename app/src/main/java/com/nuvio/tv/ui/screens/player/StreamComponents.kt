@@ -254,10 +254,10 @@ internal fun StreamItem(
 
                     Text(
                         text = stream.addonName,
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        style = (if (touchPhoneLayout) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelSmall).copy(
                             textDirection = stream.addonName.contentTextDirection()
                         ),
-                        color = NuvioTheme.extendedColors.textTertiary,
+                        color = if (touchPhoneLayout) NuvioTheme.extendedColors.textSecondary else NuvioTheme.extendedColors.textTertiary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

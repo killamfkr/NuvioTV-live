@@ -441,16 +441,7 @@ fun StreamScreen(
                     }
                 }
             }
-            val rightSectionModifier = if (touchPhonePicker) {
-                Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            } else {
-                Modifier
-                    .weight(0.6f)
-                    .fillMaxHeight()
-            }
-            val rightStreamSection = @Composable {
+            val rightStreamSection = @Composable { sectionModifier: Modifier ->
                 RightStreamSection(
                     isLoading = uiState.isLoading,
                     error = uiState.error,
@@ -477,7 +468,7 @@ fun StreamScreen(
                     onExpandStreams = { viewModel.expandFilteredStreamsIfNeeded() },
                     hazeState = streamHazeState,
                     touchPhoneLayout = touchPhonePicker,
-                    modifier = rightSectionModifier
+                    modifier = sectionModifier
                 )
             }
 
@@ -496,7 +487,11 @@ fun StreamScreen(
                         compact = true,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    rightStreamSection()
+                    rightStreamSection(
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    )
                 }
             } else {
                 Row(modifier = Modifier.fillMaxSize()) {
@@ -514,7 +509,11 @@ fun StreamScreen(
                             .weight(0.4f)
                             .fillMaxHeight()
                     )
-                    rightStreamSection()
+                    rightStreamSection(
+                        Modifier
+                            .weight(0.6f)
+                            .fillMaxHeight()
+                    )
                 }
             }
         }
