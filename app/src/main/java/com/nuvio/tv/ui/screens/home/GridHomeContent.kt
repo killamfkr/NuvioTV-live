@@ -82,6 +82,9 @@ import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.domain.model.catalogRowStableKey
 import com.nuvio.tv.domain.model.PosterShape
 import com.nuvio.tv.ui.components.GridContentCard
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.ui.components.LocalCardDepthStyle
 import com.nuvio.tv.ui.components.LocalLandscapePosterMode
 import com.nuvio.tv.ui.components.GridContinueWatchingSection
@@ -939,16 +942,18 @@ private fun SeeAllGridCard(
     } else {
         posterCardStyle.height
     }
+    val touchPreferred = prefersTouchCards()
     Column(
         modifier = modifier.then(if (globalLandscape) Modifier.fillMaxWidth() else Modifier.width(posterCardStyle.width))
     ) {
         Card(
-            onClick = onClick,
+            onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
             modifier = Modifier
                 .then(
                     if (globalLandscape) Modifier.fillMaxWidth().aspectRatio(PosterShape.LANDSCAPE.aspectRatio())
                     else Modifier.width(posterCardStyle.width).height(effectiveCardHeight)
                 )
+                .tvCardTouchClick(onClick = onClick)
                 .onFocusChanged { if (it.isFocused) onFocused() }
                 .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
             shape = CardDefaults.shape(
@@ -1034,11 +1039,13 @@ private fun GridCollectionFolderCard(
         PosterShape.SQUARE -> 1f
         PosterShape.POSTER -> posterCardStyle.aspectRatio
     }
+    val touchPreferred = prefersTouchCards()
     Card(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(folderAspectRatio)
+            .tvCardTouchClick(onClick = onClick)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
                 isFocused = it.isFocused
