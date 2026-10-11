@@ -28,11 +28,7 @@ import androidx.tv.material3.ClickableSurfaceScale
 import androidx.tv.material3.ClickableSurfaceShape
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.IconButton
-import androidx.tv.material3.IconButtonBorder
-import androidx.tv.material3.IconButtonColors
 import androidx.tv.material3.IconButtonDefaults
-import androidx.tv.material3.IconButtonScale
-import androidx.tv.material3.IconButtonShape
 import androidx.tv.material3.Surface
 @Composable
 fun touchTvRemoteClick(enabled: Boolean = true, onClick: () -> Unit): () -> Unit {
@@ -74,20 +70,12 @@ fun TouchTvIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    colors: IconButtonColors = IconButtonDefaults.colors(),
-    border: IconButtonBorder = IconButtonDefaults.border(),
-    shape: IconButtonShape = IconButtonDefaults.shape(),
-    scale: IconButtonScale = IconButtonDefaults.scale(),
     content: @Composable BoxScope.() -> Unit
 ) {
     IconButton(
         onClick = touchTvRemoteClick(enabled, onClick),
         enabled = enabled,
         modifier = modifier.touchTvClick(enabled, onClick),
-        colors = colors,
-        border = border,
-        shape = shape,
-        scale = scale,
         content = content
     )
 }

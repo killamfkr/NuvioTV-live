@@ -152,23 +152,18 @@ fun LayoutSelectionScreen(
                 onContinue()
             }
             if (touchPreferred) {
-                androidx.compose.material3.TouchTvButton(
+                com.nuvio.tv.ui.components.TouchMaterial3Button(
+                    text = stringResource(R.string.layout_selection_continue),
                     onClick = onContinueClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(NuvioTheme.spacing.xxxl),
-                    shape = RoundedCornerShape(NuvioTheme.spacing.xl),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                         containerColor = NuvioTheme.colors.Primary,
                         contentColor = NuvioTheme.colors.OnPrimary
-                    )
-                ) {
-                    M3Text(
-                        text = stringResource(R.string.layout_selection_continue),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = NuvioTheme.colors.OnPrimary
-                    )
-                }
+                    ),
+                    labelColor = NuvioTheme.colors.OnPrimary
+                )
             } else {
             TouchTvButton(
                 onClick = onContinueClick,

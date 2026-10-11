@@ -46,8 +46,11 @@ import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import com.nuvio.tv.ui.components.TouchTvIconButton
+import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.data.local.SubtitleStyleSettings
@@ -372,9 +375,12 @@ private fun SubtitleStyleStepperButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TouchTvIconButton(
-        onClick = onClick,
-        modifier = modifier.size(NuvioTheme.spacing.xxl),
+    val touchPreferred = prefersTouchCards()
+    IconButton(
+        onClick = touchTvRemoteClick(touchPreferred, onClick = onClick),
+        modifier = modifier
+            .size(NuvioTheme.spacing.xxl)
+            .tvCardTouchClick(onClick = onClick),
         colors = IconButtonDefaults.colors(
             containerColor = Color.White.copy(alpha = 0.16f),
             focusedContainerColor = Color.White.copy(alpha = 0.28f),
@@ -422,11 +428,13 @@ private fun SubtitleStyleColorChip(
         else -> Modifier
     }
 
-    TouchTvIconButton(
-        onClick = onClick,
+    val touchPreferred = prefersTouchCards()
+    IconButton(
+        onClick = touchTvRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .size(30.dp)
             .then(borderModifier)
+            .tvCardTouchClick(onClick = onClick)
             .onFocusChanged { isFocused = it.isFocused },
         colors = IconButtonDefaults.colors(
             containerColor = color,

@@ -59,7 +59,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import com.nuvio.tv.ui.components.TouchTvSurface
+import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Text
 import com.nuvio.tv.data.local.ValidationResult
@@ -424,7 +424,7 @@ private fun ImportContent(
 
                         Spacer(modifier = Modifier.height(NuvioTheme.spacing.md))
 
-                        TouchTvSurface(
+                        Surface(
                             shape = RoundedCornerShape(NuvioTheme.radii.md),
                             colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundElevated),
                             border = Border(
@@ -481,7 +481,7 @@ private fun ImportContent(
                     }
 
                     ImportMode.URL -> {
-                        TouchTvSurface(
+                        Surface(
                             shape = RoundedCornerShape(NuvioTheme.radii.md),
                             colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundElevated),
                             border = Border(
@@ -536,7 +536,7 @@ private fun ImportContent(
             if (validationResult != null && validationResult.valid) {
                 item {
                     Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
-                    TouchTvSurface(
+                    Surface(
                         shape = RoundedCornerShape(NuvioTheme.radii.md),
                         colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundCard),
                         border = Border(
@@ -592,7 +592,7 @@ private fun CollectionListItem(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
 ) {
-    TouchTvSurface(
+    Surface(
         shape = RoundedCornerShape(NuvioTheme.radii.md),
         colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundCard),
         modifier = Modifier.fillMaxWidth()

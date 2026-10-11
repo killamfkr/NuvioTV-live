@@ -46,8 +46,10 @@ import androidx.tv.material3.Border
 import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
-import com.nuvio.tv.ui.components.TouchTvIconButton
+import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.R
@@ -256,10 +258,12 @@ private fun UpdateBannerIconButton(
         }
         return
     }
-    TouchTvIconButton(
-        onClick = onClick,
+    IconButton(
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
         enabled = enabled,
-        modifier = Modifier.size(44.dp),
+        modifier = Modifier
+            .size(44.dp)
+            .tvCardTouchClick(enabled = enabled, onClick = onClick),
         colors = IconButtonDefaults.colors(
             containerColor = NuvioTheme.colors.BackgroundCard,
             focusedContainerColor = NuvioTheme.colors.Secondary,

@@ -47,7 +47,10 @@ import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import com.nuvio.tv.ui.components.TouchTvIconButton
+import androidx.tv.material3.IconButton
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -86,9 +89,12 @@ internal fun ServerOptionsMenuHost(
     }
 
     Box(modifier = modifier) {
-        TouchTvIconButton(
-            onClick = { expanded = true },
-            modifier = Modifier.size(48.dp),
+        val touchPreferred = prefersTouchCards()
+        IconButton(
+            onClick = tvCardRemoteClick(touchPreferred, onClick = { expanded = true }),
+            modifier = Modifier
+                .size(48.dp)
+                .tvCardTouchClick(onClick = { expanded = true }),
             colors = IconButtonDefaults.colors(
                 containerColor = Color.Transparent,
                 focusedContainerColor = Color.Transparent,

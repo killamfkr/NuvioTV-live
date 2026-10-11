@@ -68,7 +68,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import com.nuvio.tv.ui.components.TouchTvSurface
+import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Switch
 import androidx.tv.material3.SwitchDefaults
@@ -513,7 +513,7 @@ private fun FolderListItem(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
 ) {
-    TouchTvSurface(
+    Surface(
         shape = RoundedCornerShape(NuvioTheme.radii.md),
         colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundCard),
         modifier = Modifier.fillMaxWidth()
