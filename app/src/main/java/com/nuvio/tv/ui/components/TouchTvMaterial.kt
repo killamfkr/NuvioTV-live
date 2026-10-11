@@ -2,6 +2,7 @@
 
 package com.nuvio.tv.ui.components
 
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -77,7 +78,7 @@ fun TouchTvIconButton(
     border: IconButtonBorder = IconButtonDefaults.border(),
     shape: IconButtonShape = IconButtonDefaults.shape(),
     scale: IconButtonScale = IconButtonDefaults.scale(),
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     IconButton(
         onClick = touchTvRemoteClick(enabled, onClick),
@@ -100,7 +101,7 @@ fun TouchTvSurface(
     border: ClickableSurfaceBorder = ClickableSurfaceDefaults.border(),
     shape: ClickableSurfaceShape = ClickableSurfaceDefaults.shape(),
     scale: ClickableSurfaceScale = ClickableSurfaceDefaults.scale(),
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     Surface(
         onClick = touchTvRemoteClick(enabled, onClick),
