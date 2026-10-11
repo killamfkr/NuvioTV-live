@@ -70,6 +70,9 @@ import com.nuvio.tv.domain.model.NextToWatch
 import com.nuvio.tv.ui.components.ImdbRatingSourceLabel
 import com.nuvio.tv.ui.components.MDBListRatingsRow
 import com.nuvio.tv.ui.components.SynopsisDescription
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.ui.theme.NuvioTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -393,17 +396,20 @@ internal fun PlayButton(
         context = context,
         rawRes = com.nuvio.tv.R.raw.ic_player_play
     )
+    val touchPreferred = prefersTouchCards()
+    val activateClick: () -> Unit = {
+        if (longPressTriggered) {
+            longPressTriggered = false
+        } else {
+            onClick()
+        }
+    }
 
     Button(
         enabled = enabled,
-        onClick = {
-            if (longPressTriggered) {
-                longPressTriggered = false
-            } else {
-                onClick()
-            }
-        },
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = activateClick),
         modifier = modifier
+            .tvCardTouchClick(enabled = enabled, onClick = activateClick)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
                 if (it.isFocused) {
@@ -498,11 +504,13 @@ private fun ActionIconButtonPainter(
     onFocused: () -> Unit = {},
     enabled: Boolean = true
 ) {
+    val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
         enabled = enabled,
         modifier = Modifier
             .size(NuvioTheme.spacing.xxxl)
+            .tvCardTouchClick(enabled = enabled, onClick = onClick)
             .onFocusChanged { state ->
                 if (state.isFocused) onFocused()
             }
@@ -548,19 +556,22 @@ private fun ActionIconButton(
 ) {
     var longPressTriggered by remember { mutableStateOf(false) }
     val longPressKeyTracker = rememberLongPressKeyTracker()
+    val touchPreferred = prefersTouchCards()
+    val activateClick: () -> Unit = {
+        if (longPressTriggered) {
+            longPressTriggered = false
+        } else {
+            onClick()
+        }
+    }
 
     IconButton(
-        onClick = {
-            if (longPressTriggered) {
-                longPressTriggered = false
-            } else {
-                onClick()
-            }
-        },
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = activateClick),
         enabled = enabled,
         modifier = Modifier
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .size(NuvioTheme.spacing.xxxl)
+            .tvCardTouchClick(enabled = enabled, onClick = activateClick)
             .onFocusChanged { state ->
                 if (state.isFocused) onFocused()
             }

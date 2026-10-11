@@ -37,7 +37,9 @@ import androidx.tv.material3.Text
 import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.ContinueWatchingCardStyle
+import com.nuvio.tv.ui.components.prefersTouchCards
 import com.nuvio.tv.ui.screens.home.ContinueWatchingItem
+import androidx.compose.ui.platform.LocalConfiguration
 import kotlin.math.abs
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -67,6 +69,12 @@ fun GridContinueWatchingSection(
     cornerRadius: Dp = NuvioTheme.radii.md
 ) {
     if (items.isEmpty()) return
+
+    val touchPreferred = prefersTouchCards()
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val posterCardWidth = if (touchPreferred) minOf(120.dp, screenWidth * 0.34f) else 120.dp
+    val wideCardWidth = if (touchPreferred) minOf(320.dp, screenWidth * 0.88f) else 320.dp
+    val landscapeCardWidth = if (touchPreferred) minOf(220.dp, screenWidth * 0.62f) else 220.dp
 
     var optionsItem by remember { mutableStateOf<ContinueWatchingItem?>(null) }
     var lastRequestedFocusIndex by remember { mutableIntStateOf(-1) }
@@ -130,7 +138,10 @@ fun GridContinueWatchingSection(
                         ?: FocusRequester.Default
                 }
                 .focusGroup(),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = NuvioTheme.spacing.none),
+            contentPadding = PaddingValues(
+                horizontal = if (touchPreferred) NuvioTheme.spacing.md else 36.dp,
+                vertical = NuvioTheme.spacing.none
+            ),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
             itemsIndexed(
@@ -170,14 +181,14 @@ fun GridContinueWatchingSection(
                             }
                         },
                     cardWidth = when (cardStyle) {
-                        ContinueWatchingCardStyle.POSTER -> 120.dp
-                        ContinueWatchingCardStyle.WIDE -> 320.dp
-                        ContinueWatchingCardStyle.CARD -> 220.dp
+                        ContinueWatchingCardStyle.POSTER -> posterCardWidth
+                        ContinueWatchingCardStyle.WIDE -> wideCardWidth
+                        ContinueWatchingCardStyle.CARD -> landscapeCardWidth
                     },
                     imageHeight = when (cardStyle) {
-                        ContinueWatchingCardStyle.POSTER -> 180.dp
-                        ContinueWatchingCardStyle.WIDE -> 128.dp
-                        ContinueWatchingCardStyle.CARD -> 124.dp
+                        ContinueWatchingCardStyle.POSTER -> posterCardWidth * 1.5f
+                        ContinueWatchingCardStyle.WIDE -> wideCardWidth * 0.4f
+                        ContinueWatchingCardStyle.CARD -> landscapeCardWidth / 1.77f
                     }
                 )
             }

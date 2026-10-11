@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
@@ -629,13 +630,21 @@ fun ContinueWatchingCard(
             onClick()
         }
     }
+    val touchModifier = if (touchPreferred) {
+        Modifier.combinedClickable(
+            onClick = activateCard,
+            onLongClick = onLongPress
+        )
+    } else {
+        Modifier.tvCardTouchClick(onClick = activateCard)
+    }
 
     Card(
         onClick = tvCardRemoteClick(touchPreferred, onClick = activateCard),
         modifier = modifier
             .width(cardWidth)
             .recompositionHighlighter()
-            .tvCardTouchClick(onClick = activateCard)
+            .then(touchModifier)
             .onPreviewKeyEvent { event ->
                 val native = event.nativeKeyEvent
                 if (native.action == AndroidKeyEvent.ACTION_DOWN) {
@@ -1146,15 +1155,18 @@ fun ContinueWatchingOptionsDialog(
         detailsFocusRequester.requestFocus()
     }
 
+    val touchPreferred = prefersTouchCards()
+
     NuvioDialog(
         onDismiss = onDismiss,
         title = title,
         subtitle = stringResource(R.string.cw_dialog_subtitle)
     ) {
         Button(
-            onClick = onDetails,
+            onClick = tvCardRemoteClick(touchPreferred, onClick = onDetails),
             modifier = Modifier
                 .fillMaxWidth()
+                .tvCardTouchClick(onClick = onDetails)
                 .focusRequester(detailsFocusRequester),
             colors = ButtonDefaults.colors(
                 containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1166,12 +1178,14 @@ fun ContinueWatchingOptionsDialog(
 
         if (showPlayManually && isPlayEnabled) {
             Button(
-                onClick = onPlayManually,
+                onClick = tvCardRemoteClick(touchPreferred, onClick = onPlayManually),
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
                     contentColor = NuvioTheme.colors.TextPrimary
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tvCardTouchClick(onClick = onPlayManually)
             ) {
                 Text(stringResource(R.string.play_manually))
             }
@@ -1179,24 +1193,28 @@ fun ContinueWatchingOptionsDialog(
 
         if (item is ContinueWatchingItem.InProgress && isPlayEnabled) {
             Button(
-                onClick = onStartFromBeginning,
+                onClick = tvCardRemoteClick(touchPreferred, onClick = onStartFromBeginning),
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
                     contentColor = NuvioTheme.colors.TextPrimary
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tvCardTouchClick(onClick = onStartFromBeginning)
             ) {
                 Text(stringResource(R.string.cw_action_start_from_beginning))
             }
         }
 
         Button(
-            onClick = onRemove,
+            onClick = tvCardRemoteClick(touchPreferred, onClick = onRemove),
             colors = ButtonDefaults.colors(
                 containerColor = NuvioTheme.colors.BackgroundCard,
                 contentColor = NuvioTheme.colors.TextPrimary
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .tvCardTouchClick(onClick = onRemove)
         ) {
             Text(stringResource(R.string.cw_action_remove))
         }

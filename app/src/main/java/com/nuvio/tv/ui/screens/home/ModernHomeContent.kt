@@ -79,6 +79,8 @@ import com.nuvio.tv.domain.model.FocusedPosterTrailerPlaybackTarget
 import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.ContinueWatchingOptionsDialog
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.LocalSidebarExpanded
 import com.nuvio.tv.LocalContentFocusRequester
 import com.nuvio.tv.ui.util.LocalRecompositionHighlighterEnabled
@@ -644,6 +646,11 @@ fun ModernHomeContent(
         }
     }
 
+    val localConfiguration = LocalConfiguration.current
+    val screenWidth = localConfiguration.screenWidthDp.dp
+    val screenHeight = localConfiguration.screenHeightDp.dp
+    val touchPhoneHome = prefersTouchCards() && !DeviceFormFactor.isTelevision(LocalContext.current)
+
     val portraitBaseWidth = uiState.posterCardWidthDp.dp
     val portraitBaseHeight = uiState.posterCardHeightDp.dp
     val portraitModernPosterScale = 1.08f
@@ -666,14 +673,27 @@ fun ModernHomeContent(
         ContinueWatchingCardStyle.WIDE -> continueWatchingCardWidth * WIDE_CARD_HEIGHT_RATIO
         ContinueWatchingCardStyle.CARD -> continueWatchingCardWidth / 1.77f
     }
-
-    val localConfiguration = LocalConfiguration.current
-    val screenWidth = localConfiguration.screenWidthDp.dp
-    val screenHeight = localConfiguration.screenHeightDp.dp
+    val continueWatchingCardWidthForRows = if (touchPhoneHome) {
+        minOf(continueWatchingCardWidth, screenWidth * 0.72f)
+    } else {
+        continueWatchingCardWidth
+    }
+    val continueWatchingCardHeightForRows = if (touchPhoneHome) {
+        when (continueWatchingStyle) {
+            ContinueWatchingCardStyle.POSTER ->
+                continueWatchingCardWidthForRows * (portraitCatalogCardHeight / portraitCatalogCardWidth)
+            ContinueWatchingCardStyle.WIDE ->
+                continueWatchingCardWidthForRows * WIDE_CARD_HEIGHT_RATIO
+            ContinueWatchingCardStyle.CARD ->
+                continueWatchingCardWidthForRows / 1.77f
+        }
+    } else {
+        continueWatchingCardHeight
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(NuvioTheme.colors.Background)) {
             val posterCardCornerRadius = remember(uiState.posterCardCornerRadiusDp) { uiState.posterCardCornerRadiusDp.dp }
-            val rowHorizontalPadding = 52.dp
+            val rowHorizontalPadding = if (touchPhoneHome) NuvioTheme.spacing.md else 52.dp
 
             val activeCarouselItemState = remember(carouselRows, rowByKey) {
                 derivedStateOf {
@@ -985,7 +1005,12 @@ fun ModernHomeContent(
             }
 
             val localDensity = LocalDensity.current
-            val rowsViewportHeightFraction = if (useLandscapePosters) 0.49f else 0.52f
+            val rowsViewportHeightFraction = when {
+                useLandscapePosters && touchPhoneHome -> 0.54f
+                useLandscapePosters -> 0.49f
+                touchPhoneHome -> 0.58f
+                else -> 0.52f
+            }
             val rowsViewportHeight = remember(screenHeight, rowsViewportHeightFraction) { screenHeight * rowsViewportHeightFraction }
             val rowTitleLineHeight = MaterialTheme.typography.titleMedium.lineHeight
             val rowTitleHeight = remember(rowTitleLineHeight, localDensity) {
@@ -1192,8 +1217,8 @@ fun ModernHomeContent(
                 portraitCatalogCardHeight = portraitCatalogCardHeight,
                 landscapeCatalogCardWidth = landscapeCatalogCardWidth,
                 landscapeCatalogCardHeight = landscapeCatalogCardHeight,
-                continueWatchingCardWidth = continueWatchingCardWidth,
-                continueWatchingCardHeight = continueWatchingCardHeight,
+                continueWatchingCardWidth = continueWatchingCardWidthForRows,
+                continueWatchingCardHeight = continueWatchingCardHeightForRows,
                 blurUnwatchedEpisodes = uiState.blurUnwatchedEpisodes,
                 useEpisodeThumbnails = uiState.useEpisodeThumbnailsInCw,
                 continueWatchingCardStyle = continueWatchingStyle,
