@@ -92,7 +92,9 @@ import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.core.player.ExternalPlayerLauncher
 import com.nuvio.tv.ui.components.prefersTouchCards
 import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardContentTouchClick
 import com.nuvio.tv.ui.components.tvCardTouchClick
+import androidx.compose.ui.focus.focusProperties
 import com.nuvio.tv.core.streams.StreamBadgePlacement
 import com.nuvio.tv.core.streams.StreamBadgeSettings
 import com.nuvio.tv.data.local.PlayerPreference
@@ -903,6 +905,7 @@ private fun RightStreamSection(
         }
     }
     LaunchedEffect(isLoading, firstStreamKey, userMovedFromFirstResult, firstResultFocusAssigned) {
+        if (touchPhoneLayout) return@LaunchedEffect
         if (!isLoading && firstStreamKey != null && !userMovedFromFirstResult && !firstResultFocusAssigned) {
             firstResultFocusAssigned = true
             firstStreamFocusRequestId += 1
@@ -911,6 +914,7 @@ private fun RightStreamSection(
     // When on "All" tab and new results arrive above the focused stream, move focus to the new first item.
     var trackedFirstStreamKey by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(firstStreamKey, selectedAddonFilter, listHasFocus) {
+        if (touchPhoneLayout) return@LaunchedEffect
         if (selectedAddonFilter != null) {
             trackedFirstStreamKey = firstStreamKey
             return@LaunchedEffect
@@ -1233,6 +1237,7 @@ private fun StreamsList(
     }
 
     LaunchedEffect(firstStreamFocusRequestId) {
+        if (touchPhoneLayout) return@LaunchedEffect
         val requestedKey = firstStreamKey
         if (firstStreamFocusRequestId <= 0 || requestedKey == null) return@LaunchedEffect
         streamListState.scrollToItem(0)
@@ -1403,13 +1408,28 @@ private fun StreamCard(
         }
     }
 
+    val useContentTouch = touchPreferred
     Card(
-        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
+        onClick = if (useContentTouch) ({}) else tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .fillMaxWidth()
             .then(if (touchPhoneLayout) Modifier.heightIn(min = 72.dp) else Modifier)
-            .tvCardTouchClick(onClick = onClick)
-            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .then(
+                if (useContentTouch && touchPhoneLayout) {
+                    Modifier.focusProperties { canFocus = false }
+                } else if (!useContentTouch) {
+                    Modifier.tvCardTouchClick(onClick = onClick)
+                } else {
+                    Modifier
+                }
+            )
+            .then(
+                if (focusRequester != null && !(useContentTouch && touchPhoneLayout)) {
+                    Modifier.focusRequester(focusRequester)
+                } else {
+                    Modifier
+                }
+            )
             .onFocusChanged {
                 isFocused = it.isFocused
                 onFocusChanged?.invoke(it.isFocused)
@@ -1451,6 +1471,7 @@ private fun StreamCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(if (useContentTouch) Modifier.tvCardContentTouchClick(onClick = onClick) else Modifier)
                 .padding(if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg)

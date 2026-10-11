@@ -76,7 +76,9 @@ import com.nuvio.tv.R
 import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.ui.components.prefersTouchCards
 import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardContentTouchClick
 import com.nuvio.tv.ui.components.tvCardTouchClick
+import androidx.compose.ui.focus.focusProperties
 
 @Composable
 internal fun StreamItem(
@@ -115,13 +117,28 @@ internal fun StreamItem(
         }
     }
 
+    val useContentTouch = touchPreferred
     Card(
-        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
+        onClick = if (useContentTouch) ({}) else tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .fillMaxWidth()
             .then(if (touchPhoneLayout) Modifier.heightIn(min = 72.dp) else Modifier)
-            .tvCardTouchClick(onClick = onClick)
-            .then(if (focusRequester != null && requestInitialFocus) Modifier.focusRequester(focusRequester) else Modifier)
+            .then(
+                if (useContentTouch && touchPhoneLayout) {
+                    Modifier.focusProperties { canFocus = false }
+                } else if (!useContentTouch) {
+                    Modifier.tvCardTouchClick(onClick = onClick)
+                } else {
+                    Modifier
+                }
+            )
+            .then(
+                if (focusRequester != null && requestInitialFocus && !(useContentTouch && touchPhoneLayout)) {
+                    Modifier.focusRequester(focusRequester)
+                } else {
+                    Modifier
+                }
+            )
             .onFocusChanged {
                 onFocusChanged?.invoke(it.isFocused)
             }
@@ -158,6 +175,7 @@ internal fun StreamItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(if (useContentTouch) Modifier.tvCardContentTouchClick(onClick = onClick) else Modifier)
                 .padding(NuvioTheme.spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
