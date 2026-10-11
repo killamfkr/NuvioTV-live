@@ -230,9 +230,15 @@ fun SharedTrailerOverlay(
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White
                     )
-                    Button(onClick = onRetry) {
-                        Text(text = stringResource(R.string.action_retry))
-                    }
+                    TouchMaterial3Button(
+                        text = stringResource(R.string.action_retry),
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black,
+                        ),
+                        labelColor = Color.Black,
+                    )
                 }
             }
 
