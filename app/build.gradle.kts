@@ -35,6 +35,13 @@ fun cmakePath(path: String): String {
     return resolved.absolutePath.replace("\\", "/")
 }
 
+/** Public official Nuvio backend when local.properties / CI omit Supabase keys (client anon JWT). */
+private const val OFFICIAL_NUVIO_SUPABASE_URL = "https://api.nuvio.tv"
+private const val OFFICIAL_NUVIO_SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgxNTIxMzQ2LCJleHAiOjE5MzkyMDEzNDZ9.tmQaj682pwzehpqlgCDMnySOqiUvpgRbrE43T4VJpDI"
+private const val OFFICIAL_NUVIO_AVATAR_PUBLIC_BASE_URL =
+    "https://api.nuvio.tv/storage/v1/object/public/avatars"
+
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
@@ -210,8 +217,20 @@ android {
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("debug"))
 
             // Dev environment (from local.dev.properties)
-            buildConfigField("String", "SUPABASE_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL")))
-            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_ANON_KEY")))
+            buildConfigField(
+                "String",
+                "SUPABASE_URL",
+                buildConfigString(
+                    resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL", OFFICIAL_NUVIO_SUPABASE_URL)
+                )
+            )
+            buildConfigField(
+                "String",
+                "SUPABASE_ANON_KEY",
+                buildConfigString(
+                    resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_ANON_KEY", OFFICIAL_NUVIO_SUPABASE_ANON_KEY)
+                )
+            )
             buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_FALLBACK_URL")))
             buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${devProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
             buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${devProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
@@ -245,8 +264,20 @@ android {
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("production"))
 
             // Production environment (from local.properties)
-            buildConfigField("String", "SUPABASE_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_URL", "")))
-            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_ANON_KEY", "")))
+            buildConfigField(
+                "String",
+                "SUPABASE_URL",
+                buildConfigString(
+                    resolveProperty(Properties(), localProperties, "NUVIO_SUPABASE_URL", OFFICIAL_NUVIO_SUPABASE_URL)
+                )
+            )
+            buildConfigField(
+                "String",
+                "SUPABASE_ANON_KEY",
+                buildConfigString(
+                    resolveProperty(Properties(), localProperties, "NUVIO_SUPABASE_ANON_KEY", OFFICIAL_NUVIO_SUPABASE_ANON_KEY)
+                )
+            )
             buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_FALLBACK_URL", "")))
             buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
             buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
@@ -257,7 +288,11 @@ android {
             buildConfigField("String", "IMDB_TAPFRAME_API_BASE_URL", "\"${localProperties.getProperty("IMDB_TAPFRAME_API_BASE_URL", "")}\"")
             buildConfigField("String", "SUPPORTERS_API_BASE_URL", buildConfigString(localProperties.getProperty("SUPPORTERS_API_BASE_URL", "https://nuvio.tv/")))
             buildConfigField("String", "SUPPORT_URL", buildConfigString(localProperties.getProperty("SUPPORT_URL", "https://nuvio.tv/support")))
-            buildConfigField("String", "AVATAR_PUBLIC_BASE_URL", "\"${localProperties.getProperty("AVATAR_PUBLIC_BASE_URL", "")}\"")
+            buildConfigField(
+                "String",
+                "AVATAR_PUBLIC_BASE_URL",
+                "\"${localProperties.getProperty("AVATAR_PUBLIC_BASE_URL", OFFICIAL_NUVIO_AVATAR_PUBLIC_BASE_URL)}\""
+            )
             buildConfigField("String", "UNIQUE_CONTRIBUTIONS_BASE_URL", "\"${localProperties.getProperty("UNIQUE_CONTRIBUTIONS_BASE_URL", "")}\"")
             buildConfigField("String", "PLAYBACK_REPORTS_BASE_URL", buildConfigString(localProperties.getProperty("PLAYBACK_REPORTS_BASE_URL", "")))
             buildConfigField("String", "PREMIUMIZE_CLIENT_ID", "\"${localProperties.getProperty("PREMIUMIZE_CLIENT_ID", "")}\"")
