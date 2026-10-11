@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text as M3Text
 import androidx.compose.runtime.Composable
@@ -82,15 +81,15 @@ fun GoogleDeviceCodeSignInDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
+                TouchMaterial3Button(
+                    text = stringResource(R.string.drive_sign_in_open_browser),
                     onClick = { openUrl(prompt.qrUrl) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = NuvioTheme.colors.Secondary,
                         contentColor = NuvioTheme.colors.OnSecondary
-                    )
-                ) {
-                    M3Text(stringResource(R.string.drive_sign_in_open_browser))
-                }
+                    ),
+                    labelColor = NuvioTheme.colors.OnSecondary,
+                )
                 M3Text(
                     text = if (showQr) {
                         stringResource(R.string.auth_sign_in_hide_qr)
