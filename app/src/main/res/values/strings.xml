@@ -505,6 +505,12 @@
     <string name="auth_sign_in_hide_qr">Hide QR code</string>
     <string name="auth_handheld_sign_in_hint">On this phone, use the browser—no need to scan a QR code on the same screen.</string>
     <string name="drive_sign_in_open_browser">Open Google sign-in page</string>
+    <string name="livetv_touch_exit">Exit</string>
+    <string name="livetv_touch_channel_down">Ch −</string>
+    <string name="livetv_touch_channel_up">Ch +</string>
+    <string name="livetv_touch_screen_size">Screen size</string>
+    <string name="livetv_touch_options">Options</string>
+    <string name="livetv_touch_channels">Channels</string>
     <string name="drive_device_code_instruction_handheld">Tap Open Google sign-in page, sign in, and allow access. You can also enter the code at google.com/device if you prefer.</string>
     <string name="experience_mode_essential">Essential</string>
     <string name="experience_mode_advanced">Advanced</string>

@@ -267,11 +267,13 @@ private fun FolderCard(
         enabled = collection.focusGlowEnabled
     )
 
+    val touchPreferred = prefersTouchCards()
     Card(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = modifier
             .width(tileWidth)
             .height(tileHeight)
+            .tvCardTouchClick(onClick = onClick)
             .focusRequester(focusRequester)
             .onFocusChanged {
                 isFocused = it.isFocused

@@ -406,6 +406,10 @@ fun LiveTvGuideScreen(
     val openSidebar = com.nuvio.tv.LocalOpenSidebar.current
     BackHandler(enabled = !sidebarExpanded) {
         when {
+            fullscreen -> {
+                fullscreen = false
+                exitFullscreenTick++
+            }
             column == GuideColumn.PROGRAM -> {
                 column = GuideColumn.CHANNEL
                 windowStart = floorSlot(now)

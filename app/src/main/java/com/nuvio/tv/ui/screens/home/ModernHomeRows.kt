@@ -1301,6 +1301,15 @@ private fun ModernCarouselCard(
         titleMedium.copy(fontWeight = FontWeight.Medium)
     }
 
+    val touchPreferred = com.nuvio.tv.ui.components.prefersTouchCards()
+    val activateCard = {
+        if (longPressTriggered) {
+            longPressTriggered = false
+        } else {
+            onClick()
+        }
+    }
+
     Column(
         modifier = modifier
             .width(animatedCardWidth)
@@ -1308,16 +1317,11 @@ private fun ModernCarouselCard(
         verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
     ) {
         Card(
-            onClick = {
-                if (longPressTriggered) {
-                    longPressTriggered = false
-                } else {
-                    onClick()
-                }
-            },
+            onClick = com.nuvio.tv.ui.components.tvCardRemoteClick(touchPreferred, onClick = activateCard),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(cardHeight)
+                .com.nuvio.tv.ui.components.tvCardTouchClick(onClick = activateCard)
                 .focusRequester(focusRequester)
                 .onFocusChanged {
                     isFocused = it.isFocused

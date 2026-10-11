@@ -99,7 +99,14 @@ fun GridContentCard(
     var isFocused by remember { mutableStateOf(false) }
     var longPressTriggered by remember { mutableStateOf(false) }
     val longPressKeyTracker = rememberLongPressKeyTracker()
-
+    val touchPreferred = prefersTouchCards()
+    val activateCard = {
+        if (longPressTriggered) {
+            longPressTriggered = false
+        } else {
+            onClick()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -107,14 +114,9 @@ fun GridContentCard(
             .recompositionHighlighter()
     ) {
         Card(
-            onClick = {
-                if (longPressTriggered) {
-                    longPressTriggered = false
-                } else {
-                    onClick()
-                }
-            },
+            onClick = tvCardRemoteClick(touchPreferred, onClick = activateCard),
             modifier = Modifier
+                .tvCardTouchClick(onClick = activateCard)
                 .then(
                     if (globalLandscape) Modifier.fillMaxWidth().aspectRatio(PosterShape.LANDSCAPE.aspectRatio())
                     else Modifier.width(posterCardStyle.width).height(cardHeight)

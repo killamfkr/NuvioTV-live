@@ -621,18 +621,21 @@ fun ContinueWatchingCard(
     
     val bgCardColor = NuvioTheme.colors.BackgroundCard
     val backgroundPainter = remember(bgCardColor) { androidx.compose.ui.graphics.painter.ColorPainter(bgCardColor) }
+    val touchPreferred = prefersTouchCards()
+    val activateCard = {
+        if (longPressTriggered) {
+            longPressTriggered = false
+        } else {
+            onClick()
+        }
+    }
 
     Card(
-        onClick = {
-            if (longPressTriggered) {
-                longPressTriggered = false
-            } else {
-                onClick()
-            }
-        },
+        onClick = tvCardRemoteClick(touchPreferred, onClick = activateCard),
         modifier = modifier
             .width(cardWidth)
             .recompositionHighlighter()
+            .tvCardTouchClick(onClick = activateCard)
             .onPreviewKeyEvent { event ->
                 val native = event.nativeKeyEvent
                 if (native.action == AndroidKeyEvent.ACTION_DOWN) {

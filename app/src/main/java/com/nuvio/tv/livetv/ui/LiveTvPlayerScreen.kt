@@ -55,7 +55,9 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.nuvio.tv.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -238,6 +240,12 @@ fun LiveTvPlayerScreen(
     }
 
     BackHandler(enabled = listVisible) { listVisible = false }
+    BackHandler(enabled = touchPlayer && dialog != PlayerDialog.NONE) {
+        dialog = PlayerDialog.NONE
+    }
+    BackHandler(enabled = touchPlayer && !listVisible && dialog == PlayerDialog.NONE) {
+        onBack()
+    }
 
     val guideAppearance = LiveGuideAppearance.fromKey(settings.guideAppearance)
     CompositionLocalProvider(
@@ -369,6 +377,22 @@ fun LiveTvPlayerScreen(
                     .background(Color.Black.copy(alpha = 0.6f))
                     .padding(horizontal = 18.dp, vertical = 10.dp),
                 size = 18.sp
+            )
+        }
+
+        if (touchPlayer && !listVisible && dialog == PlayerDialog.NONE) {
+            LivePlayerTouchBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                showChannels = settings.overlayMode,
+                onExit = onBack,
+                onChannelDown = { zap(-1); showBanner() },
+                onChannelUp = { zap(1); showBanner() },
+                onScreenSize = { dialog = PlayerDialog.SCREEN_SIZE },
+                onOptions = { dialog = PlayerDialog.OPTIONS },
+                onChannels = { listVisible = true }
             )
         }
 
@@ -881,6 +905,48 @@ private fun SleepTimerDialog(onPick: (Int?) -> Unit, onDismiss: () -> Unit) {
         }
     }
     LaunchedEffect(Unit) { delay(60); runCatching { first.requestFocus() } }
+}
+
+@Composable
+private fun LivePlayerTouchBar(
+    modifier: Modifier,
+    showChannels: Boolean,
+    onExit: () -> Unit,
+    onChannelDown: () -> Unit,
+    onChannelUp: () -> Unit,
+    onScreenSize: () -> Unit,
+    onOptions: () -> Unit,
+    onChannels: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Black.copy(alpha = 0.78f))
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        LiveTouchChip(stringResource(R.string.livetv_touch_exit), onExit)
+        LiveTouchChip(stringResource(R.string.livetv_touch_channel_down), onChannelDown)
+        LiveTouchChip(stringResource(R.string.livetv_touch_channel_up), onChannelUp)
+        LiveTouchChip(stringResource(R.string.livetv_touch_screen_size), onScreenSize)
+        LiveTouchChip(stringResource(R.string.livetv_touch_options), onOptions)
+        if (showChannels) {
+            LiveTouchChip(stringResource(R.string.livetv_touch_channels), onChannels)
+        }
+    }
+}
+
+@Composable
+private fun LiveTouchChip(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    ) {
+        LiveText(label, size = 14.sp, weight = FontWeight.Medium)
+    }
 }
 
 /**

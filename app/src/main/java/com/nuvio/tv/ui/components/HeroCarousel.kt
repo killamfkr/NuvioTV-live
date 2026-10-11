@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -137,6 +138,13 @@ fun HeroCarousel(
                 isFocused = it.hasFocus || it.isFocused
             }
             .focusable()
+            .then(
+                if (prefersTouchCards()) {
+                    Modifier.clickable { currentOnItemClick(items[activeIndex]) }
+                } else {
+                    Modifier
+                }
+            )
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
                     when (event.key) {
