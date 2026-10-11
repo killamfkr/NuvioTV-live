@@ -50,7 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -683,7 +683,7 @@ private fun TrackingBrandPrimaryButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier
@@ -736,7 +736,7 @@ private fun TrackingBrandFooterButton(
     enabled: Boolean = true,
     fillContentWidth: Boolean = false
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,

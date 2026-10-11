@@ -14,7 +14,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -82,7 +82,7 @@ internal fun SentrySettingsDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 modifier = Modifier
                     .weight(1f)
@@ -102,7 +102,7 @@ internal fun SentrySettingsDialog(
                     )
                 )
             }
-            Button(
+            TouchTvButton(
                 onClick = {
                     onConfirm()
                     onDismiss()

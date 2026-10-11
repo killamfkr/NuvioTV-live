@@ -15,14 +15,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.nuvio.tv.R
-import com.nuvio.tv.ui.components.prefersTouchCards
-import com.nuvio.tv.ui.components.tvCardRemoteClick
-import com.nuvio.tv.ui.components.tvCardTouchClick
-
 @Composable
 internal fun ShuffleButton(
     active: Boolean,
@@ -31,12 +27,11 @@ internal fun ShuffleButton(
     focusRequester: FocusRequester?,
     onFocused: () -> Unit
 ) {
-    val touchPreferred = prefersTouchCards()
     val activate = { if (!pending) onClick() }
-    Button(
-        onClick = tvCardRemoteClick(touchPreferred, enabled = !pending, onClick = activate),
+    TouchTvButton(
+        onClick = activate,
+        enabled = !pending,
         modifier = Modifier
-            .tvCardTouchClick(enabled = !pending, onClick = activate)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .focusProperties { up = FocusRequester.Cancel }
             .onFocusChanged { if (it.isFocused) onFocused() }

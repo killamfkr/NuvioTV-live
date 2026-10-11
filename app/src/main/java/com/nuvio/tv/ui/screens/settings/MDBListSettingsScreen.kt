@@ -45,7 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Border
 import com.nuvio.tv.R
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -261,7 +261,7 @@ private fun MDBListApiKeyDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -271,7 +271,7 @@ private fun MDBListApiKeyDialog(
                 Text(stringResource(R.string.action_cancel))
             }
             Spacer(modifier = Modifier.width(NuvioTheme.spacing.sm))
-            Button(
+            TouchTvButton(
                 onClick = onClear,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -281,7 +281,7 @@ private fun MDBListApiKeyDialog(
                 Text(stringResource(R.string.action_clear))
             }
             Spacer(modifier = Modifier.width(NuvioTheme.spacing.sm))
-            Button(
+            TouchTvButton(
                 onClick = { if (!validating) viewModel.validateAndSaveApiKey(value, onSaved) },
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
@@ -324,7 +324,7 @@ private fun RatingOrderToggleRow(
             onToggle = onToggle,
             modifier = Modifier.weight(1f)
         )
-        Button(
+        TouchTvButton(
             onClick = { onMoveUp?.invoke() },
             enabled = onMoveUp != null,
             modifier = Modifier.width(40.dp),
@@ -339,7 +339,7 @@ private fun RatingOrderToggleRow(
         ) {
             Text("▲", style = MaterialTheme.typography.bodySmall)
         }
-        Button(
+        TouchTvButton(
             onClick = { onMoveDown?.invoke() },
             enabled = onMoveDown != null,
             modifier = Modifier.width(40.dp),

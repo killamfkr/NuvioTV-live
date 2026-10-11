@@ -43,9 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -152,7 +152,7 @@ fun LayoutSelectionScreen(
                 onContinue()
             }
             if (touchPreferred) {
-                androidx.compose.material3.Button(
+                androidx.compose.material3.TouchTvButton(
                     onClick = onContinueClick,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -170,7 +170,7 @@ fun LayoutSelectionScreen(
                     )
                 }
             } else {
-            Button(
+            TouchTvButton(
                 onClick = onContinueClick,
                 modifier = Modifier
                     .width(200.dp)
@@ -303,7 +303,7 @@ private fun LayoutOptionCard(
         return
     }
 
-    Card(
+    TouchTvCard(
         onClick = onSelect,
         modifier = cardModifier,
         colors = CardDefaults.colors(

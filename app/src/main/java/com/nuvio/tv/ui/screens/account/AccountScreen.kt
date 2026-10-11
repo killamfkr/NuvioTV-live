@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -206,7 +206,7 @@ private fun AccountActionCard(
     description: String,
     onClick: () -> Unit
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         colors = ButtonDefaults.colors(
             containerColor = NuvioTheme.colors.BackgroundCard,
@@ -321,7 +321,7 @@ private fun LinkedDevicesSection(
                         color = NuvioTheme.colors.TextPrimary,
                         modifier = Modifier.weight(1f)
                     )
-                    Button(
+                    TouchTvButton(
                         onClick = { onUnlink(device.deviceUserId) },
                         colors = ButtonDefaults.colors(
                             containerColor = Color(0xFFC62828).copy(alpha = 0.2f),
@@ -348,7 +348,7 @@ private fun LinkedDevicesSection(
 
 @Composable
 private fun SignOutButton(onClick: () -> Unit) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         colors = ButtonDefaults.colors(
             containerColor = Color(0xFFC62828).copy(alpha = 0.15f),

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -274,7 +274,7 @@ private fun CastChip(
     member: MetaCastMember,
     onClick: () -> Unit
 ) {
-    Card(
+    TouchTvCard(
         onClick = onClick,
         colors = CardDefaults.colors(
             containerColor = Color.White.copy(alpha = 0.1f),

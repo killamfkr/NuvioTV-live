@@ -30,6 +30,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
@@ -97,6 +100,7 @@ import androidx.compose.ui.layout.onPlaced
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.components.TouchTvButton
 import com.nuvio.tv.ui.components.TouchTvCard
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import com.nuvio.tv.ui.components.prefersTouchCards
 import com.nuvio.tv.ui.components.tvCardRemoteClick
 import com.nuvio.tv.ui.components.tvCardTouchClick
@@ -117,13 +121,11 @@ import androidx.media3.common.Tracks
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -2590,6 +2592,9 @@ private fun PlayerControlsProgressBarHost(
         onSeekCommit = {
             viewModel.onEvent(PlayerEvent.OnCommitPreviewSeek)
         },
+        onSeekTo = { position ->
+            viewModel.onEvent(PlayerEvent.OnSeekTo(position))
+        },
         focusRequester = focusRequester,
         upFocusRequester = upFocusRequester,
         downFocusRequester = downFocusRequester,
@@ -2669,14 +2674,12 @@ private fun ControlButton(
     onFocused: (() -> Unit)? = null
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    val touchPreferred = prefersTouchCards()
 
-    IconButton(
-        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
+    TouchTvIconButton(
+        onClick = onClick,
         enabled = enabled,
         modifier = Modifier
             .size(NuvioTheme.spacing.xxxl)
-            .tvCardTouchClick(enabled = enabled, onClick = onClick)
             .then(
                 if (focusRequester != null) Modifier.focusRequester(focusRequester)
                 else Modifier
@@ -2743,6 +2746,7 @@ private fun ProgressBar(
     duration: Long,
     onSeekPreview: (Long) -> Unit,
     onSeekCommit: () -> Unit,
+    onSeekTo: ((Long) -> Unit)? = null,
     focusRequester: FocusRequester? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
@@ -2771,11 +2775,34 @@ private fun ProgressBar(
         label = "bufferedProgress"
     )
     var isFocused by remember { mutableStateOf(false) }
+    val touchPreferred = prefersTouchCards()
 
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .height(if (isFocused) NuvioTheme.spacing.md else NuvioTheme.spacing.sm)
+            .then(
+                if (touchPreferred && duration > 0 && onSeekTo != null) {
+                    val seekModifier = Modifier.pointerInput(duration) {
+                        fun seekAt(x: Float) {
+                            val fraction = (x / size.width).coerceIn(0f, 1f)
+                            onSeekTo.invoke((duration * fraction).toLong())
+                        }
+                        detectTapGestures { offset -> seekAt(offset.x) }
+                    }
+                    seekModifier.then(
+                        Modifier.pointerInput(duration) {
+                            detectHorizontalDragGestures { change, _ ->
+                                change.consume()
+                                val fraction = (change.position.x / size.width).coerceIn(0f, 1f)
+                                onSeekTo.invoke((duration * fraction).toLong())
+                            }
+                        }
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .then(
                 if (focusRequester != null) Modifier.focusRequester(focusRequester)
                 else Modifier

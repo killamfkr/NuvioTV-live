@@ -71,10 +71,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -704,7 +704,7 @@ private fun PostPlayRecommendationNavigationButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    IconButton(
+    TouchTvIconButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
@@ -745,7 +745,7 @@ private fun PostPlayRecommendationButton(
     val shape = RoundedCornerShape(NuvioTheme.spacing.xxl)
     var longPressTriggered by remember { mutableStateOf(false) }
     val longPressKeyTracker = rememberLongPressKeyTracker()
-    Button(
+    TouchTvButton(
         onClick = {
             if (longPressTriggered) {
                 longPressTriggered = false

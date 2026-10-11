@@ -34,7 +34,7 @@ import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
+import com.nuvio.tv.ui.components.TouchTvSurface
 import androidx.tv.material3.Text
 
 @Composable
@@ -59,7 +59,7 @@ internal fun InputField(
         }
     }
 
-    Surface(
+    TouchTvSurface(
         onClick = { isEditing = true },
         modifier = modifier,
         colors = ClickableSurfaceDefaults.colors(

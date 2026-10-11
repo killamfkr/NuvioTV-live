@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -64,7 +64,7 @@ fun AuthSignInScreen(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(22.dp))
-            Button(
+            TouchTvButton(
                 onClick = onNavigateToQrSignIn,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.Secondary,

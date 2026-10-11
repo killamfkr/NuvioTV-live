@@ -68,7 +68,7 @@ import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.nuvio.tv.ui.screens.home.ContinueWatchingItem
@@ -1155,18 +1155,15 @@ fun ContinueWatchingOptionsDialog(
         detailsFocusRequester.requestFocus()
     }
 
-    val touchPreferred = prefersTouchCards()
-
     NuvioDialog(
         onDismiss = onDismiss,
         title = title,
         subtitle = stringResource(R.string.cw_dialog_subtitle)
     ) {
-        Button(
-            onClick = tvCardRemoteClick(touchPreferred, onClick = onDetails),
+        TouchTvButton(
+            onClick = onDetails,
             modifier = Modifier
                 .fillMaxWidth()
-                .tvCardTouchClick(onClick = onDetails)
                 .focusRequester(detailsFocusRequester),
             colors = ButtonDefaults.colors(
                 containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1177,44 +1174,38 @@ fun ContinueWatchingOptionsDialog(
         }
 
         if (showPlayManually && isPlayEnabled) {
-            Button(
-                onClick = tvCardRemoteClick(touchPreferred, onClick = onPlayManually),
+            TouchTvButton(
+                onClick = onPlayManually,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
                     contentColor = NuvioTheme.colors.TextPrimary
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .tvCardTouchClick(onClick = onPlayManually)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.play_manually))
             }
         }
 
         if (item is ContinueWatchingItem.InProgress && isPlayEnabled) {
-            Button(
-                onClick = tvCardRemoteClick(touchPreferred, onClick = onStartFromBeginning),
+            TouchTvButton(
+                onClick = onStartFromBeginning,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
                     contentColor = NuvioTheme.colors.TextPrimary
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .tvCardTouchClick(onClick = onStartFromBeginning)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.cw_action_start_from_beginning))
             }
         }
 
-        Button(
-            onClick = tvCardRemoteClick(touchPreferred, onClick = onRemove),
+        TouchTvButton(
+            onClick = onRemove,
             colors = ButtonDefaults.colors(
                 containerColor = NuvioTheme.colors.BackgroundCard,
                 contentColor = NuvioTheme.colors.TextPrimary
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .tvCardTouchClick(onClick = onRemove)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.cw_action_remove))
         }

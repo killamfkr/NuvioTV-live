@@ -42,7 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -135,7 +135,7 @@ fun P2pConsentDialog(
                         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Card(
+                        TouchTvCard(
                             onClick = onDismiss,
                             modifier = Modifier
                                 .weight(1f)
@@ -165,7 +165,7 @@ fun P2pConsentDialog(
                         }
 
                         var enableFocused by remember { mutableStateOf(false) }
-                        Card(
+                        TouchTvCard(
                             onClick = onEnableP2p,
                             modifier = Modifier
                                 .weight(1f)

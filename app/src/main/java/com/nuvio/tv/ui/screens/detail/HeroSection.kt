@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -405,11 +405,10 @@ internal fun PlayButton(
         }
     }
 
-    Button(
+    TouchTvButton(
         enabled = enabled,
-        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = activateClick),
+        onClick = activateClick,
         modifier = modifier
-            .tvCardTouchClick(enabled = enabled, onClick = activateClick)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
                 if (it.isFocused) {

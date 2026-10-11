@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -65,7 +65,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
+import com.nuvio.tv.ui.components.TouchTvSurface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Switch
 import androidx.tv.material3.SwitchDefaults
@@ -274,7 +274,7 @@ fun FolderEditorContent(
                 Text(stringResource(R.string.collections_editor_cover), style = MaterialTheme.typography.labelLarge, color = NuvioTheme.colors.TextSecondary)
                 Spacer(modifier = Modifier.height(NuvioTheme.spacing.sm))
                 Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
-                    Button(
+                    TouchTvButton(
                         onClick = { viewModel.clearFolderCover() },
                         colors = ButtonDefaults.colors(
                             containerColor = if (coverMode == "none") NuvioTheme.colors.Secondary.copy(alpha = 0.3f) else NuvioTheme.colors.BackgroundCard,
@@ -295,7 +295,7 @@ fun FolderEditorContent(
                         shape = ButtonDefaults.shape(RoundedCornerShape(NuvioTheme.radii.md))
                     ) { Text(stringResource(R.string.collections_editor_cover_none)) }
 
-                    Button(
+                    TouchTvButton(
                         onClick = { viewModel.showEmojiPicker() },
                         colors = ButtonDefaults.colors(
                             containerColor = if (coverMode == "emoji") NuvioTheme.colors.Secondary.copy(alpha = 0.3f) else NuvioTheme.colors.BackgroundCard,
@@ -322,7 +322,7 @@ fun FolderEditorContent(
                         }
                     }
 
-                    Button(
+                    TouchTvButton(
                         onClick = { viewModel.switchToImageMode() },
                         colors = ButtonDefaults.colors(
                             containerColor = if (coverMode == "image") NuvioTheme.colors.Secondary.copy(alpha = 0.3f) else NuvioTheme.colors.BackgroundCard,
@@ -519,7 +519,7 @@ fun FolderEditorContent(
                             PosterShape.SQUARE -> stringResource(R.string.collections_editor_shape_square)
                         }
                         val isSelected = folder.tileShape == shape
-                        Button(
+                        TouchTvButton(
                             onClick = { viewModel.updateFolderTileShape(shape) },
                             modifier = Modifier.focusRequester(shapeFocusRequesters[shape]!!),
                             colors = ButtonDefaults.colors(
@@ -644,7 +644,7 @@ fun FolderEditorContent(
                     else -> addonSource?.type.orEmpty()
                 }
                 val hasGenreOptions = addonSource != null && catalog?.genreOptions?.isNotEmpty() == true
-                Surface(
+                TouchTvSurface(
                     shape = RoundedCornerShape(NuvioTheme.radii.md),
                     colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundCard),
                     border = if (isMissing) Border(
@@ -709,7 +709,7 @@ fun FolderEditorContent(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                    Button(
+                                    TouchTvButton(
                                         onClick = { viewModel.showGenrePicker(index) },
                                         colors = ButtonDefaults.colors(
                                             containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -732,7 +732,7 @@ fun FolderEditorContent(
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xxs)) {
                             if (tmdbSource != null) {
-                                Button(
+                                TouchTvButton(
                                     onClick = { viewModel.editTmdbSource(index) },
                                     colors = ButtonDefaults.colors(
                                         containerColor = NuvioTheme.colors.BackgroundCard,
@@ -752,7 +752,7 @@ fun FolderEditorContent(
                                 }
                             }
                             if (traktSource != null) {
-                                Button(
+                                TouchTvButton(
                                     onClick = { viewModel.editTraktSource(index) },
                                     colors = ButtonDefaults.colors(
                                         containerColor = NuvioTheme.colors.BackgroundCard,
@@ -771,7 +771,7 @@ fun FolderEditorContent(
                                     Icon(Icons.Default.Edit, stringResource(R.string.cd_edit))
                                 }
                             }
-                            Button(
+                            TouchTvButton(
                                 onClick = { viewModel.moveCatalogSourceUp(index) },
                                 colors = ButtonDefaults.colors(
                                     containerColor = NuvioTheme.colors.BackgroundCard,
@@ -789,7 +789,7 @@ fun FolderEditorContent(
                             ) {
                                 Icon(Icons.Default.KeyboardArrowUp, stringResource(R.string.cd_move_up), tint = if (index > 0) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextTertiary)
                             }
-                            Button(
+                            TouchTvButton(
                                 onClick = { viewModel.moveCatalogSourceDown(index) },
                                 colors = ButtonDefaults.colors(
                                     containerColor = NuvioTheme.colors.BackgroundCard,
@@ -807,7 +807,7 @@ fun FolderEditorContent(
                             ) {
                                 Icon(Icons.Default.KeyboardArrowDown, stringResource(R.string.cd_move_down), tint = if (index < folder.sources.size - 1) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextTertiary)
                             }
-                            Button(
+                            TouchTvButton(
                                 onClick = {
                                     pendingFocusIndex = index
                                     viewModel.removeCatalogSource(index)

@@ -42,11 +42,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -282,7 +282,7 @@ internal fun SubtitleStyleSidePanel(
                         .width(StyleCardWidth)
                         .height(StyleCardHeight)
                 ) {
-                    Card(
+                    TouchTvCard(
                         onClick = { onEvent(PlayerEvent.OnResetSubtitleDefaults) },
                         colors = CardDefaults.colors(
                             containerColor = Color.White.copy(alpha = 0.1f),
@@ -372,7 +372,7 @@ private fun SubtitleStyleStepperButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    IconButton(
+    TouchTvIconButton(
         onClick = onClick,
         modifier = modifier.size(NuvioTheme.spacing.xxl),
         colors = IconButtonDefaults.colors(
@@ -422,7 +422,7 @@ private fun SubtitleStyleColorChip(
         else -> Modifier
     }
 
-    IconButton(
+    TouchTvIconButton(
         onClick = onClick,
         modifier = Modifier
             .size(30.dp)
@@ -447,7 +447,7 @@ private fun SubtitleStyleToggleButton(
     isEnabled: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    TouchTvCard(
         onClick = onClick,
         colors = CardDefaults.colors(
             containerColor = if (isEnabled) Color.White.copy(alpha = 0.18f) else Color.White.copy(alpha = 0.08f),

@@ -43,11 +43,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -86,7 +86,7 @@ internal fun ServerOptionsMenuHost(
     }
 
     Box(modifier = modifier) {
-        IconButton(
+        TouchTvIconButton(
             onClick = { expanded = true },
             modifier = Modifier.size(48.dp),
             colors = IconButtonDefaults.colors(
@@ -265,7 +265,7 @@ private fun ServerConnectionDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.colors(
@@ -275,7 +275,7 @@ private fun ServerConnectionDialog(
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = { onDiscover(serverUrl) },
                 enabled = canDiscover,
                 modifier = Modifier.weight(1f),
@@ -341,7 +341,7 @@ private fun ServerTrustConfirmationDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 enabled = !isSwitching,
                 modifier = Modifier
@@ -354,7 +354,7 @@ private fun ServerTrustConfirmationDialog(
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = onConnect,
                 enabled = !isSwitching,
                 modifier = Modifier.weight(1f),
@@ -440,7 +440,7 @@ private fun OfficialServerConfirmationDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 enabled = !isSwitching,
                 modifier = Modifier
@@ -453,7 +453,7 @@ private fun OfficialServerConfirmationDialog(
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = onConfirm,
                 enabled = !isSwitching,
                 modifier = Modifier.weight(1f),

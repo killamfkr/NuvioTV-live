@@ -45,7 +45,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -713,7 +713,7 @@ private fun CardDepthResetButton(
     modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(SettingsSecondaryCardRadius)
-    Button(
+    TouchTvButton(
         onClick = onClick,
         modifier = modifier,
         shape = ButtonDefaults.shape(shape = shape),

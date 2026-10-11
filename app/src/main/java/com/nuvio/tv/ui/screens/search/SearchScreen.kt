@@ -96,7 +96,6 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.IconButton as TvIconButton
@@ -1242,7 +1241,7 @@ private fun SearchInputField(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (showDiscoverButton) {
-            IconButton(
+            TouchTvIconButton(
                 onClick = onOpenDiscover,
                 modifier = Modifier
                     .then(
@@ -1331,7 +1330,7 @@ private fun SearchInputField(
                 }
 
                 // Layer 3: Actual button
-                IconButton(
+                TouchTvIconButton(
                     onClick = onVoiceSearch,
                     modifier = Modifier
                         .then(
@@ -1448,7 +1447,7 @@ private fun SearchInputField(
         if (query.isNotEmpty()) {
             var isClearButtonFocused by remember { mutableStateOf(false) }
             Spacer(modifier = Modifier.width(NuvioTheme.spacing.md))
-            IconButton(
+            TouchTvIconButton(
                 onClick = {
                     // Clearing drops this button from the row, so hand focus back first.
                     runCatching { searchFocusRequester.requestFocus() }

@@ -62,7 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.Button as M3Button
 import androidx.compose.material3.ButtonDefaults as M3ButtonDefaults
 import androidx.compose.material3.Text as M3Text
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -468,7 +468,7 @@ private fun AuthQrLoginPane(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (isSignedIn || !useEmailLogin) {
-                    Button(
+                    TouchTvButton(
                         onClick = onRefreshOrSignOut,
                         enabled = !uiState.isLoading,
                         modifier = if (focusMainAction) Modifier.focusRequester(initialFocusRequester) else Modifier,
@@ -489,7 +489,7 @@ private fun AuthQrLoginPane(
                         Text(refreshLabel)
                     }
                 }
-                Button(
+                TouchTvButton(
                     onClick = onBackOrContinue,
                     modifier = if (!focusEmail && !focusMainAction) {
                         Modifier.focusRequester(initialFocusRequester)
@@ -605,7 +605,7 @@ private fun AuthEmailLoginForm(
                 filled = true
             )
         } else {
-            Button(
+            TouchTvButton(
                 onClick = submit,
                 enabled = canSignIn,
                 modifier = Modifier.fillMaxWidth(),

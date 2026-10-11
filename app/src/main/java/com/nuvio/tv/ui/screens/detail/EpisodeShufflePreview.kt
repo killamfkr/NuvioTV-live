@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -109,7 +109,7 @@ internal fun EpisodeShufflePreview(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                Button(
+                TouchTvButton(
                     onClick = { if (!starting) onBack() },
                     modifier = Modifier.focusRequester(backFocus).focusProperties { down = playFocus }
                 ) {
@@ -159,7 +159,7 @@ internal fun EpisodeShufflePreview(
                             modifier = Modifier.focusProperties { up = backFocus; down = FocusRequester.Cancel }
                         )
                         if (canShuffleAgain) {
-                            Button(
+                            TouchTvButton(
                                 onClick = { if (!starting) onShuffleAgain() },
                                 modifier = Modifier.focusProperties { up = backFocus; down = FocusRequester.Cancel }
                             ) {

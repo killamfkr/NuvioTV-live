@@ -105,7 +105,7 @@ import androidx.tv.material3.Border
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -3488,7 +3488,7 @@ private fun LibraryListPickerDialog(
             items(tabs, key = { it.key }) { tab ->
                 val selected = membership[tab.key] == true
                 val titleText = if (selected) "\u2713 ${tab.localizedMembershipTitle()}" else tab.localizedMembershipTitle()
-                Button(
+                TouchTvButton(
                     onClick = { onToggle(tab.key) },
                     enabled = !isPending,
                     modifier = if (tab.key == tabs.firstOrNull()?.key) {
@@ -3515,7 +3515,7 @@ private fun LibraryListPickerDialog(
         HorizontalDivider(color = NuvioTheme.colors.Border, thickness = NuvioTheme.spacing.hairline)
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            Button(
+            TouchTvButton(
                 onClick = onSave,
                 enabled = !isPending,
                 colors = ButtonDefaults.colors(

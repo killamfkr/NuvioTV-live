@@ -78,7 +78,7 @@ import com.nuvio.tv.core.device.DeviceFormFactor
 import androidx.tv.material3.Border
 import androidx.tv.material3.CardScale
 import androidx.tv.material3.CardShape
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardBorder
@@ -1197,10 +1197,9 @@ internal fun SettingsDialogActionButton(
     primary: Boolean = false,
     enabled: Boolean = true
 ) {
-    Button(
-        onClick = settingsRemoteCardOnClick(enabled, onClick),
+    TouchTvButton(
+        onClick = onClick,
         enabled = enabled,
-        modifier = Modifier.settingsTouchClick(enabled, onClick),
         colors = ButtonDefaults.colors(
             containerColor = if (primary) NuvioTheme.colors.FocusBackground else NuvioTheme.colors.BackgroundCard,
             contentColor = NuvioTheme.colors.TextPrimary

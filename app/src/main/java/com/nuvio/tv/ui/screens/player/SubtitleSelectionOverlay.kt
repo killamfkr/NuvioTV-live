@@ -56,12 +56,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.stringResource
 import kotlin.math.roundToInt
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.Border
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -840,7 +840,7 @@ private fun SubtitleStyleRail(
                 .heightIn(max = 720.dp)
         ) {
             item {
-                Card(
+                TouchTvCard(
                     onClick = { dispatchStyleEvent(PlayerEvent.OnShowSubtitleDelayOverlay) },
                     colors = overlayCardColors(selected = false),
                     shape = CardDefaults.shape(RoundedCornerShape(NuvioTheme.radii.md)),
@@ -1018,7 +1018,7 @@ private fun SubtitleStyleRail(
                 }
             }
             item {
-                Card(
+                TouchTvCard(
                     onClick = { dispatchStyleEvent(PlayerEvent.OnResetSubtitleDefaults) },
                     colors = overlayCardColors(selected = false),
                     shape = CardDefaults.shape(RoundedCornerShape(NuvioTheme.radii.md)),
@@ -1090,7 +1090,7 @@ private fun SubtitleLanguageCard(
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val moveToOptionsKey = if (isRtl) android.view.KeyEvent.KEYCODE_DPAD_LEFT else android.view.KeyEvent.KEYCODE_DPAD_RIGHT
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -1170,7 +1170,7 @@ private fun SubtitleOptionCard(
     val moveLeftKey = if (isRtl) android.view.KeyEvent.KEYCODE_DPAD_RIGHT else android.view.KeyEvent.KEYCODE_DPAD_LEFT
     val moveRightKey = if (isRtl) android.view.KeyEvent.KEYCODE_DPAD_LEFT else android.view.KeyEvent.KEYCODE_DPAD_RIGHT
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         onLongClick = onLongClick,
         modifier = Modifier
@@ -1440,7 +1440,7 @@ private fun StepperButton(
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val moveLeftKey = if (isRtl) android.view.KeyEvent.KEYCODE_DPAD_RIGHT else android.view.KeyEvent.KEYCODE_DPAD_LEFT
 
-    IconButton(
+    TouchTvIconButton(
         onClick = onClick,
         modifier = Modifier
             .size(40.dp)
@@ -1504,7 +1504,7 @@ private fun ToggleChip(
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val moveLeftKey = if (isRtl) android.view.KeyEvent.KEYCODE_DPAD_RIGHT else android.view.KeyEvent.KEYCODE_DPAD_LEFT
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = if (focusRequester != null) {
             Modifier
@@ -1610,7 +1610,7 @@ private fun ColorChip(
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val moveLeftKey = if (isRtl) android.view.KeyEvent.KEYCODE_DPAD_RIGHT else android.view.KeyEvent.KEYCODE_DPAD_LEFT
 
-    Card(
+    TouchTvCard(
         onClick = { if (enabled) onClick() },
         colors = CardDefaults.colors(
             containerColor = color,

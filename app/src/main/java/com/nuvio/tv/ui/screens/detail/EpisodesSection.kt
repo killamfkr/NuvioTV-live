@@ -70,9 +70,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nuvio.tv.core.util.parseEpisodeReleaseLocalDate
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -236,10 +236,10 @@ fun SeasonTabs(
                     onSeasonSelected(season)
                 }
             }
-            Card(
-                onClick = tvCardRemoteClick(touchPreferred, enabled = isFocusEnabled, onClick = activateSeason),
+            TouchTvCard(
+                onClick = activateSeason,
+                enabled = isFocusEnabled,
                 modifier = Modifier
-                    .tvCardTouchClick(enabled = isFocusEnabled, onClick = activateSeason)
                     .focusRequester(seasonFocusRequester)
                     .focusProperties {
                         canFocus = isFocusEnabled
@@ -772,7 +772,7 @@ private fun EpisodeCard(
     val cardScale = CardDefaults.scale(focusedScale = 1.0f)
     val cardGlow = CardDefaults.glow()
 
-    Card(
+    TouchTvCard(
         onClick = {
             if (longPressTriggered) {
                 longPressTriggered = false
@@ -1103,7 +1103,7 @@ fun SeasonOptionsDialog(
         title = if (season == 0) stringResource(R.string.episodes_specials) else stringResource(R.string.episodes_season, season),
         subtitle = stringResource(R.string.episodes_season_actions)
     ) {
-        Button(
+        TouchTvButton(
             onClick = if (isFullyWatched) onMarkSeasonUnwatched else onMarkSeasonWatched,
             modifier = Modifier
                 .fillMaxWidth()
@@ -1117,7 +1117,7 @@ fun SeasonOptionsDialog(
         }
 
         if (hasPreviousSeasons && season > 0) {
-            Button(
+            TouchTvButton(
                 onClick = onMarkPreviousSeasonsWatched,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,

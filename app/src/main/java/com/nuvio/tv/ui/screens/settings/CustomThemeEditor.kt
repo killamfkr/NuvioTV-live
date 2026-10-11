@@ -40,7 +40,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -236,7 +236,7 @@ internal fun CustomThemeEditor(
                 color = NuvioTheme.colors.TextSecondary,
                 modifier = Modifier.weight(1f)
             )
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 modifier = Modifier
                     .height(36.dp)
@@ -245,7 +245,7 @@ internal fun CustomThemeEditor(
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = { onSave(colors) },
                 modifier = Modifier.height(36.dp).focusProperties { up = hexFocusRequester },
                 colors = ButtonDefaults.colors(

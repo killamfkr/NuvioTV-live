@@ -62,7 +62,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import androidx.tv.material3.Border
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -463,7 +463,7 @@ private fun CastMemberItem(
         modifier = Modifier.width(itemWidth),
         horizontalAlignment = Alignment.Start
     ) {
-        Card(
+        TouchTvCard(
             onClick = onClick,
             modifier = modifier
                 .size(cardSize)

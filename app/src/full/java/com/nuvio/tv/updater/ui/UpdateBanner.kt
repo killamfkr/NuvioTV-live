@@ -43,10 +43,10 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -204,7 +204,7 @@ internal fun UpdateBanner(
                     )
                 }
             } else {
-                Button(
+                TouchTvButton(
                     onClick = primaryAction,
                     enabled = primaryEnabled,
                     colors = ButtonDefaults.colors(
@@ -256,7 +256,7 @@ private fun UpdateBannerIconButton(
         }
         return
     }
-    IconButton(
+    TouchTvIconButton(
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier.size(44.dp),

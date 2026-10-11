@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -68,7 +68,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
+import com.nuvio.tv.ui.components.TouchTvSurface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Switch
 import androidx.tv.material3.SwitchDefaults
@@ -325,7 +325,7 @@ fun CollectionEditorScreen(
                 )
                 viewModes.forEach { (mode, label) ->
                     val isSelected = uiState.viewMode == mode
-                    Button(
+                    TouchTvButton(
                         onClick = { viewModel.setViewMode(mode) },
                         colors = ButtonDefaults.colors(
                             containerColor = if (isSelected) NuvioTheme.colors.Secondary.copy(alpha = 0.3f) else NuvioTheme.colors.BackgroundCard,
@@ -513,7 +513,7 @@ private fun FolderListItem(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit
 ) {
-    Surface(
+    TouchTvSurface(
         shape = RoundedCornerShape(NuvioTheme.radii.md),
         colors = SurfaceDefaults.colors(containerColor = NuvioTheme.colors.BackgroundCard),
         modifier = Modifier.fillMaxWidth()
