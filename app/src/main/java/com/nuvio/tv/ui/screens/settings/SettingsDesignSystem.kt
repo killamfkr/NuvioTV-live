@@ -3,6 +3,7 @@
 package com.nuvio.tv.ui.screens.settings
 
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.components.tvCardContentTouchClick
 
 import androidx.annotation.RawRes
 import androidx.compose.animation.animateColorAsState
@@ -195,15 +196,22 @@ internal fun SettingsCard(
     scale: CardScale = CardDefaults.scale(focusedScale = 1f, pressedScale = 1f),
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val touch = settingsTouchPreferred()
     Card(
-        onClick = settingsRemoteCardOnClick(enabled, onClick),
-        modifier = modifier.settingsTouchClick(enabled, onClick),
+        onClick = if (touch) ({}) else settingsRemoteCardOnClick(enabled, onClick),
+        modifier = if (touch) modifier else modifier.settingsTouchClick(enabled, onClick),
         colors = colors,
         border = border,
         shape = shape,
-        scale = scale,
-        content = content
-    )
+        scale = scale
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .tvCardContentTouchClick(enabled = enabled, onClick = onClick),
+            content = content
+        )
+    }
 }
 
 @Composable
@@ -1197,19 +1205,38 @@ internal fun SettingsDialogActionButton(
     primary: Boolean = false,
     enabled: Boolean = true
 ) {
-    TouchTvButton(
-        onClick = onClick,
-        enabled = enabled,
-        colors = ButtonDefaults.colors(
-            containerColor = if (primary) NuvioTheme.colors.FocusBackground else NuvioTheme.colors.BackgroundCard,
-            contentColor = NuvioTheme.colors.TextPrimary
-        )
-    ) {
-        Text(
+    val touch = settingsTouchPreferred()
+    if (touch) {
+        com.nuvio.tv.ui.components.TouchMaterial3Button(
             text = text,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            onClick = onClick,
+            enabled = enabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp),
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = if (primary) NuvioTheme.colors.FocusBackground else NuvioTheme.colors.BackgroundCard,
+                contentColor = NuvioTheme.colors.TextPrimary,
+                disabledContainerColor = NuvioTheme.colors.BackgroundCard.copy(alpha = 0.5f),
+                disabledContentColor = NuvioTheme.colors.TextPrimary.copy(alpha = 0.45f)
+            ),
+            labelColor = NuvioTheme.colors.TextPrimary
         )
+    } else {
+        TouchTvButton(
+            onClick = onClick,
+            enabled = enabled,
+            colors = ButtonDefaults.colors(
+                containerColor = if (primary) NuvioTheme.colors.FocusBackground else NuvioTheme.colors.BackgroundCard,
+                contentColor = NuvioTheme.colors.TextPrimary
+            )
+        ) {
+            Text(
+                text = text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 

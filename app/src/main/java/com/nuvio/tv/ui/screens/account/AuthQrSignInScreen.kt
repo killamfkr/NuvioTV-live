@@ -72,6 +72,7 @@ import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.AuthState
 import com.nuvio.tv.ui.components.BrandWordmark
+import com.nuvio.tv.ui.components.TouchMaterial3Button
 import com.nuvio.tv.ui.components.SkeletonBar
 import com.nuvio.tv.ui.components.rememberOpenExternalUrl
 import com.nuvio.tv.ui.components.rememberShimmerBrush
@@ -428,7 +429,12 @@ private fun AuthQrLoginPane(
                 isHandheld = isHandheld
             )
         } else {
-            AuthQrCodeBlock(uiState = uiState, remainingMillis = remainingMillis, isHandheld = isHandheld)
+            AuthQrCodeBlock(
+                uiState = uiState,
+                remainingMillis = remainingMillis,
+                isHandheld = isHandheld,
+                onRefreshQr = onRefreshOrSignOut
+            )
         }
 
         Spacer(modifier = Modifier.height(28.dp))
@@ -524,13 +530,14 @@ private fun AuthHandheldButton(
     filled: Boolean
 ) {
     val shape = RoundedCornerShape(16.dp)
-    M3Button(
+    val labelColor = if (filled) Color.Black else AuthTextPrimary
+    TouchMaterial3Button(
+        text = text,
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp),
-        shape = shape,
         colors = if (filled) {
             M3ButtonDefaults.buttonColors(
                 containerColor = Color.White,
@@ -546,14 +553,10 @@ private fun AuthHandheldButton(
                 disabledContentColor = AuthTextPrimary.copy(alpha = 0.45f)
             )
         },
-        border = if (filled) null else androidx.compose.foundation.BorderStroke(1.dp, AuthSecondaryButtonBorder)
-    ) {
-        M3Text(
-            text = text,
-            fontWeight = FontWeight.SemiBold,
-            color = if (filled) Color.Black else AuthTextPrimary
-        )
-    }
+        labelColor = labelColor,
+        border = if (filled) null else androidx.compose.foundation.BorderStroke(1.dp, AuthSecondaryButtonBorder),
+        fontWeight = FontWeight.SemiBold
+    )
 }
 
 @Composable
@@ -652,7 +655,8 @@ private fun AuthEmailLoginForm(
 private fun AuthQrCodeBlock(
     uiState: AccountUiState,
     remainingMillis: Long,
-    isHandheld: Boolean
+    isHandheld: Boolean,
+    onRefreshQr: () -> Unit = {}
 ) {
     var showQrOnHandheld by remember { mutableStateOf(false) }
     val openUrl = rememberOpenExternalUrl()
@@ -669,8 +673,15 @@ private fun AuthQrCodeBlock(
         Spacer(modifier = Modifier.height(16.dp))
         AuthHandheldButton(
             text = stringResource(R.string.auth_sign_in_open_browser),
-            onClick = { browserUrl?.let(openUrl) },
-            enabled = browserUrl != null && !uiState.isLoading,
+            onClick = {
+                val url = browserUrl
+                if (url != null) {
+                    openUrl(url)
+                } else {
+                    onRefreshQr()
+                }
+            },
+            enabled = !uiState.isLoading,
             filled = true
         )
         Spacer(modifier = Modifier.height(10.dp))
