@@ -42,7 +42,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
+import com.nuvio.tv.ui.components.TouchTvSurface
 import androidx.tv.material3.Text
 import com.nuvio.tv.data.local.ExperienceModeDataStore
 import com.nuvio.tv.data.local.LayoutPreferenceDataStore
@@ -219,7 +219,7 @@ private fun ExperienceModeCard(
             cardContent()
         }
     } else {
-        Surface(
+        TouchTvSurface(
             onClick = onClick,
             modifier = modifier.height(210.dp),
             colors = ClickableSurfaceDefaults.colors(

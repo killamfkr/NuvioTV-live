@@ -48,8 +48,9 @@ object IptvIconResources {
 /** The switch at the top of the App icon picker. */
 @Composable
 fun IptvIconToggle(enabled: Boolean, busy: Boolean, onToggle: (Boolean) -> Unit) {
-    androidx.tv.material3.Surface(
+    com.nuvio.tv.ui.components.TouchTvSurface(
         onClick = { if (!busy) onToggle(!enabled) },
+        enabled = !busy,
         modifier = Modifier.fillMaxWidth(),
         shape = androidx.tv.material3.ClickableSurfaceDefaults.shape(RoundedCornerShape(12.dp)),
         colors = androidx.tv.material3.ClickableSurfaceDefaults.colors(

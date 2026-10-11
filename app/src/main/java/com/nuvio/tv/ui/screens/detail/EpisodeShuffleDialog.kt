@@ -14,7 +14,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.nuvio.tv.R
@@ -106,13 +106,13 @@ internal fun EpisodeShuffleDialog(
             readyPicker == null -> Text(stringResource(R.string.random_episode_loading))
             allCount == 0 -> {
                 Text(stringResource(R.string.random_episode_empty_subtitle))
-                Button(onClick = onDismiss, modifier = Modifier.focusRequester(focusRequester)) {
+                TouchTvButton(onClick = onDismiss, modifier = Modifier.focusRequester(focusRequester)) {
                     Text(stringResource(R.string.action_close))
                 }
             }
             else -> {
                 for (include in listOf(false, true)) {
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             includeWatched = include
                             selectedEpisode = readyPicker.pick(include)

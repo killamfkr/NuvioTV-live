@@ -71,7 +71,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Border
 import androidx.tv.material3.Card
@@ -80,7 +79,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
+import com.nuvio.tv.ui.components.TouchTvSurface
 import androidx.tv.material3.Text
 import com.nuvio.tv.core.cloud.CloudLibraryFile
 import com.nuvio.tv.core.cloud.CloudLibraryItem
@@ -813,7 +812,7 @@ private fun CloudLibrarySearchRow(
         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        Surface(
+        TouchTvSurface(
             onClick = { editing = true },
             modifier = Modifier
                 .weight(1f)

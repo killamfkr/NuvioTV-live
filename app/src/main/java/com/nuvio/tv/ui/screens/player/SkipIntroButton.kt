@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
@@ -148,7 +148,7 @@ fun SkipIntroButton(
         exit = fadeOut(tween(200)) + scaleOut(tween(200), targetScale = 0.8f),
         modifier = modifier
     ) {
-        Card(
+        TouchTvCard(
             onClick = onSkip,
             modifier = Modifier
                 .focusRequester(activeFocusRequester)

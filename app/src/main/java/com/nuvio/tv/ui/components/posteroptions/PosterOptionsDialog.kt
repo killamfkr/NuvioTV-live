@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -62,7 +62,7 @@ fun PosterOptionsDialog(
         title = title,
         subtitle = stringResource(R.string.home_poster_dialog_subtitle)
     ) {
-        Button(
+        TouchTvButton(
             onClick = onDetails,
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,7 +75,7 @@ fun PosterOptionsDialog(
             Text(stringResource(R.string.cw_action_go_to_details))
         }
 
-        Button(
+        TouchTvButton(
             onClick = onToggleLibrary,
             enabled = !isLibraryPending,
             modifier = Modifier.fillMaxWidth(),
@@ -98,7 +98,7 @@ fun PosterOptionsDialog(
         }
 
         if (isMovie || isSeries) {
-            Button(
+            TouchTvButton(
                 onClick = onToggleWatched,
                 enabled = !isWatchedPending,
                 modifier = Modifier.fillMaxWidth(),
@@ -160,7 +160,7 @@ fun PosterListPickerDialog(
             items(tabs, key = { it.key }) { tab ->
                 val selected = membership[tab.key] == true
                 val titleText = if (selected) "✓ ${tab.localizedMembershipTitle()}" else tab.localizedMembershipTitle()
-                Button(
+                TouchTvButton(
                     onClick = { onToggle(tab.key) },
                     enabled = !isPending,
                     modifier = if (tab.key == tabs.firstOrNull()?.key) {
@@ -187,7 +187,7 @@ fun PosterListPickerDialog(
         Divider(color = NuvioTheme.colors.Border, thickness = NuvioTheme.spacing.hairline)
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            Button(
+            TouchTvButton(
                 onClick = onSave,
                 enabled = !isPending,
                 colors = ButtonDefaults.colors(
@@ -306,14 +306,14 @@ fun TrackingRemovalConfirmationDialog(
         width = 560.dp,
         suppressFirstKeyUp = false
     ) {
-        Button(
+        TouchTvButton(
             onClick = onConfirm,
             enabled = !isPending,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.action_remove_anyway))
         }
-        Button(
+        TouchTvButton(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.colors(

@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
@@ -38,7 +38,7 @@ fun PlayManualOverrideDialog(
         subtitle = subtitle
     ) {
         if (showPlayManually) {
-            Button(
+            TouchTvButton(
                 onClick = onPlayManually,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -53,7 +53,7 @@ fun PlayManualOverrideDialog(
         }
 
         if (showStartFromBeginning) {
-            Button(
+            TouchTvButton(
                 onClick = onStartFromBeginning,
                 modifier = Modifier
                     .fillMaxWidth()

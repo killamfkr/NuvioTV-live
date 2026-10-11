@@ -46,7 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -291,7 +291,7 @@ private fun AudioTrackCard(
         track.sampleRate?.let { "${it / 1000} kHz" }
     ).joinToString(" | ")
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -590,7 +590,7 @@ private fun AudioControlsContent(
                 }
             )
 
-            Card(
+            TouchTvCard(
                 onClick = { onPersistAmplificationChange(!persistAmplification) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -740,7 +740,7 @@ private fun StepCard(
         }
     }
 
-    Card(
+    TouchTvCard(
         onClick = {
             if (enabled) {
                 onClick()

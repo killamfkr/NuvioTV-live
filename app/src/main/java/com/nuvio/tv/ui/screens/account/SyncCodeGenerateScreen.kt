@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -120,7 +120,7 @@ fun SyncCodeGenerateScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
-                Button(
+                TouchTvButton(
                     onClick = {
                         viewModel.clearGeneratedSyncCode()
                         onBackPress()
@@ -169,7 +169,7 @@ fun SyncCodeGenerateScreen(
 
                 Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
 
-                Button(
+                TouchTvButton(
                     onClick = { viewModel.generateSyncCode(pin) },
                     enabled = !uiState.isLoading && pin.length >= 4,
                     colors = ButtonDefaults.colors(

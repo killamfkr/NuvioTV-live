@@ -36,7 +36,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -141,7 +141,7 @@ fun EssentialAddonSetupScreen(
                                 }
                             }
                         )
-                        Button(
+                        TouchTvButton(
                             onClick = {
                                 viewModel.installAddon()
                                 keyboardController?.hide()
@@ -197,7 +197,7 @@ fun EssentialAddonSetupScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = NuvioTheme.colors.TextSecondary
                         )
-                        Button(
+                        TouchTvButton(
                             onClick = { viewModel.startQrMode(AddonWebConfigMode.ADDONS_ONLY) },
                             colors = ButtonDefaults.colors(
                                 containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -214,7 +214,7 @@ fun EssentialAddonSetupScreen(
                 }
             }
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
-            Button(
+            TouchTvButton(
                 onClick = onSkip,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,

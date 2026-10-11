@@ -43,9 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -152,25 +152,20 @@ fun LayoutSelectionScreen(
                 onContinue()
             }
             if (touchPreferred) {
-                androidx.compose.material3.Button(
+                com.nuvio.tv.ui.components.TouchMaterial3Button(
+                    text = stringResource(R.string.layout_selection_continue),
                     onClick = onContinueClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(NuvioTheme.spacing.xxxl),
-                    shape = RoundedCornerShape(NuvioTheme.spacing.xl),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                         containerColor = NuvioTheme.colors.Primary,
                         contentColor = NuvioTheme.colors.OnPrimary
-                    )
-                ) {
-                    M3Text(
-                        text = stringResource(R.string.layout_selection_continue),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = NuvioTheme.colors.OnPrimary
-                    )
-                }
+                    ),
+                    labelColor = NuvioTheme.colors.OnPrimary
+                )
             } else {
-            Button(
+            TouchTvButton(
                 onClick = onContinueClick,
                 modifier = Modifier
                     .width(200.dp)
@@ -303,7 +298,7 @@ private fun LayoutOptionCard(
         return
     }
 
-    Card(
+    TouchTvCard(
         onClick = onSelect,
         modifier = cardModifier,
         colors = CardDefaults.colors(

@@ -42,12 +42,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.data.local.SubtitleStyleSettings
@@ -282,7 +285,7 @@ internal fun SubtitleStyleSidePanel(
                         .width(StyleCardWidth)
                         .height(StyleCardHeight)
                 ) {
-                    Card(
+                    TouchTvCard(
                         onClick = { onEvent(PlayerEvent.OnResetSubtitleDefaults) },
                         colors = CardDefaults.colors(
                             containerColor = Color.White.copy(alpha = 0.1f),
@@ -372,9 +375,12 @@ private fun SubtitleStyleStepperButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = onClick,
-        modifier = modifier.size(NuvioTheme.spacing.xxl),
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
+        modifier = modifier
+            .size(NuvioTheme.spacing.xxl)
+            .tvCardTouchClick(onClick = onClick),
         colors = IconButtonDefaults.colors(
             containerColor = Color.White.copy(alpha = 0.16f),
             focusedContainerColor = Color.White.copy(alpha = 0.28f),
@@ -422,11 +428,13 @@ private fun SubtitleStyleColorChip(
         else -> Modifier
     }
 
+    val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .size(30.dp)
             .then(borderModifier)
+            .tvCardTouchClick(onClick = onClick)
             .onFocusChanged { isFocused = it.isFocused },
         colors = IconButtonDefaults.colors(
             containerColor = color,
@@ -447,7 +455,7 @@ private fun SubtitleStyleToggleButton(
     isEnabled: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    TouchTvCard(
         onClick = onClick,
         colors = CardDefaults.colors(
             containerColor = if (isEnabled) Color.White.copy(alpha = 0.18f) else Color.White.copy(alpha = 0.08f),

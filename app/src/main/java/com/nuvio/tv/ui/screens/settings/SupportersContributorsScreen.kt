@@ -58,7 +58,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -595,7 +595,7 @@ private fun TabErrorState(
                 color = NuvioTheme.colors.TextSecondary,
                 textAlign = TextAlign.Center
             )
-            Button(
+            TouchTvButton(
                 onClick = onRetry,
                 modifier = Modifier
                     .focusRequester(retryFocusRequester)
@@ -1048,9 +1048,9 @@ private fun SponsorDetailsDialog(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
-            Button(
+            TouchTvButton(
                 onClick = {
-                    val channelUrl = sponsor.channelUrl ?: return@Button
+                    val channelUrl = sponsor.channelUrl ?: return@TouchTvButton
                     runCatching {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(channelUrl)))
                     }
@@ -1068,7 +1068,7 @@ private fun SponsorDetailsDialog(
                 Text(text = stringResource(R.string.sponsors_open_channel))
             }
 
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1123,7 +1123,7 @@ private fun SupporterDetailsDialog(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
-            Button(
+            TouchTvButton(
                 onClick = {
                     runCatching {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL)))
@@ -1141,7 +1141,7 @@ private fun SupporterDetailsDialog(
                 Text(text = stringResource(R.string.supporters_open_donations))
             }
 
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1232,9 +1232,9 @@ private fun ContributorDetailsDialog(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
-            Button(
+            TouchTvButton(
                 onClick = {
-                    val profileUrl = contributor.profileUrl ?: return@Button
+                    val profileUrl = contributor.profileUrl ?: return@TouchTvButton
                     runCatching {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse(profileUrl))
@@ -1255,7 +1255,7 @@ private fun ContributorDetailsDialog(
             }
 
             supportLink?.kofiUrl?.let {
-                Button(
+                TouchTvButton(
                     onClick = { showSupportQr = !showSupportQr },
                     colors = ButtonDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1277,7 +1277,7 @@ private fun ContributorDetailsDialog(
                 }
             }
 
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,

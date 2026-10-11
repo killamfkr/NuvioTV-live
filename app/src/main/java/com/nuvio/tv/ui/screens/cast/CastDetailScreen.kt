@@ -75,9 +75,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -329,7 +329,7 @@ private fun HeroSection(
         verticalAlignment = Alignment.Top
     ) {
         // Avatar / Profile Photo
-        Card(
+        TouchTvCard(
             onClick = onPortraitClick,
             modifier = Modifier
                 .width(160.dp)
@@ -794,7 +794,7 @@ private fun CastDetailError(
                 color = NuvioTheme.colors.TextSecondary
             )
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
-            Button(
+            TouchTvButton(
                 onClick = onRetry,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.Secondary,

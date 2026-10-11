@@ -26,7 +26,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -134,7 +134,7 @@ internal fun HexColorEditor(
             "0123456789ABCDEF".chunked(4).forEachIndexed { rowIndex, row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEachIndexed { columnIndex, character ->
-                        Button(
+                        TouchTvButton(
                             onClick = { enter(character) },
                             modifier = Modifier
                                 .weight(1f)
@@ -157,11 +157,11 @@ internal fun HexColorEditor(
             modifier = Modifier.settingsOptionRow(clearFocusRequester),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = { digits = ""; replaceOnInput = false },
                 modifier = Modifier.weight(1f).height(36.dp).focusRequester(clearFocusRequester)
             ) { Text(stringResource(R.string.custom_theme_hex_clear)) }
-            Button(onClick = ::delete, modifier = Modifier.weight(1f).height(36.dp)) {
+            TouchTvButton(onClick = ::delete, modifier = Modifier.weight(1f).height(36.dp)) {
                 Text(stringResource(R.string.custom_theme_hex_delete))
             }
         }
@@ -169,13 +169,13 @@ internal fun HexColorEditor(
             modifier = Modifier.settingsOptionRow(cancelFocusRequester),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f).height(36.dp).focusRequester(cancelFocusRequester)
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = { color?.let(onConfirm) },
                 enabled = color != null,
                 modifier = Modifier.weight(1f).height(36.dp),

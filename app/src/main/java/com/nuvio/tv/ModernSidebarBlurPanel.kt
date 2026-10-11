@@ -41,7 +41,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
@@ -287,7 +287,7 @@ private fun SidebarNavigationItem(
         label = "sidebarItemScale"
     )
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = modifier
             .graphicsLayer {
@@ -385,7 +385,7 @@ private fun SidebarProfileItem(
     val colors = NuvioTheme.colors
     val shape = RoundedCornerShape(NuvioRadii.tokens.full)
     val backgroundColor = if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = modifier
             .onFocusChanged {

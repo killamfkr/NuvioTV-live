@@ -122,7 +122,7 @@ import androidx.metrics.performance.PerformanceMetricsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.DrawerValue
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -1796,7 +1796,7 @@ private fun LegacySidebarButton(
         label = "legacySidebarItemScale"
     )
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = modifier
             .height(NuvioComponents.tokens.sidebar.itemHeight)

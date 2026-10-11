@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -738,7 +738,7 @@ private fun HomePosterOptionsDialog(
         title = title,
         subtitle = stringResource(R.string.home_poster_dialog_subtitle)
     ) {
-        Button(
+        TouchTvButton(
             onClick = onDetails,
             modifier = Modifier
                 .fillMaxWidth()
@@ -751,7 +751,7 @@ private fun HomePosterOptionsDialog(
             Text(stringResource(R.string.cw_action_go_to_details))
         }
 
-        Button(
+        TouchTvButton(
             onClick = onToggleLibrary,
             enabled = !isLibraryPending,
             modifier = Modifier.fillMaxWidth(),
@@ -774,7 +774,7 @@ private fun HomePosterOptionsDialog(
         }
 
         if (isMovie || isSeries) {
-            Button(
+            TouchTvButton(
                 onClick = onToggleWatched,
                 enabled = !isWatchedPending,
                 modifier = Modifier.fillMaxWidth(),
@@ -836,7 +836,7 @@ private fun HomeLibraryListPickerDialog(
             items(tabs, key = { it.key }) { tab ->
                 val selected = membership[tab.key] == true
                 val titleText = if (selected) "\u2713 ${tab.localizedMembershipTitle()}" else tab.localizedMembershipTitle()
-                Button(
+                TouchTvButton(
                     onClick = { onToggle(tab.key) },
                     enabled = !isPending,
                     modifier = if (tab.key == tabs.firstOrNull()?.key) {
@@ -863,7 +863,7 @@ private fun HomeLibraryListPickerDialog(
         Divider(color = NuvioTheme.colors.Border, thickness = NuvioTheme.spacing.hairline)
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            Button(
+            TouchTvButton(
                 onClick = onSave,
                 enabled = !isPending,
                 colors = ButtonDefaults.colors(

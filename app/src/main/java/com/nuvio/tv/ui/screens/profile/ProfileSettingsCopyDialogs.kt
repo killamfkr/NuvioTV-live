@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -267,7 +267,7 @@ private fun SourceProfileButton(
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.fillMaxWidth(),

@@ -17,7 +17,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import com.nuvio.tv.R
@@ -35,7 +35,7 @@ internal fun PostPlayRecommendationPlayerWindow(
     val shape = RoundedCornerShape(12.dp)
     val description = stringResource(R.string.player_post_play_return_to_player)
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = modifier
             .focusRequester(focusRequester)

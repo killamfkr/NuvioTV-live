@@ -30,6 +30,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
@@ -95,6 +98,11 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.onPlaced
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
+import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvCard
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -112,7 +120,6 @@ import androidx.media3.common.Tracks
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -2585,6 +2592,9 @@ private fun PlayerControlsProgressBarHost(
         onSeekCommit = {
             viewModel.onEvent(PlayerEvent.OnCommitPreviewSeek)
         },
+        onSeekTo = { position ->
+            viewModel.onEvent(PlayerEvent.OnSeekTo(position))
+        },
         focusRequester = focusRequester,
         upFocusRequester = upFocusRequester,
         downFocusRequester = downFocusRequester,
@@ -2665,10 +2675,12 @@ private fun ControlButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
+    val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
         enabled = enabled,
         modifier = Modifier
+            .tvCardTouchClick(enabled = enabled, onClick = onClick)
             .size(NuvioTheme.spacing.xxxl)
             .then(
                 if (focusRequester != null) Modifier.focusRequester(focusRequester)
@@ -2736,6 +2748,7 @@ private fun ProgressBar(
     duration: Long,
     onSeekPreview: (Long) -> Unit,
     onSeekCommit: () -> Unit,
+    onSeekTo: ((Long) -> Unit)? = null,
     focusRequester: FocusRequester? = null,
     upFocusRequester: FocusRequester? = null,
     downFocusRequester: FocusRequester? = null,
@@ -2764,11 +2777,34 @@ private fun ProgressBar(
         label = "bufferedProgress"
     )
     var isFocused by remember { mutableStateOf(false) }
+    val touchPreferred = prefersTouchCards()
 
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .height(if (isFocused) NuvioTheme.spacing.md else NuvioTheme.spacing.sm)
+            .then(
+                if (touchPreferred && duration > 0 && onSeekTo != null) {
+                    val seekModifier = Modifier.pointerInput(duration) {
+                        fun seekAt(x: Float) {
+                            val fraction = (x / size.width).coerceIn(0f, 1f)
+                            onSeekTo.invoke((duration * fraction).toLong())
+                        }
+                        detectTapGestures { offset -> seekAt(offset.x) }
+                    }
+                    seekModifier.then(
+                        Modifier.pointerInput(duration) {
+                            detectHorizontalDragGestures { change, _ ->
+                                change.consume()
+                                val fraction = (change.position.x / size.width).coerceIn(0f, 1f)
+                                onSeekTo.invoke((duration * fraction).toLong())
+                            }
+                        }
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .then(
                 if (focusRequester != null) Modifier.focusRequester(focusRequester)
                 else Modifier
@@ -3230,15 +3266,18 @@ private fun SubtitleDelayOverlay(
 
         Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
 
+        val touchPreferred = prefersTouchCards()
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Card(
-                onClick = onResetDelay,
+                onClick = tvCardRemoteClick(touchPreferred, onClick = onResetDelay),
                 modifier = Modifier
                     .weight(1f)
+                    .tvCardTouchClick(onClick = onResetDelay)
                     .focusRequester(resetFocusRequester)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
@@ -3272,9 +3311,10 @@ private fun SubtitleDelayOverlay(
             }
 
             Card(
-                onClick = onOpenSyncByLine,
+                onClick = tvCardRemoteClick(touchPreferred, onClick = onOpenSyncByLine),
                 modifier = Modifier
                     .weight(1f)
+                    .tvCardTouchClick(onClick = onOpenSyncByLine)
                     .focusRequester(syncLineFocusRequester)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
@@ -3544,7 +3584,7 @@ internal fun PlayerOverlayButton(
     enabled: Boolean = true
 ) {
     val shape = RoundedCornerShape(NuvioTheme.spacing.xxl)
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
@@ -3681,7 +3721,7 @@ private fun MoreActionItem(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -3710,7 +3750,7 @@ private fun SpeedItem(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
@@ -3754,7 +3794,7 @@ internal fun DialogButton(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,

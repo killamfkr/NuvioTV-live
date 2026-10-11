@@ -83,6 +83,7 @@ import com.nuvio.tv.ui.util.contentTextDirection
 import com.nuvio.tv.ui.util.toAbsoluteAlignment
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
 import androidx.tv.material3.Border
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -1153,11 +1154,9 @@ private fun ErrorState(
         Spacer(modifier = Modifier.height(NuvioTheme.spacing.xl))
 
         var isFocused by remember { mutableStateOf(false) }
-        val touchPreferred = prefersTouchCards()
-        Card(
-            onClick = tvCardRemoteClick(touchPreferred, onClick = onRetry),
+        TouchTvCard(
+            onClick = onRetry,
             modifier = Modifier
-                .tvCardTouchClick(onClick = onRetry)
                 .onFocusChanged { isFocused = it.isFocused },
             colors = CardDefaults.colors(
                 containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1662,7 +1661,7 @@ internal fun PlayerChoiceDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     var internalFocused by remember { mutableStateOf(false) }
-                    Card(
+                    TouchTvCard(
                         onClick = onInternalSelected,
                         modifier = Modifier
                             .weight(1f)
@@ -1693,7 +1692,7 @@ internal fun PlayerChoiceDialog(
                     }
 
                     var externalFocused by remember { mutableStateOf(false) }
-                    Card(
+                    TouchTvCard(
                         onClick = onExternalSelected,
                         modifier = Modifier
                             .weight(1f)

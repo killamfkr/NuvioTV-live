@@ -31,7 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -137,7 +137,7 @@ internal fun AppIconChangeConfirmationDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.colors(
@@ -147,7 +147,7 @@ internal fun AppIconChangeConfirmationDialog(
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = onConfirm,
                 modifier = Modifier
                     .weight(1f)

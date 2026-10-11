@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -206,7 +206,7 @@ private fun AnimeSkipClientIdDialog(
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -214,7 +214,7 @@ private fun AnimeSkipClientIdDialog(
                 )
             ) { Text(stringResource(R.string.action_cancel)) }
             Spacer(modifier = Modifier.width(NuvioTheme.spacing.sm))
-            Button(
+            TouchTvButton(
                 onClick = onClear,
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -222,7 +222,7 @@ private fun AnimeSkipClientIdDialog(
                 )
             ) { Text(stringResource(R.string.action_clear)) }
             Spacer(modifier = Modifier.width(NuvioTheme.spacing.sm))
-            Button(
+            TouchTvButton(
                 onClick = { if (!validating) viewModel.validateAndSave(value, onSaved) },
                 colors = ButtonDefaults.colors(
                     containerColor = NuvioTheme.colors.BackgroundCard,

@@ -39,7 +39,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -212,7 +212,7 @@ private fun CatalogOrderCard(
                 horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
+                TouchTvButton(
                     onClick = onMoveUp,
                     enabled = item.canMoveUp,
                     colors = ButtonDefaults.colors(
@@ -235,7 +235,7 @@ private fun CatalogOrderCard(
                     )
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onMoveDown,
                     enabled = item.canMoveDown,
                     colors = ButtonDefaults.colors(
@@ -258,7 +258,7 @@ private fun CatalogOrderCard(
                     )
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onToggleEnabled,
                     colors = ButtonDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundCard,

@@ -48,7 +48,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.TextStyle
 import com.nuvio.tv.R
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -851,7 +851,7 @@ private fun StreamRegexDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    Button(
+                    TouchTvButton(
                         onClick = onDismiss,
                         colors = ButtonDefaults.colors(
                             containerColor = NuvioTheme.colors.BackgroundElevated,
@@ -864,7 +864,7 @@ private fun StreamRegexDialog(
                         Text(stringResource(R.string.action_cancel))
                     }
                     Spacer(modifier = Modifier.width(NuvioTheme.spacing.sm))
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             regex = ""
                             regexError = null
@@ -880,14 +880,14 @@ private fun StreamRegexDialog(
                         Text(stringResource(R.string.action_none))
                     }
                     Spacer(modifier = Modifier.width(NuvioTheme.spacing.sm))
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             val value = regex.trim()
                             if (value.isNotEmpty()) {
                                 val valid = runCatching { Regex(value, RegexOption.IGNORE_CASE) }.isSuccess
                                 if (!valid) {
                                     regexError = strInvalidRegex
-                                    return@Button
+                                    return@TouchTvButton
                                 }
                             }
                             onSave(value)

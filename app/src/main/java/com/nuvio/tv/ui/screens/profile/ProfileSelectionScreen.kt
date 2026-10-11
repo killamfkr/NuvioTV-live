@@ -97,7 +97,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import androidx.compose.ui.res.stringResource
@@ -641,7 +641,7 @@ fun ProfileSelectionScreen(
                 width = 360.dp,
                 suppressFirstKeyUp = suppressOptionsDialogFirstKeyUp
             ) {
-                Button(
+                TouchTvButton(
                     onClick = {
                         longPressedProfile = null
                         profileToEdit = profile
@@ -658,7 +658,7 @@ fun ProfileSelectionScreen(
                 }
 
                 if (profiles.size > 1) {
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             longPressedProfile = null
                             settingsCopyError = null
@@ -674,7 +674,7 @@ fun ProfileSelectionScreen(
                     }
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = {
                         longPressedProfile = null
                         pinOverlayError = null
@@ -700,7 +700,7 @@ fun ProfileSelectionScreen(
                 }
 
                 if (profilePinEnabled[profile.id] == true) {
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             longPressedProfile = null
                             pinOverlayError = null
@@ -717,7 +717,7 @@ fun ProfileSelectionScreen(
                 }
 
                 if (!profile.isPrimary) {
-                    Button(
+                    TouchTvButton(
                         onClick = {
                             longPressedProfile = null
                             if (profilePinEnabled[profile.id] == true) {
@@ -786,7 +786,7 @@ fun ProfileSelectionScreen(
                 width = 420.dp,
                 suppressFirstKeyUp = false
             ) {
-                Button(
+                TouchTvButton(
                     onClick = {
                         viewModel.deleteProfile(profile.id)
                         profileToDelete = null

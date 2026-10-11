@@ -30,7 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -167,7 +167,7 @@ internal fun SettingsResetButton(
 ) {
     val flat = isFlatSettingsStyle()
     val shape = if (flat) settingsRowShape() else RoundedCornerShape(SettingsPillRadius)
-    Button(
+    TouchTvButton(
         onClick = settingsRemoteCardOnClick(onClick = onClick),
         modifier = modifier
             .settingsTouchClick(onClick = onClick)

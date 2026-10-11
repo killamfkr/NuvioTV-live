@@ -41,7 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -328,7 +328,7 @@ private fun StreamInfoHudButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Button(
+    TouchTvButton(
         onClick = onClick,
         // Every direction leads back to this button, so a stray press cannot drop focus onto the
         // transport controls still drawn behind the overlay.

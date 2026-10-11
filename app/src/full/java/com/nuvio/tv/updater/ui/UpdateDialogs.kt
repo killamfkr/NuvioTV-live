@@ -39,7 +39,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -182,21 +182,17 @@ internal fun UpdateUnknownSourcesDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
             ) {
-                Button(
-                    onClick = tvCardRemoteClick(touchPreferred, onClick = onOpenSettings),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .tvCardTouchClick(onClick = onOpenSettings),
+                TouchTvButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.fillMaxWidth(),
                     colors = primaryColors,
                     shape = buttonShape
                 ) {
                     Text(stringResource(R.string.update_open_settings))
                 }
-                Button(
-                    onClick = tvCardRemoteClick(touchPreferred, onClick = onDismiss),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .tvCardTouchClick(onClick = onDismiss),
+                TouchTvButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
                     colors = secondaryColors,
                     shape = buttonShape
                 ) {
@@ -208,7 +204,7 @@ internal fun UpdateUnknownSourcesDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
             ) {
-                Button(
+                TouchTvButton(
                     onClick = onOpenSettings,
                     modifier = Modifier.focusRequester(settingsFocusRequester),
                     colors = primaryColors,
@@ -217,7 +213,7 @@ internal fun UpdateUnknownSourcesDialog(
                     Text(stringResource(R.string.update_open_settings))
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onDismiss,
                     colors = secondaryColors,
                     shape = buttonShape

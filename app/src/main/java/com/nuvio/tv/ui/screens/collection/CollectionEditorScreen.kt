@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -325,7 +325,7 @@ fun CollectionEditorScreen(
                 )
                 viewModes.forEach { (mode, label) ->
                     val isSelected = uiState.viewMode == mode
-                    Button(
+                    TouchTvButton(
                         onClick = { viewModel.setViewMode(mode) },
                         colors = ButtonDefaults.colors(
                             containerColor = if (isSelected) NuvioTheme.colors.Secondary.copy(alpha = 0.3f) else NuvioTheme.colors.BackgroundCard,

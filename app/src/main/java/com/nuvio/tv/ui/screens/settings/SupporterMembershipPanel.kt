@@ -40,7 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -362,7 +362,7 @@ private fun MembershipRefreshButton(
     isVisible: Boolean,
     onRefresh: () -> Unit
 ) {
-    Button(
+    TouchTvButton(
         onClick = onRefresh,
         enabled = !isRefreshing,
         modifier = Modifier
@@ -407,7 +407,7 @@ private fun MembershipPrimaryButton(
     isVisible: Boolean,
     onClick: () -> Unit
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         modifier = Modifier
             .focusRequester(focusRequester)
@@ -480,7 +480,7 @@ private fun MembershipPanelBack(
             )
         }
         Spacer(modifier = Modifier.height(18.dp))
-        Button(
+        TouchTvButton(
             onClick = onHideQr,
             modifier = Modifier
                 .focusRequester(backFocusRequester)

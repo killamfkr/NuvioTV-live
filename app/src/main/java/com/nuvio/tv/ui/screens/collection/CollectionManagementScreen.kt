@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -82,7 +82,7 @@ private fun NuvioButton(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    Button(
+    TouchTvButton(
         onClick = onClick,
         modifier = modifier,
         colors = ButtonDefaults.colors(
@@ -383,7 +383,7 @@ private fun ImportContent(
                             ImportMode.URL -> stringResource(R.string.collections_mode_url)
                         }
                         if (mode == importMode) {
-                            Button(
+                            TouchTvButton(
                                 onClick = { onModeChange(mode) },
                                 colors = ButtonDefaults.colors(
                                     containerColor = NuvioTheme.colors.Primary,
@@ -620,7 +620,7 @@ private fun CollectionListItem(
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)) {
-                Button(
+                TouchTvButton(
                     onClick = onMoveUp,
                     enabled = !isFirst,
                     colors = ButtonDefaults.colors(
@@ -640,7 +640,7 @@ private fun CollectionListItem(
                     Icon(Icons.Default.KeyboardArrowUp, stringResource(R.string.cd_move_up))
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onMoveDown,
                     enabled = !isLast,
                     colors = ButtonDefaults.colors(
@@ -660,7 +660,7 @@ private fun CollectionListItem(
                     Icon(Icons.Default.KeyboardArrowDown, stringResource(R.string.cd_move_down))
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onEdit,
                     modifier = if (editFocusRequester != null) Modifier.focusRequester(editFocusRequester) else Modifier,
                     colors = ButtonDefaults.colors(
@@ -680,7 +680,7 @@ private fun CollectionListItem(
                     Icon(Icons.Default.Edit, stringResource(R.string.cd_edit))
                 }
 
-                Button(
+                TouchTvButton(
                     onClick = onDelete,
                     colors = ButtonDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundCard,

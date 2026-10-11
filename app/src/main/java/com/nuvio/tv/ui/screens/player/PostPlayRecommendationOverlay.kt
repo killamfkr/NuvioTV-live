@@ -71,11 +71,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Button
+import com.nuvio.tv.ui.components.TouchTvButton
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
@@ -704,11 +707,13 @@ private fun PostPlayRecommendationNavigationButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val touchPreferred = prefersTouchCards()
     IconButton(
-        onClick = onClick,
+        onClick = tvCardRemoteClick(touchPreferred, enabled = enabled, onClick = onClick),
         enabled = enabled,
         modifier = modifier
             .size(NuvioTheme.spacing.xxxl)
+            .tvCardTouchClick(enabled = enabled, onClick = onClick)
             .focusRequester(focusRequester),
         colors = IconButtonDefaults.colors(
             containerColor = NuvioTheme.colors.BackgroundCard,
@@ -745,7 +750,7 @@ private fun PostPlayRecommendationButton(
     val shape = RoundedCornerShape(NuvioTheme.spacing.xxl)
     var longPressTriggered by remember { mutableStateOf(false) }
     val longPressKeyTracker = rememberLongPressKeyTracker()
-    Button(
+    TouchTvButton(
         onClick = {
             if (longPressTriggered) {
                 longPressTriggered = false

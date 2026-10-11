@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Card
+import com.nuvio.tv.ui.components.TouchTvCard
 import androidx.tv.material3.Border
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -164,7 +164,7 @@ private fun SyncPromptPanel(
             color = Color.White
         )
 
-        Card(
+        TouchTvCard(
             onClick = onCaptureNow,
             modifier = Modifier
                 .focusRequester(focusRequester),
@@ -340,7 +340,7 @@ private fun CueRow(
     val focusedContainer = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f)
     val focusedTextColor = MaterialTheme.colorScheme.onSecondary
 
-    Card(
+    TouchTvCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
