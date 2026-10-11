@@ -103,6 +103,8 @@ import androidx.tv.material3.IconButton as TvIconButton
 import androidx.tv.material3.IconButtonDefaults as TvIconButtonDefaults
 import androidx.tv.material3.Text
 import com.nuvio.tv.ui.components.CatalogRowSection
+import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvIconButton
 import com.nuvio.tv.ui.components.EmptyScreenState
 import com.nuvio.tv.ui.components.ErrorState
 import com.nuvio.tv.ui.components.LoadingIndicator
@@ -1047,7 +1049,7 @@ private fun RecentSearchesSection(
                 style = androidx.tv.material3.MaterialTheme.typography.titleMedium,
                 color = NuvioTheme.colors.TextPrimary
             )
-            Button(
+            TouchTvButton(
                 onClick = onClearHistory,
                 modifier = Modifier
                     .focusRequester(clearHistoryFocusRequester)
@@ -1093,7 +1095,7 @@ private fun RecentSearchesSection(
                         animationSpec = tween(durationMillis = 140),
                         label = "recentSearchScale"
                     )
-                    Button(
+                    TouchTvButton(
                         onClick = { onSearchSelected(recentQuery) },
                         modifier = Modifier
                             .weight(1f)
@@ -1131,7 +1133,7 @@ private fun RecentSearchesSection(
                     }
 
                     var isRemoveFocused by remember(recentQuery) { mutableStateOf(false) }
-                    TvIconButton(
+                    TouchTvIconButton(
                         onClick = {
                             val nextQuery = recentSearches.getOrNull(index + 1)
                             val previousQuery = recentSearches.getOrNull(index - 1)

@@ -92,6 +92,8 @@ import com.nuvio.tv.domain.model.PosterShape
 import com.nuvio.tv.data.local.PlayerPreference
 import com.nuvio.tv.ui.components.EmptyScreenState
 import com.nuvio.tv.ui.components.GridContentCard
+import com.nuvio.tv.ui.components.TouchTvButton
+import com.nuvio.tv.ui.components.TouchTvCard
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.screens.home.HeroBackdropState
 import com.nuvio.tv.ui.screens.stream.PlayerChoiceDialog
@@ -349,7 +351,7 @@ fun LibraryScreen(
                 // Refresh belongs to the cloud view only, pinned right in line with the tabs.
                 trailing = if (viewMode == LibraryViewMode.Cloud) {
                     {
-                        Button(
+                        TouchTvButton(
                             onClick = viewModel::refreshCloudLibrary,
                             enabled = !uiState.cloudLibrary.isRefreshing,
                             colors = ButtonDefaults.colors(
@@ -695,7 +697,7 @@ private fun LibraryViewModeRow(
         Row(horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
             LibraryViewMode.entries.forEach { mode ->
                 val selected = mode == selectedMode
-                Button(
+                TouchTvButton(
                     onClick = { onSelected(mode) },
                     modifier = Modifier
                         .then(if (selected) Modifier.focusRequester(primaryFocusRequester) else Modifier),
@@ -893,7 +895,7 @@ private fun CloudLibrarySearchRow(
         }
 
         if (query.isNotEmpty()) {
-            Button(
+            TouchTvButton(
                 onClick = {
                     onQueryChange("")
                     editing = false
@@ -936,8 +938,9 @@ private fun CloudLibraryCard(
     onClick: () -> Unit
 ) {
     val fileLine = cloudLibraryFileLine(item)
-    Card(
-        onClick = { if (!isResolving) onClick() },
+    TouchTvCard(
+        onClick = onClick,
+        enabled = !isResolving,
         modifier = Modifier.fillMaxWidth(),
         shape = CardDefaults.shape(RoundedCornerShape(10.dp)),
         colors = CardDefaults.colors(
@@ -1056,8 +1059,9 @@ private fun CloudFilePickerDialog(
         ) {
             items(item.playableFiles, key = { it.stableKey }) { file ->
                 val resolving = resolvingFileKey == "${item.stableKey}:${file.stableKey}"
-                Card(
-                    onClick = { if (!resolving) onPlay(file) },
+                TouchTvCard(
+                    onClick = { onPlay(file) },
+                    enabled = !resolving,
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.colors(
                         containerColor = NuvioTheme.colors.BackgroundCard,
@@ -1306,7 +1310,7 @@ private fun LibraryDropdownPicker(
     }
 
     Box(modifier = modifier) {
-        Card(
+        TouchTvCard(
             onClick = { onExpandedChange(!expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -1462,7 +1466,7 @@ private fun LibraryActionsRow(
         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
     ) {
         if (showManageLists) {
-            Button(
+            TouchTvButton(
                 onClick = onManageLists,
                 enabled = !pending && !isSyncing,
                 colors = ButtonDefaults.colors(
@@ -1473,7 +1477,7 @@ private fun LibraryActionsRow(
                 Text(stringResource(R.string.library_manage_lists))
             }
         }
-        Button(
+        TouchTvButton(
             onClick = onRefresh,
             enabled = !pending && !isSyncing,
             colors = ButtonDefaults.colors(
@@ -1499,7 +1503,7 @@ private fun ConfirmDeleteDialog(
         subtitle = stringResource(R.string.library_delete_subtitle),
         width = 420.dp
     ) {
-        Button(
+        TouchTvButton(
             onClick = onConfirm,
             enabled = !pending,
             modifier = Modifier.fillMaxWidth(),

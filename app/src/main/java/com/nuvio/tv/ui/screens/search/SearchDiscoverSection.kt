@@ -77,6 +77,9 @@ import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.ui.components.EmptyScreenState
 import com.nuvio.tv.ui.components.GridContentCard
 import com.nuvio.tv.ui.components.LoadingIndicator
+import com.nuvio.tv.ui.components.TouchTvCard
+import com.nuvio.tv.ui.components.touchTvClick
+import com.nuvio.tv.ui.components.touchTvRemoteClick
 import com.nuvio.tv.ui.components.LocalCardDepthStyle
 import com.nuvio.tv.ui.components.PosterCardStyle
 import com.nuvio.tv.ui.components.nuvioCardDepth
@@ -331,7 +334,7 @@ private fun DiscoverDropdownPicker(
     }
 
     Box(modifier = modifier) {
-        Card(
+        TouchTvCard(
             onClick = { onExpandedChange(!expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -754,14 +757,16 @@ private fun DiscoverActionCard(
     Column(
         modifier = modifier.then(if (globalLandscape) Modifier.fillMaxWidth() else Modifier.width(posterCardStyle.width))
     ) {
+        val actionEnabled = actionType != DiscoverGridAction.Loading
         Card(
-            onClick = onClick,
+            onClick = touchTvRemoteClick(actionEnabled, onClick),
             modifier = Modifier
                 .then(
                     if (globalLandscape) Modifier.fillMaxWidth().aspectRatio(com.nuvio.tv.domain.model.PosterShape.LANDSCAPE.aspectRatio())
                     else Modifier.width(posterCardStyle.width).height(posterCardStyle.height)
                 )
-                .focusProperties { canFocus = actionType != DiscoverGridAction.Loading }
+                .touchTvClick(actionEnabled, onClick)
+                .focusProperties { canFocus = actionEnabled }
                 .onPreviewKeyEvent { event ->
                     actionType != DiscoverGridAction.None &&
                         event.nativeKeyEvent.action == AndroidKeyEvent.ACTION_DOWN &&

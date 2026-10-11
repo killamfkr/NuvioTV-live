@@ -13,12 +13,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
 import com.nuvio.tv.R
 import com.nuvio.tv.ui.components.NuvioDialog
+import com.nuvio.tv.ui.components.TouchTvButton
 import com.nuvio.tv.ui.theme.NuvioTheme
 
 @Composable
@@ -42,7 +42,7 @@ internal fun AccountSignOutConfirmationDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
         ) {
-            Button(
+            TouchTvButton(
                 onClick = onDismiss,
                 modifier = Modifier
                     .weight(1f)
@@ -54,7 +54,7 @@ internal fun AccountSignOutConfirmationDialog(
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
-            Button(
+            TouchTvButton(
                 onClick = onConfirm,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.colors(

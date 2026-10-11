@@ -33,7 +33,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -43,6 +42,7 @@ import com.nuvio.tv.domain.model.LibraryListPrivacy
 import kotlinx.coroutines.delay
 import com.nuvio.tv.domain.model.localizedTitle
 import com.nuvio.tv.ui.components.NuvioDialog
+import com.nuvio.tv.ui.components.TouchTvButton
 import com.nuvio.tv.ui.theme.NuvioTheme
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
@@ -115,7 +115,7 @@ internal fun ManageListsDialog(
                     ) {
                         items(personalTabs, key = { it.key }) { tab ->
                             val selected = tab.key == selectedKey
-                            Button(
+                            TouchTvButton(
                                 onClick = { onSelect(tab.key) },
                                 enabled = !pending,
                                 modifier = if (tab.key == personalTabs.firstOrNull()?.key) {
@@ -141,7 +141,7 @@ internal fun ManageListsDialog(
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Button(
+                    TouchTvButton(
                         onClick = onCreate,
                         modifier = if (personalTabs.isEmpty()) Modifier.focusRequester(firstFocusRequester) else Modifier,
                         enabled = !pending,
@@ -150,7 +150,7 @@ internal fun ManageListsDialog(
                             contentColor = NuvioTheme.colors.TextPrimary
                         )
                     ) { Text(stringResource(R.string.library_list_create)) }
-                    Button(
+                    TouchTvButton(
                         onClick = onEdit,
                         enabled = !pending && selectedKey != null,
                         colors = ButtonDefaults.colors(
@@ -159,7 +159,7 @@ internal fun ManageListsDialog(
                         )
                     ) { Text(stringResource(R.string.library_list_edit)) }
                     if (capabilities.supportsReordering) {
-                        Button(
+                        TouchTvButton(
                             onClick = onMoveUp,
                             enabled = !pending && selectedKey != null,
                             colors = ButtonDefaults.colors(
@@ -167,7 +167,7 @@ internal fun ManageListsDialog(
                                 contentColor = NuvioTheme.colors.TextPrimary
                             )
                         ) { Text(stringResource(R.string.library_list_move_up)) }
-                        Button(
+                        TouchTvButton(
                             onClick = onMoveDown,
                             enabled = !pending && selectedKey != null,
                             colors = ButtonDefaults.colors(
@@ -179,7 +179,7 @@ internal fun ManageListsDialog(
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Button(
+                    TouchTvButton(
                         onClick = onDelete,
                         enabled = !pending && selectedKey != null,
                         colors = ButtonDefaults.colors(
@@ -187,7 +187,7 @@ internal fun ManageListsDialog(
                             contentColor = NuvioTheme.colors.TextPrimary
                         )
                     ) { Text(stringResource(R.string.library_list_delete)) }
-                    Button(
+                    TouchTvButton(
                         onClick = onDismiss,
                         enabled = !pending,
                         colors = ButtonDefaults.colors(
@@ -334,7 +334,7 @@ internal fun ListEditorDialog(
         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             items(capabilities.privacyOptions, key = { it.name }) { privacy ->
                 val selected = privacy == state.privacy
-                Button(
+                        TouchTvButton(
                     onClick = { onPrivacyChanged(privacy) },
                     enabled = !pending,
                     colors = ButtonDefaults.colors(
@@ -347,7 +347,7 @@ internal fun ListEditorDialog(
             }
         }
 
-        Button(
+                        TouchTvButton(
             onClick = onSave,
             enabled = !pending,
             modifier = Modifier.fillMaxWidth(),
