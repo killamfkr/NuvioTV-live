@@ -26,6 +26,7 @@ import androidx.tv.material3.FilterChipDefaults
 import androidx.tv.material3.Icon
 import com.nuvio.tv.R
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import kotlinx.coroutines.delay as coroutineDelay
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -82,7 +83,9 @@ fun RefreshFilterChip(
     FilterChip(
         selected = false,
         onClick = onClick,
-        modifier = modifier.onFocusChanged {
+        modifier = modifier
+            .tvCardTouchClick(onClick = onClick)
+            .onFocusChanged {
             isFocused = it.isFocused
             onFocusChanged(it.isFocused)
         },

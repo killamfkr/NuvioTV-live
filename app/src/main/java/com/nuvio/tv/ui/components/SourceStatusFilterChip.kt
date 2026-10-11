@@ -1,6 +1,8 @@
 package com.nuvio.tv.ui.components
 
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.ui.util.contentTextDirection
 
 import androidx.compose.animation.core.Animatable
@@ -48,6 +50,7 @@ fun SourceStatusFilterChip(
     modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    val touchPreferred = prefersTouchCards()
     val isError = status == SourceChipStatus.ERROR
     val isLoading = status == SourceChipStatus.LOADING
     val shouldUseNormalColors = !isError
@@ -86,6 +89,7 @@ fun SourceStatusFilterChip(
         selected = isSelected,
         onClick = { if (isSelectable) onClick() },
         modifier = modifier
+            .tvCardTouchClick(enabled = isSelectable, onClick = onClick)
             .graphicsLayer {
                 alpha = alphaPulse.value
                 translationX = shakeOffsetPx.value
@@ -138,7 +142,7 @@ fun SourceStatusFilterChip(
         Text(
             text = name,
             modifier = Modifier.shimmer(isLoading),
-            style = MaterialTheme.typography.labelLarge.copy(
+            style = (if (touchPreferred) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelLarge).copy(
                 textDirection = name.contentTextDirection()
             ),
             color = textColor

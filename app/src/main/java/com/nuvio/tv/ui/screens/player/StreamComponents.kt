@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -118,6 +119,7 @@ internal fun StreamItem(
         onClick = tvCardRemoteClick(touchPreferred, onClick = onClick),
         modifier = Modifier
             .fillMaxWidth()
+            .then(if (touchPhoneLayout) Modifier.heightIn(min = 72.dp) else Modifier)
             .tvCardTouchClick(onClick = onClick)
             .then(if (focusRequester != null && requestInitialFocus) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
@@ -279,6 +281,7 @@ internal fun AddonFilterChips(
     externalFocusRequesters: List<FocusRequester>? = null,
     externalOrderedNames: List<String>? = null,
     onUpKey: (() -> Unit)? = null,
+    touchPhoneLayout: Boolean = false,
     debugTag: String = "AddonFilterChips"
 ) {
     val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
@@ -383,10 +386,16 @@ internal fun AddonFilterChips(
         }
     }
 
+    val chipSpacing = if (touchPhoneLayout) NuvioTheme.spacing.md else NuvioTheme.spacing.lg
+    val chipPadding = if (touchPhoneLayout) {
+        PaddingValues(horizontal = NuvioTheme.spacing.xs, vertical = NuvioTheme.spacing.sm)
+    } else {
+        PaddingValues(horizontal = NuvioTheme.spacing.sm, vertical = NuvioTheme.spacing.xs)
+    }
     LazyRow(
         state = chipListState,
-        horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg),
-        contentPadding = PaddingValues(horizontal = NuvioTheme.spacing.sm, vertical = NuvioTheme.spacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(chipSpacing),
+        contentPadding = chipPadding,
         modifier = Modifier
             .onFocusChanged { focusState ->
                 val hasFocus = focusState.hasFocus
