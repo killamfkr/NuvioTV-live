@@ -19,12 +19,6 @@ import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.CardScale
 import androidx.tv.material3.CardShape
 import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.IconButton
-import androidx.tv.material3.IconButtonColors
-import androidx.tv.material3.IconButtonDefaults
-import androidx.tv.material3.IconButtonScale
-import androidx.tv.material3.IconButtonShape
-
 @Composable
 fun touchTvRemoteClick(enabled: Boolean = true, onClick: () -> Unit): () -> Unit {
     return tvCardRemoteClick(prefersTouchCards(), enabled, onClick)
@@ -46,27 +40,6 @@ fun TouchTvButton(
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
-        onClick = touchTvRemoteClick(enabled, onClick),
-        modifier = modifier.touchTvClick(enabled, onClick),
-        enabled = enabled,
-        colors = colors,
-        shape = shape,
-        scale = scale,
-        content = content
-    )
-}
-
-@Composable
-fun TouchTvIconButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    colors: IconButtonColors = IconButtonDefaults.colors(),
-    shape: IconButtonShape = IconButtonDefaults.shape(),
-    scale: IconButtonScale = IconButtonDefaults.scale(),
-    content: @Composable () -> Unit
-) {
-    IconButton(
         onClick = touchTvRemoteClick(enabled, onClick),
         modifier = modifier.touchTvClick(enabled, onClick),
         enabled = enabled,

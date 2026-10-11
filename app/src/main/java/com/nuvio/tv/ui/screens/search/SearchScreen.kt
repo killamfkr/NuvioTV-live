@@ -104,7 +104,9 @@ import androidx.tv.material3.IconButtonDefaults as TvIconButtonDefaults
 import androidx.tv.material3.Text
 import com.nuvio.tv.ui.components.CatalogRowSection
 import com.nuvio.tv.ui.components.TouchTvButton
-import com.nuvio.tv.ui.components.TouchTvIconButton
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.ui.components.EmptyScreenState
 import com.nuvio.tv.ui.components.ErrorState
 import com.nuvio.tv.ui.components.LoadingIndicator
@@ -1133,26 +1135,29 @@ private fun RecentSearchesSection(
                     }
 
                     var isRemoveFocused by remember(recentQuery) { mutableStateOf(false) }
-                    TouchTvIconButton(
-                        onClick = {
-                            val nextQuery = recentSearches.getOrNull(index + 1)
-                            val previousQuery = recentSearches.getOrNull(index - 1)
-                            when {
-                                nextQuery != null -> {
-                                    pendingDownwardFocus = recentQuery to nextQuery
-                                }
-                                previousQuery != null -> {
-                                    runCatching {
-                                        removeFocusRequesters.getValue(previousQuery).requestFocus()
-                                    }
-                                }
-                                else -> {
-                                    runCatching { emptyHistoryFocusRequester.requestFocus() }
+                    val touchPreferred = prefersTouchCards()
+                    val removeRecentSearch = {
+                        val nextQuery = recentSearches.getOrNull(index + 1)
+                        val previousQuery = recentSearches.getOrNull(index - 1)
+                        when {
+                            nextQuery != null -> {
+                                pendingDownwardFocus = recentQuery to nextQuery
+                            }
+                            previousQuery != null -> {
+                                runCatching {
+                                    removeFocusRequesters.getValue(previousQuery).requestFocus()
                                 }
                             }
-                            onRemoveSearch(recentQuery)
-                        },
+                            else -> {
+                                runCatching { emptyHistoryFocusRequester.requestFocus() }
+                            }
+                        }
+                        onRemoveSearch(recentQuery)
+                    }
+                    TvIconButton(
+                        onClick = tvCardRemoteClick(touchPreferred, onClick = removeRecentSearch),
                         modifier = Modifier
+                            .tvCardTouchClick(onClick = removeRecentSearch)
                             .focusRequester(removeFocusRequester)
                             .focusProperties {
                                 up = previousRemoveFocusRequester
