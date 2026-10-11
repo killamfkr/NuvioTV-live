@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Border
-import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -58,6 +57,7 @@ import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
 import com.nuvio.tv.ui.components.GoogleDeviceCodeSignInDialog
 import androidx.compose.material.icons.filled.CloudUpload
+import com.nuvio.tv.ui.screens.settings.SettingsCard
 
 @Composable
 fun AccountSettingsContent(
@@ -415,7 +415,7 @@ private fun SettingsActionButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
@@ -501,7 +501,7 @@ private fun SignOutSettingsButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.colors(
