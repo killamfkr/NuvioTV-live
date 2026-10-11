@@ -479,28 +479,31 @@ fun StreamScreen(
             }
 
             if (touchPhonePicker) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .background(NuvioTheme.colors.Background)
-                ) {
-                    MobileStreamPickerHeader(
-                        title = uiState.title,
-                        isEpisode = uiState.isEpisode,
-                        season = uiState.season,
-                        episode = uiState.episode,
-                        episodeName = uiState.episodeName,
-                        year = uiState.year,
-                        isLoading = uiState.isLoading,
-                        streamCount = uiState.filteredStreams.size
-                    )
-                    rightStreamSection(
-                        Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    )
-                }
+                MobileStreamPicker(
+                    modifier = Modifier.fillMaxSize(),
+                    title = uiState.title,
+                    isEpisode = uiState.isEpisode,
+                    season = uiState.season,
+                    episode = uiState.episode,
+                    episodeName = uiState.episodeName,
+                    year = uiState.year,
+                    isLoading = uiState.isLoading,
+                    error = uiState.error,
+                    streams = uiState.filteredStreams,
+                    availableAddons = uiState.availableAddons,
+                    sourceChips = uiState.sourceChips,
+                    selectedAddonFilter = uiState.selectedAddonFilter,
+                    showFileSizeBadges = streamBadgeSettings.showFileSizeBadges,
+                    showAddonLogo = streamBadgeSettings.showAddonLogo,
+                    badgePlacement = streamBadgeSettings.badgePlacement,
+                    hasBadgeRules = streamBadgeSettings.rules.hasImport,
+                    onBack = onBackPress,
+                    onStreamSelected = onStreamPicked,
+                    onAddonFilterSelected = { viewModel.onEvent(StreamScreenEvent.OnAddonFilterSelected(it)) },
+                    onRefresh = { viewModel.onEvent(StreamScreenEvent.OnRefresh) },
+                    onRetry = { viewModel.onEvent(StreamScreenEvent.OnRetry) },
+                    onExpandStreams = { viewModel.expandFilteredStreamsIfNeeded() }
+                )
             } else {
                 Row(modifier = Modifier.fillMaxSize()) {
                     LeftContentSection(
