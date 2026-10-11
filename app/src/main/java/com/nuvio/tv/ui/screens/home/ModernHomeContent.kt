@@ -655,8 +655,9 @@ fun ModernHomeContent(
     val portraitBaseHeight = uiState.posterCardHeightDp.dp
     val portraitModernPosterScale = 1.08f
     val landscapeModernPosterScale = 1.34f
-    val portraitCatalogCardWidth = portraitBaseWidth * 0.84f * portraitModernPosterScale
-    val portraitCatalogCardHeight = portraitBaseHeight * 0.84f * portraitModernPosterScale
+    val touchCatalogScale = if (touchPhoneHome) 0.78f else 1f
+    val portraitCatalogCardWidth = portraitBaseWidth * 0.84f * portraitModernPosterScale * touchCatalogScale
+    val portraitCatalogCardHeight = portraitBaseHeight * 0.84f * portraitModernPosterScale * touchCatalogScale
     val landscapeCatalogCardWidth = portraitBaseWidth * 1.24f * landscapeModernPosterScale
     val landscapeCatalogCardHeight = landscapeCatalogCardWidth / 1.77f
     // Poster style reuses the portrait catalog dimensions so its artwork matches the catalogs below it.
@@ -1006,11 +1007,12 @@ fun ModernHomeContent(
 
             val localDensity = LocalDensity.current
             val rowsViewportHeightFraction = when {
-                useLandscapePosters && touchPhoneHome -> 0.54f
+                useLandscapePosters && touchPhoneHome -> 0.62f
                 useLandscapePosters -> 0.49f
-                touchPhoneHome -> 0.58f
+                touchPhoneHome -> 0.72f
                 else -> 0.52f
             }
+            val rowTitleStartPadding = if (touchPhoneHome) NuvioTheme.spacing.md else 52.dp
             val rowsViewportHeight = remember(screenHeight, rowsViewportHeightFraction) { screenHeight * rowsViewportHeightFraction }
             val rowTitleLineHeight = MaterialTheme.typography.titleMedium.lineHeight
             val rowTitleHeight = remember(rowTitleLineHeight, localDensity) {
@@ -1241,6 +1243,8 @@ fun ModernHomeContent(
                 onExpansionInteractionNonceChange = onExpansionInteractionNonceChangeLambda,
                 blockLeftOnFirstExpandedItem = blockLeftOnFirstExpandedItem,
                 isVerticalRowsScrollingState = isVerticalRowsScrollingState,
+                rowTitleStartPadding = rowTitleStartPadding,
+                liveTvRowStartPadding = rowTitleStartPadding,
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .onFocusChanged { contentHasFocus.value = it.hasFocus }

@@ -146,6 +146,8 @@ internal fun ModernHomeRowsList(
     onFocusedHeroMediaNonceChange: (Int) -> Unit,
     onExpansionInteractionNonceChange: (Int) -> Unit,
     blockLeftOnFirstExpandedItem: Boolean = false,
+    rowTitleStartPadding: Dp = 52.dp,
+    liveTvRowStartPadding: Dp = 52.dp,
     modifier: Modifier = Modifier
 ) {
     // Live TV fork: where the Live TV row goes (null = hidden).
@@ -432,13 +434,21 @@ internal fun ModernHomeRowsList(
                 }
                 androidx.compose.foundation.layout.Column {
                 if (liveTvHere && (liveTvRowAbove == true || !hasContinueWatching)) {
-                    com.nuvio.tv.livetv.home.LiveTvHomeRow(hideUnlessFocused = true, above = liveTvRowAbove == true, startPadding = 52.dp, titleStyle = androidx.tv.material3.MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+                    com.nuvio.tv.livetv.home.LiveTvHomeRow(
+                        hideUnlessFocused = !com.nuvio.tv.ui.components.prefersTouchCards(),
+                        above = liveTvRowAbove == true,
+                        startPadding = liveTvRowStartPadding,
+                        titleStyle = androidx.tv.material3.MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        )
+                    )
                 }
                 ModernRowSection(
                     row = row,
                     isActiveRow = isActiveRowLambda,
                     rowFocusRequester = rowFocusRequesters.getOrPut(row.key) { FocusRequester() },
                     rowTitleBottom = 14.dp, // rowTitleBottom
+                    rowTitleStartPadding = rowTitleStartPadding,
                     defaultBringIntoViewSpec = defaultBringIntoViewSpec,
                     focusStateCatalogRowScrollIndex = focusState.catalogRowScrollStates[row.key] ?: 0,
                     focusStateCatalogRowScrollAnchor = focusState.catalogRowScrollAnchors[row.key],

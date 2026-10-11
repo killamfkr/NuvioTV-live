@@ -104,6 +104,9 @@ import java.util.TimeZone
 import com.nuvio.tv.ui.util.contentTextDirection
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
 import com.nuvio.tv.ui.util.rememberLongPressKeyTracker
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 
 private const val EPISODE_CARD_CONTENT_TYPE = "episode_card"
 private const val EPISODE_SCROLL_REPEAT_THROTTLE_MS = 80L
@@ -143,6 +146,8 @@ fun SeasonTabs(
     val textSecondary = NuvioTheme.extendedColors.textSecondary
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val lazyListState = rememberLazyListState()
+    val touchPreferred = prefersTouchCards()
+    val seasonTabPadding = if (touchPreferred) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
 
     var suppressFocusSwitch by remember { mutableStateOf(false) }
     var lastAppliedSeason by remember { mutableStateOf(selectedSeason) }
@@ -205,7 +210,7 @@ fun SeasonTabs(
             }
             .focusGroup(),
         state = lazyListState,
-        contentPadding = PaddingValues(horizontal = NuvioTheme.spacing.xxxl, vertical = NuvioTheme.spacing.xl),
+        contentPadding = PaddingValues(horizontal = seasonTabPadding, vertical = NuvioTheme.spacing.xl),
         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
     ) {
         items(sortedSeasons, key = { it }) { season ->
@@ -221,15 +226,17 @@ fun SeasonTabs(
                 remember(season) { seasonFocusRequesters.getOrPut(season) { FocusRequester() } }
             }
 
+            val activateSeason = {
+                if (longPressTriggered) {
+                    longPressTriggered = false
+                } else {
+                    onSeasonSelected(season)
+                }
+            }
             Card(
-                onClick = {
-                    if (longPressTriggered) {
-                        longPressTriggered = false
-                    } else {
-                        onSeasonSelected(season)
-                    }
-                },
+                onClick = tvCardRemoteClick(touchPreferred, enabled = isFocusEnabled, onClick = activateSeason),
                 modifier = Modifier
+                    .tvCardTouchClick(enabled = isFocusEnabled, onClick = activateSeason)
                     .focusRequester(seasonFocusRequester)
                     .focusProperties {
                         canFocus = isFocusEnabled

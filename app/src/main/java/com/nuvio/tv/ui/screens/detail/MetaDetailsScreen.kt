@@ -16,6 +16,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -73,7 +75,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import com.nuvio.tv.core.device.DeviceFormFactor
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -3288,11 +3295,14 @@ private fun PeopleSectionTabs(
 ) {
     val defaultRequester = tabs.first().focusRequester
     val restorerRequester = tabs.firstOrNull { it.tab == activeTab }?.focusRequester ?: defaultRequester
+    val touchDetail = prefersTouchCards() && !DeviceFormFactor.isTelevision(LocalContext.current)
+    val sectionPadding = if (touchDetail) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
+    val tabScroll = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 20.dp, start = NuvioTheme.spacing.xxxl, end = NuvioTheme.spacing.xxxl),
+            .padding(top = 20.dp, start = sectionPadding, end = sectionPadding),
         verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
     ) {
         @Composable
@@ -3321,6 +3331,9 @@ private fun PeopleSectionTabs(
         }
 
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(tabScroll),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             renderTabs(tabs)
@@ -3341,6 +3354,7 @@ private fun PeopleSectionTabButton(
     onFocused: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    val touchPreferred = prefersTouchCards()
 
     LaunchedEffect(isFocused, selected) {
         if (isFocused && !selected && activeFocusRequester != null) {
@@ -3349,8 +3363,9 @@ private fun PeopleSectionTabButton(
     }
 
     Card(
-        onClick = onFocused,
+        onClick = tvCardRemoteClick(touchPreferred, enabled = canFocus, onClick = onFocused),
         modifier = Modifier
+            .tvCardTouchClick(enabled = canFocus, onClick = onFocused)
             .focusRequester(focusRequester)
             .focusProperties {
                 this.canFocus = canFocus

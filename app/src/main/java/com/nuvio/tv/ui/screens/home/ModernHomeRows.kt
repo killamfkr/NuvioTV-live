@@ -434,6 +434,7 @@ internal fun ModernRowSection(
     rowFocusRequester: FocusRequester,
     isVerticalRowsScrollingState: State<Boolean>,
     rowTitleBottom: Dp,
+    rowTitleStartPadding: Dp = 52.dp,
     defaultBringIntoViewSpec: BringIntoViewSpec,
     focusStateCatalogRowScrollIndex: Int,
     focusStateCatalogRowScrollAnchor: String?,
@@ -537,8 +538,8 @@ internal fun ModernRowSection(
         }
         val rowTitle = row.title
         val textColor = NuvioTheme.colors.TextPrimary
-        val textModifier = remember(rowTitleBottom) {
-            Modifier.padding(start = 52.dp, bottom = rowTitleBottom)
+        val textModifier = remember(rowTitleBottom, rowTitleStartPadding) {
+            Modifier.padding(start = rowTitleStartPadding, bottom = rowTitleBottom)
         }
         Text(
             text = rowTitle,
