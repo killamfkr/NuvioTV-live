@@ -17,8 +17,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -377,6 +375,9 @@ fun SettingsScreen(
     LaunchedEffect(visibleSections) {
         if (visibleSections.none { it.category == selectedCategory }) {
             selectedCategory = visibleSections.firstOrNull()?.category ?: SettingsCategory.APPEARANCE
+            if (isHandheldSettings) {
+                mobileSettingsDetailOpen = false
+            }
         }
     }
 
@@ -427,8 +428,8 @@ fun SettingsScreen(
             )
     ) {
         SettingsWorkspaceSurface(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            classicContainer = !isHandheldSettings
         ) {
 
             val onSectionClick: (SettingsSectionSpec) -> Unit = { section ->
@@ -483,7 +484,9 @@ fun SettingsScreen(
                         )
                         LazyColumn(
                             state = railListState,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             itemsIndexed(
@@ -531,7 +534,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
+                                .fillMaxHeight()
                         ) {
                             SettingsDetailPane(
                                 selectedCategory = selectedCategory,
