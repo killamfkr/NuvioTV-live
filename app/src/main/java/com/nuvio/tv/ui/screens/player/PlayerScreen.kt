@@ -29,6 +29,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -133,6 +135,7 @@ import com.nuvio.tv.data.local.StreamAutoPlayMode
 import com.nuvio.tv.domain.model.Subtitle
 import com.nuvio.tv.domain.model.WatchProgress
 import com.nuvio.tv.ui.components.LoadingIndicator
+import com.nuvio.tv.ui.system.HandheldImmersiveSystemBarsEffect
 import android.text.format.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -178,6 +181,8 @@ fun PlayerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val postPlayRecommendationState by viewModel.postPlayRecommendationUiState.collectAsState()
+    val handheldPlayerUi = rememberHandheldPlayerUi()
+    val playerVideoTouchInteraction = remember { MutableInteractionSource() }
     val effectiveAutoplayEnabled by viewModel.effectiveAutoplayEnabled.collectAsState(initial = false)
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -572,6 +577,12 @@ fun PlayerScreen(
         onDispose { PlayerWindowBackdrop.releaseTransparent() }
     }
 
+    HandheldImmersiveSystemBarsEffect(
+        enabled = handheldPlayerUi &&
+            !postPlayRecommendationState.isVisible &&
+            uiState.error == null
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -921,27 +932,53 @@ fun PlayerScreen(
         val playerSurfaceShape = RoundedCornerShape(postPlayRecommendationPlayerCornerRadius)
         val playerSurfaceIsFullscreen = !postPlayRecommendationState.isVisible &&
             postPlayRecommendationPlayerWidth >= 0.999f
-        val playerSurfaceModifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(end = postPlayRecommendationPlayerPadding, top = postPlayRecommendationPlayerPadding)
-            .fillMaxWidth(postPlayRecommendationPlayerWidth)
-            .aspectRatio(16f / 9f)
-            .clip(playerSurfaceShape)
-            .border(
-                BorderStroke(1.dp, Color.White.copy(alpha = postPlayRecommendationPlayerBorderAlpha)),
-                playerSurfaceShape
-            )
-            .then(
-                if (transparentLetterbox && playerSurfaceIsFullscreen) Modifier
-                else Modifier.background(Color.Black)
-            )
-            .zIndex(
-                if (postPlayRecommendationState.isVisible || postPlayRecommendationPlayerWidth < 0.999f) {
-                    2.2f
-                } else {
-                    0f
-                }
-            )
+        val handheldFullscreenSurface = handheldPlayerUi && playerSurfaceIsFullscreen
+        val playerSurfaceModifier = if (handheldFullscreenSurface) {
+            Modifier
+                .align(Alignment.Center)
+                .fillMaxSize()
+                .clip(playerSurfaceShape)
+                .then(
+                    if (transparentLetterbox) Modifier
+                    else Modifier.background(Color.Black)
+                )
+                .zIndex(0f)
+        } else {
+            Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = postPlayRecommendationPlayerPadding, top = postPlayRecommendationPlayerPadding)
+                .fillMaxWidth(postPlayRecommendationPlayerWidth)
+                .aspectRatio(16f / 9f)
+                .clip(playerSurfaceShape)
+                .border(
+                    BorderStroke(1.dp, Color.White.copy(alpha = postPlayRecommendationPlayerBorderAlpha)),
+                    playerSurfaceShape
+                )
+                .then(
+                    if (transparentLetterbox && playerSurfaceIsFullscreen) Modifier
+                    else Modifier.background(Color.Black)
+                )
+                .zIndex(
+                    if (postPlayRecommendationState.isVisible || postPlayRecommendationPlayerWidth < 0.999f) {
+                        2.2f
+                    } else {
+                        0f
+                    }
+                )
+        }
+        val playerVideoTouchBlocked =
+            uiState.showEpisodesPanel || uiState.showSourcesPanel ||
+                uiState.showAudioOverlay || uiState.showSubtitleOverlay ||
+                uiState.showSubtitleStylePanel || uiState.showSubtitleDelayOverlay ||
+                uiState.showSubtitleTimingDialog || uiState.showSpeedDialog ||
+                uiState.showMoreDialog ||
+                shouldConfirmNextEpisodeOnEnd ||
+                uiState.postPlayMode is PostPlayMode.StillWatching ||
+                postPlayRecommendationState.isVisible ||
+                uiState.error != null ||
+                uiState.showLoadingOverlay ||
+                uiState.showPauseOverlay ||
+                uiState.showStreamInfoOverlay
 
         if (!exitDispatched &&
             !postPlayRecommendationState.isTrailerPlaying &&
@@ -958,7 +995,26 @@ fun PlayerScreen(
                 playerView?.setAssOverlayVisibility(vis)
             }
 
-            Box(modifier = playerSurfaceModifier) {
+            Box(
+                modifier = playerSurfaceModifier.then(
+                    if (handheldFullscreenSurface && !playerVideoTouchBlocked) {
+                        Modifier.clickable(
+                            interactionSource = playerVideoTouchInteraction,
+                            indication = null,
+                            onClick = {
+                                viewModel.onUserInteraction()
+                                if (!uiState.showControls) {
+                                    viewModel.onEvent(PlayerEvent.OnToggleControls)
+                                } else {
+                                    viewModel.onEvent(PlayerEvent.OnPlayPause)
+                                }
+                            }
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+            ) {
                 if (uiState.internalPlayerEngine == InternalPlayerEngine.MVP_PLAYER) {
                     MpvPlayerSurface(
                         viewModel = viewModel,

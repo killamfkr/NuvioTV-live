@@ -863,6 +863,7 @@ open class MainActivity : ComponentActivity() {
                         mainUiPrefs.modernSidebarBlurPref && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
                     val hideBuiltInHeadersForFloatingPill = modernSidebarEnabled && !sidebarCollapsed
                     val isTelevision = remember { DeviceFormFactor.isTelevision(context) }
+                    val handheldNavigation = remember { DeviceFormFactor.useHandheldNavigation(context) }
 
                     val startDestination = when {
                         needsExperienceSelection -> Screen.ExperienceModeSelection.route
@@ -1191,10 +1192,10 @@ open class MainActivity : ComponentActivity() {
                             hasSelectedProfileThisSession = false
                         }
                         CompositionLocalProvider(
-                            LocalHandheldNavigation provides !isTelevision
+                            LocalHandheldNavigation provides handheldNavigation
                         ) {
                         Box(modifier = Modifier.fillMaxSize()) {
-                            if (!isTelevision) {
+                            if (handheldNavigation) {
                                 MobileBottomNavScaffold(
                                     navController = navController,
                                     startDestination = startDestination,

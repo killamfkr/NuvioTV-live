@@ -39,4 +39,16 @@ object DeviceFormFactor {
         val compactWidth = config.screenWidthDp < 600
         return portrait || compactWidth
     }
+
+    fun useHandheldPlayerUi(
+        context: Context,
+        handheldNavigationActive: Boolean = false
+    ): Boolean = useHandheldStreamUi(context, handheldNavigationActive)
+
+    /** Bottom-nav shell for phones and touch tablets that would otherwise use the TV sidebar. */
+    fun useHandheldNavigation(context: Context): Boolean {
+        if (!isTelevision(context)) return true
+        val config = context.resources.configuration
+        return supportsTouchscreen(context) && config.smallestScreenWidthDp >= 600
+    }
 }

@@ -95,4 +95,18 @@ class DeviceFormFactorTest {
 
         assertTrue(DeviceFormFactor.useHandheldStreamUi(context, handheldNavigationActive = true))
     }
+
+    @Test
+    fun `useHandheldNavigation is true for touch tablet reporting TV`() {
+        val context = mockk<Context>(relaxed = true)
+        val pm = mockk<PackageManager>()
+        val configuration = Configuration()
+        configuration.smallestScreenWidthDp = 720
+        every { context.packageManager } returns pm
+        every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns true
+        every { pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) } returns true
+        every { context.resources.configuration } returns configuration
+
+        assertTrue(DeviceFormFactor.useHandheldNavigation(context))
+    }
 }
