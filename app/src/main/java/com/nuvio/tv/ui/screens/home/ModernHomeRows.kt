@@ -106,6 +106,9 @@ import com.nuvio.tv.domain.model.ContinueWatchingCardStyle
 import com.nuvio.tv.domain.model.PLACEHOLDER_IMAGE_URL
 import com.nuvio.tv.domain.model.isPlaceholder
 import com.nuvio.tv.ui.components.ContinueWatchingCard
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.ui.components.continueWatchingArtworkWidth
 import com.nuvio.tv.ui.components.continueWatchingImageCacheKey
 import com.nuvio.tv.ui.components.continueWatchingImageModel
@@ -1301,7 +1304,7 @@ private fun ModernCarouselCard(
         titleMedium.copy(fontWeight = FontWeight.Medium)
     }
 
-    val touchPreferred = com.nuvio.tv.ui.components.prefersTouchCards()
+    val touchPreferred = prefersTouchCards()
     val activateCard = {
         if (longPressTriggered) {
             longPressTriggered = false
@@ -1317,11 +1320,11 @@ private fun ModernCarouselCard(
         verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
     ) {
         Card(
-            onClick = com.nuvio.tv.ui.components.tvCardRemoteClick(touchPreferred, onClick = activateCard),
+            onClick = tvCardRemoteClick(touchPreferred, onClick = activateCard),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(cardHeight)
-                .com.nuvio.tv.ui.components.tvCardTouchClick(onClick = activateCard)
+                .tvCardTouchClick(onClick = activateCard)
                 .focusRequester(focusRequester)
                 .onFocusChanged {
                     isFocused = it.isFocused
