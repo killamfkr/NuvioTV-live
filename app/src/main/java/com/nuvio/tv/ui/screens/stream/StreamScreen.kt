@@ -157,13 +157,13 @@ fun StreamScreen(
     )
     val scope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
-    val compactPortraitLayout =
-        configuration.screenHeightDp > configuration.screenWidthDp &&
-            configuration.screenWidthDp < 700
-    val handheldStreamUi = DeviceFormFactor.useHandheldStreamUi(
-        context = context,
-        handheldNavigationActive = LocalHandheldNavigation.current
-    ) || compactPortraitLayout
+    val portraitOrientation = configuration.screenHeightDp > configuration.screenWidthDp
+    val handheldStreamUi = LocalHandheldNavigation.current ||
+        portraitOrientation ||
+        DeviceFormFactor.useHandheldStreamUi(
+            context = context,
+            handheldNavigationActive = LocalHandheldNavigation.current
+        )
     val streamHazeState = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) HazeState() else null
     }
