@@ -65,6 +65,7 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -3298,17 +3299,18 @@ private fun PeopleSectionTabs(
     val touchDetail = prefersTouchCards() && !DeviceFormFactor.isTelevision(LocalContext.current)
     val sectionPadding = if (touchDetail) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
     val tabScroll = rememberScrollState()
+    val tabRowSpacing = if (touchDetail) NuvioTheme.spacing.sm else 0.dp
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 20.dp, start = sectionPadding, end = sectionPadding),
+            .padding(top = if (touchDetail) 12.dp else 20.dp, start = sectionPadding, end = sectionPadding),
         verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
     ) {
         @Composable
         fun androidx.compose.foundation.layout.RowScope.renderTabs(items: List<PeopleTabItem>) {
             items.forEachIndexed { index, item ->
-                if (index > 0) {
+                if (index > 0 && !touchDetail) {
                     Text(
                         text = "|",
                         style = MaterialTheme.typography.titleLarge,
@@ -3320,6 +3322,7 @@ private fun PeopleSectionTabs(
                 PeopleSectionTabButton(
                     label = item.label,
                     selected = activeTab == item.tab,
+                    chipStyle = touchDetail,
                     canFocus = tabsCanFocus,
                     focusRequester = item.focusRequester,
                     activeFocusRequester = if (activeTab != item.tab) restorerRequester else null,
@@ -3335,6 +3338,7 @@ private fun PeopleSectionTabs(
                 .fillMaxWidth()
                 .horizontalScroll(tabScroll),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (touchDetail) Arrangement.spacedBy(tabRowSpacing) else Arrangement.Start,
         ) {
             renderTabs(tabs)
         }
@@ -3346,6 +3350,7 @@ private fun PeopleSectionTabs(
 private fun PeopleSectionTabButton(
     label: String,
     selected: Boolean,
+    chipStyle: Boolean = false,
     canFocus: Boolean = true,
     focusRequester: FocusRequester,
     activeFocusRequester: FocusRequester? = null,
@@ -3355,6 +3360,17 @@ private fun PeopleSectionTabButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val touchPreferred = prefersTouchCards()
+    val chipShape = remember { RoundedCornerShape(NuvioTheme.radii.xl) }
+    val chipPadding = if (chipStyle) {
+        Modifier.padding(horizontal = NuvioTheme.spacing.lg, vertical = NuvioTheme.spacing.sm)
+    } else {
+        Modifier.padding(horizontal = NuvioTheme.spacing.xxs, vertical = NuvioTheme.spacing.xxs)
+    }
+    val labelStyle = if (chipStyle) {
+        MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+    } else {
+        MaterialTheme.typography.titleLarge
+    }
 
     LaunchedEffect(isFocused, selected) {
         if (isFocused && !selected && activeFocusRequester != null) {
@@ -3365,6 +3381,17 @@ private fun PeopleSectionTabButton(
     Card(
         onClick = tvCardRemoteClick(touchPreferred, enabled = canFocus, onClick = onFocused),
         modifier = Modifier
+            .then(
+                if (chipStyle && !selected && !isFocused) {
+                    Modifier.border(
+                        width = 1.dp,
+                        color = NuvioTheme.colors.TextPrimary.copy(alpha = 0.28f),
+                        shape = chipShape
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .tvCardTouchClick(enabled = canFocus, onClick = onFocused)
             .focusRequester(focusRequester)
             .focusProperties {
@@ -3384,26 +3411,38 @@ private fun PeopleSectionTabButton(
                 }
             },
         colors = CardDefaults.colors(
-            containerColor = Color.Transparent,
-            focusedContainerColor = Color.Transparent
+            containerColor = when {
+                chipStyle && selected -> NuvioTheme.colors.SurfaceVariant
+                chipStyle -> NuvioTheme.colors.BackgroundCard
+                else -> Color.Transparent
+            },
+            focusedContainerColor = when {
+                chipStyle -> NuvioTheme.colors.Secondary
+                else -> Color.Transparent
+            }
         ),
         border = CardDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(NuvioTheme.spacing.none, Color.Transparent),
-                shape = RoundedCornerShape(NuvioTheme.radii.xl)
+                border = BorderStroke(
+                    if (chipStyle) NuvioTheme.spacing.xxs else NuvioTheme.spacing.none,
+                    if (chipStyle) NuvioTheme.colors.TextPrimary.copy(alpha = 0.35f) else Color.Transparent
+                ),
+                shape = chipShape
             )
         ),
-        scale = CardDefaults.scale(focusedScale = 1.03f)
+        scale = CardDefaults.scale(focusedScale = if (chipStyle) 1.02f else 1.03f)
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.titleLarge,
+            style = labelStyle,
             color = when {
+                chipStyle && (isFocused || selected) -> NuvioTheme.colors.TextPrimary
+                chipStyle -> NuvioTheme.colors.TextPrimary.copy(alpha = 0.88f)
                 isFocused -> NuvioTheme.colors.TextPrimary
                 selected -> NuvioTheme.colors.TextPrimary.copy(alpha = 0.92f)
                 else -> NuvioTheme.colors.TextPrimary.copy(alpha = 0.55f)
             },
-            modifier = Modifier.padding(horizontal = NuvioTheme.spacing.xxs, vertical = NuvioTheme.spacing.xxs)
+            modifier = chipPadding
         )
     }
 }

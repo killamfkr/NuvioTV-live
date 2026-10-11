@@ -435,6 +435,7 @@ internal fun ModernRowSection(
     isVerticalRowsScrollingState: State<Boolean>,
     rowTitleBottom: Dp,
     rowTitleStartPadding: Dp = 52.dp,
+    touchPhoneRowTitles: Boolean = false,
     defaultBringIntoViewSpec: BringIntoViewSpec,
     focusStateCatalogRowScrollIndex: Int,
     focusStateCatalogRowScrollAnchor: String?,
@@ -532,9 +533,23 @@ internal fun ModernRowSection(
             } else Modifier
         )
     ) {
-        val titleMediumStyle = MaterialTheme.typography.titleMedium
-        val rowTitleStyle = remember(titleMediumStyle) {
-            titleMediumStyle.copy(fontWeight = FontWeight.SemiBold)
+        val titleBaseStyle = if (touchPhoneRowTitles) {
+            MaterialTheme.typography.titleLarge
+        } else {
+            MaterialTheme.typography.titleMedium
+        }
+        val rowTitleStyle = remember(titleBaseStyle, touchPhoneRowTitles) {
+            titleBaseStyle.copy(
+                fontWeight = FontWeight.SemiBold,
+                shadow = if (touchPhoneRowTitles) {
+                    androidx.compose.ui.graphics.Shadow(
+                        color = Color.Black.copy(alpha = 0.55f),
+                        blurRadius = 10f
+                    )
+                } else {
+                    null
+                }
+            )
         }
         val rowTitle = row.title
         val textColor = NuvioTheme.colors.TextPrimary

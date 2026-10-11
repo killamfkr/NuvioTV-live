@@ -1009,7 +1009,7 @@ fun ModernHomeContent(
             val rowsViewportHeightFraction = when {
                 useLandscapePosters && touchPhoneHome -> 0.62f
                 useLandscapePosters -> 0.49f
-                touchPhoneHome -> 0.72f
+                touchPhoneHome -> 0.78f
                 else -> 0.52f
             }
             val rowTitleStartPadding = if (touchPhoneHome) NuvioTheme.spacing.md else 52.dp
@@ -1244,6 +1244,7 @@ fun ModernHomeContent(
                 blockLeftOnFirstExpandedItem = blockLeftOnFirstExpandedItem,
                 isVerticalRowsScrollingState = isVerticalRowsScrollingState,
                 rowTitleStartPadding = rowTitleStartPadding,
+                touchPhoneRowTitles = touchPhoneHome,
                 liveTvRowStartPadding = rowTitleStartPadding,
                 modifier = Modifier
                     .align(Alignment.BottomStart)

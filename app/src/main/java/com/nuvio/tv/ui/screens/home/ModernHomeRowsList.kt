@@ -147,6 +147,7 @@ internal fun ModernHomeRowsList(
     onExpansionInteractionNonceChange: (Int) -> Unit,
     blockLeftOnFirstExpandedItem: Boolean = false,
     rowTitleStartPadding: Dp = 52.dp,
+    touchPhoneRowTitles: Boolean = false,
     liveTvRowStartPadding: Dp = 52.dp,
     modifier: Modifier = Modifier
 ) {
@@ -438,7 +439,9 @@ internal fun ModernHomeRowsList(
                         hideUnlessFocused = !com.nuvio.tv.ui.components.prefersTouchCards(),
                         above = liveTvRowAbove == true,
                         startPadding = liveTvRowStartPadding,
-                        titleStyle = androidx.tv.material3.MaterialTheme.typography.titleMedium.copy(
+                        titleStyle = androidx.tv.material3.MaterialTheme.typography.run {
+                            if (touchPhoneRowTitles) titleLarge else titleMedium
+                        }.copy(
                             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                         )
                     )
@@ -447,8 +450,9 @@ internal fun ModernHomeRowsList(
                     row = row,
                     isActiveRow = isActiveRowLambda,
                     rowFocusRequester = rowFocusRequesters.getOrPut(row.key) { FocusRequester() },
-                    rowTitleBottom = 14.dp, // rowTitleBottom
+                    rowTitleBottom = if (touchPhoneRowTitles) 10.dp else 14.dp,
                     rowTitleStartPadding = rowTitleStartPadding,
+                    touchPhoneRowTitles = touchPhoneRowTitles,
                     defaultBringIntoViewSpec = defaultBringIntoViewSpec,
                     focusStateCatalogRowScrollIndex = focusState.catalogRowScrollStates[row.key] ?: 0,
                     focusStateCatalogRowScrollAnchor = focusState.catalogRowScrollAnchors[row.key],
