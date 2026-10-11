@@ -88,8 +88,6 @@ class AccountViewModel @Inject constructor(
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    val driveOpenVerificationUrl = liveTvDriveSync.openVerificationUrl
-
     private val _uiState = MutableStateFlow(AccountUiState())
     val uiState: StateFlow<AccountUiState> = _uiState.asStateFlow()
     private var qrLoginPollJob: Job? = null

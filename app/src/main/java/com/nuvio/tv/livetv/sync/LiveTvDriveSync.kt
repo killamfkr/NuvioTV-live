@@ -5,7 +5,6 @@ import android.os.Build
 import android.util.Base64
 import android.util.Log
 import com.nuvio.tv.BuildConfig
-import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.livetv.data.LiveTvPreferences
 import com.nuvio.tv.livetv.data.LiveTvRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -14,11 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
@@ -83,10 +79,6 @@ class LiveTvDriveSync @Inject constructor(
 
     private val _state = MutableStateFlow(loadState())
     val state: StateFlow<DriveSyncState> = _state.asStateFlow()
-
-    /** Open Google's approval page on handheld after the device code is issued. */
-    private val _openVerificationUrl = MutableSharedFlow<String>(extraBufferCapacity = 1)
-    val openVerificationUrl: SharedFlow<String> = _openVerificationUrl.asSharedFlow()
 
     private var started = false
     private var signInJob: Job? = null
@@ -158,9 +150,6 @@ class LiveTvDriveSync @Inject constructor(
             val expiresAt = System.currentTimeMillis() + codes.optLong("expires_in", 1800) * 1000
             var interval = codes.optLong("interval", 5).coerceAtLeast(5)
             _state.value = _state.value.copy(busy = false, signIn = SignInPrompt(userCode, url, qrUrl, expiresAt))
-            if (DeviceFormFactor.prefersTouchGuide(context)) {
-                _openVerificationUrl.tryEmit(qrUrl)
-            }
 
             while (System.currentTimeMillis() < expiresAt) {
                 delay(interval * 1000)

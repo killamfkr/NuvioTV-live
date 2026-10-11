@@ -56,7 +56,6 @@ import androidx.tv.material3.Text
 import com.nuvio.tv.domain.model.AuthState
 import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
-import com.nuvio.tv.ui.components.CollectDriveVerificationUrlLauncher
 import com.nuvio.tv.ui.components.GoogleDeviceCodeSignInDialog
 import androidx.compose.material.icons.filled.CloudUpload
 
@@ -137,14 +136,12 @@ private fun SignedInAccountSettingsContent(
     val listState = rememberLazyListState()
     var showSignOutConfirmation by remember { mutableStateOf(false) }
     val drive = uiState.driveSyncState
-    CollectDriveVerificationUrlLauncher(viewModel.driveOpenVerificationUrl)
-
     drive?.signIn?.let { prompt ->
         GoogleDeviceCodeSignInDialog(
             title = stringResource(R.string.auth_drive_link_title),
             prompt = prompt,
-            instruction = stringResource(R.string.account_drive_sync_instruction),
-            waitingMessage = stringResource(R.string.account_drive_sync_waiting),
+            instruction = stringResource(R.string.drive_device_code_instruction),
+            waitingMessage = stringResource(R.string.drive_device_code_waiting),
             onCancel = { viewModel.cancelDriveSignIn() }
         )
     }

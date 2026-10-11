@@ -788,12 +788,11 @@ fun LiveTvSettingsContent(
     }
 
     drive.signIn?.let { prompt ->
-        com.nuvio.tv.ui.components.CollectDriveVerificationUrlLauncher(viewModel.driveSync.openVerificationUrl)
         com.nuvio.tv.ui.components.GoogleDeviceCodeSignInDialog(
             title = stringResource(R.string.auth_drive_link_title),
             prompt = prompt,
-            instruction = stringResource(R.string.account_drive_sync_instruction),
-            waitingMessage = stringResource(R.string.account_drive_sync_waiting),
+            instruction = stringResource(R.string.drive_device_code_instruction),
+            waitingMessage = stringResource(R.string.drive_device_code_waiting),
             onCancel = { viewModel.driveSync.cancelSignIn() }
         )
     }
@@ -1210,7 +1209,7 @@ private fun DriveSyncCard(
         if (expanded) {
             when {
                 !state.available -> Text(
-                    text = "Google Drive sync needs to be set up by whoever builds this app.",
+                    text = "Google Drive sign-in uses a code at google.com/device. This build is missing the Google Cloud OAuth client (TVs and Limited Input devices) needed for that flow.",
                     style = MaterialTheme.typography.bodySmall,
                     color = NuvioTheme.colors.TextSecondary
                 )
