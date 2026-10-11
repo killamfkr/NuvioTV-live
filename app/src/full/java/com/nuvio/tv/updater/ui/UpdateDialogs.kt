@@ -7,6 +7,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -47,6 +48,9 @@ import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
 import com.nuvio.tv.R
 import com.nuvio.tv.ui.components.NuvioDialog
+import com.nuvio.tv.ui.components.prefersTouchCards
+import com.nuvio.tv.ui.components.tvCardRemoteClick
+import com.nuvio.tv.ui.components.tvCardTouchClick
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.theme.NuvioTheme
 import com.nuvio.tv.updater.model.AppUpdate
@@ -151,6 +155,8 @@ internal fun UpdateUnknownSourcesDialog(
         settingsFocusRequester.requestFocusAfterFrames()
     }
 
+    val touchPreferred = prefersTouchCards()
+
     NuvioDialog(
         onDismiss = onDismiss,
         title = stringResource(R.string.update_title),
@@ -158,35 +164,66 @@ internal fun UpdateUnknownSourcesDialog(
         width = 560.dp,
         suppressFirstKeyUp = false
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
-        ) {
-            Button(
-                onClick = onOpenSettings,
-                modifier = Modifier.focusRequester(settingsFocusRequester),
-                colors = ButtonDefaults.colors(
-                    containerColor = NuvioTheme.colors.Secondary,
-                    focusedContainerColor = NuvioTheme.colors.SecondaryVariant,
-                    contentColor = NuvioTheme.colors.OnSecondary,
-                    focusedContentColor = NuvioTheme.colors.OnSecondaryVariant
-                ),
-                shape = ButtonDefaults.shape(RoundedCornerShape(50))
+        val buttonShape = ButtonDefaults.shape(RoundedCornerShape(50))
+        val primaryColors = ButtonDefaults.colors(
+            containerColor = NuvioTheme.colors.Secondary,
+            focusedContainerColor = NuvioTheme.colors.SecondaryVariant,
+            contentColor = NuvioTheme.colors.OnSecondary,
+            focusedContentColor = NuvioTheme.colors.OnSecondaryVariant
+        )
+        val secondaryColors = ButtonDefaults.colors(
+            containerColor = NuvioTheme.colors.BackgroundCard,
+            focusedContainerColor = NuvioTheme.colors.FocusBackground,
+            contentColor = NuvioTheme.colors.TextPrimary,
+            focusedContentColor = NuvioTheme.colors.Primary
+        )
+        if (touchPreferred) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
             ) {
-                Text(stringResource(R.string.update_open_settings))
+                Button(
+                    onClick = tvCardRemoteClick(touchPreferred, onClick = onOpenSettings),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .tvCardTouchClick(onClick = onOpenSettings),
+                    colors = primaryColors,
+                    shape = buttonShape
+                ) {
+                    Text(stringResource(R.string.update_open_settings))
+                }
+                Button(
+                    onClick = tvCardRemoteClick(touchPreferred, onClick = onDismiss),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .tvCardTouchClick(onClick = onDismiss),
+                    colors = secondaryColors,
+                    shape = buttonShape
+                ) {
+                    Text(stringResource(R.string.update_close))
+                }
             }
-
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.colors(
-                    containerColor = NuvioTheme.colors.BackgroundCard,
-                    focusedContainerColor = NuvioTheme.colors.FocusBackground,
-                    contentColor = NuvioTheme.colors.TextPrimary,
-                    focusedContentColor = NuvioTheme.colors.Primary
-                ),
-                shape = ButtonDefaults.shape(RoundedCornerShape(50))
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
             ) {
-                Text(stringResource(R.string.update_close))
+                Button(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.focusRequester(settingsFocusRequester),
+                    colors = primaryColors,
+                    shape = buttonShape
+                ) {
+                    Text(stringResource(R.string.update_open_settings))
+                }
+
+                Button(
+                    onClick = onDismiss,
+                    colors = secondaryColors,
+                    shape = buttonShape
+                ) {
+                    Text(stringResource(R.string.update_close))
+                }
             }
         }
     }
