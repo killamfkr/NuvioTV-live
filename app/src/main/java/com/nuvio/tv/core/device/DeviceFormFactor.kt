@@ -22,8 +22,21 @@ object DeviceFormFactor {
         return !isTelevision(context) || supportsTouchscreen(context)
     }
 
-    /** Full-screen phone/tablet stream picker (stacked list), not the TV side-by-side layout. */
-    fun useHandheldStreamUi(context: Context): Boolean {
-        return !isTelevision(context)
+    /**
+     * Full-screen phone/tablet stream picker (stacked list), not the TV side-by-side layout.
+     * Uses navigation mode when provided; otherwise infers from form factor and screen shape.
+     */
+    fun useHandheldStreamUi(
+        context: Context,
+        handheldNavigationActive: Boolean = false
+    ): Boolean {
+        if (handheldNavigationActive) return true
+        if (!isTelevision(context)) return true
+        val config = context.resources.configuration
+        if (!supportsTouchscreen(context)) return false
+        // Sideloaded / misclassified phones can report leanback + TV uiMode while in portrait.
+        val portrait = config.screenHeightDp > config.screenWidthDp
+        val compactWidth = config.screenWidthDp < 600
+        return portrait || compactWidth
     }
 }

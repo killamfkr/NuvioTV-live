@@ -41,6 +41,8 @@ class DeviceFormFactorTest {
         val pm = mockk<PackageManager>()
         val configuration = Configuration()
         configuration.uiMode = Configuration.UI_MODE_TYPE_NORMAL
+        configuration.screenWidthDp = 411
+        configuration.screenHeightDp = 891
         every { context.packageManager } returns pm
         every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns false
         every { context.resources.configuration } returns configuration
@@ -52,10 +54,45 @@ class DeviceFormFactorTest {
     fun `useHandheldStreamUi is false for leanback TV`() {
         val context = mockk<Context>(relaxed = true)
         val pm = mockk<PackageManager>()
+        val configuration = Configuration()
+        configuration.screenWidthDp = 960
+        configuration.screenHeightDp = 540
         every { context.packageManager } returns pm
         every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns true
-        every { context.resources.configuration } returns Configuration()
+        every { pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) } returns false
+        every { context.resources.configuration } returns configuration
 
         assertFalse(DeviceFormFactor.useHandheldStreamUi(context))
+    }
+
+    @Test
+    fun `useHandheldStreamUi is true for portrait touch device misclassified as TV`() {
+        val context = mockk<Context>(relaxed = true)
+        val pm = mockk<PackageManager>()
+        val configuration = Configuration()
+        configuration.uiMode = Configuration.UI_MODE_TYPE_TELEVISION
+        configuration.screenWidthDp = 411
+        configuration.screenHeightDp = 891
+        every { context.packageManager } returns pm
+        every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns true
+        every { pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) } returns true
+        every { context.resources.configuration } returns configuration
+
+        assertTrue(DeviceFormFactor.useHandheldStreamUi(context))
+    }
+
+    @Test
+    fun `useHandheldStreamUi follows handheld navigation flag`() {
+        val context = mockk<Context>(relaxed = true)
+        val pm = mockk<PackageManager>()
+        val configuration = Configuration()
+        configuration.screenWidthDp = 960
+        configuration.screenHeightDp = 540
+        every { context.packageManager } returns pm
+        every { pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) } returns true
+        every { pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) } returns true
+        every { context.resources.configuration } returns configuration
+
+        assertTrue(DeviceFormFactor.useHandheldStreamUi(context, handheldNavigationActive = true))
     }
 }

@@ -76,6 +76,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import com.nuvio.tv.ui.util.contentTextDirection
@@ -89,6 +90,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
+import com.nuvio.tv.LocalHandheldNavigation
 import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.core.player.ExternalPlayerLauncher
 import com.nuvio.tv.ui.components.prefersTouchCards
@@ -154,7 +156,14 @@ fun StreamScreen(
         initialValue = StreamBadgeSettings()
     )
     val scope = rememberCoroutineScope()
-    val handheldStreamUi = DeviceFormFactor.useHandheldStreamUi(context)
+    val configuration = LocalConfiguration.current
+    val compactPortraitLayout =
+        configuration.screenHeightDp > configuration.screenWidthDp &&
+            configuration.screenWidthDp < 700
+    val handheldStreamUi = DeviceFormFactor.useHandheldStreamUi(
+        context = context,
+        handheldNavigationActive = LocalHandheldNavigation.current
+    ) || compactPortraitLayout
     val streamHazeState = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) HazeState() else null
     }

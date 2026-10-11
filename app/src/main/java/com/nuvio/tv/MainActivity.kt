@@ -215,6 +215,9 @@ import kotlinx.coroutines.launch
 
 val LocalSidebarExpanded = compositionLocalOf { false }
 
+/** True when the app root uses phone bottom-nav (not TV sidebar). Stream picker follows this. */
+val LocalHandheldNavigation = compositionLocalOf { false }
+
 /** Opens Nuvio's side menu from a screen (used by Live TV's back button). */
 val LocalOpenSidebar = compositionLocalOf<() -> Unit> { {} }
 val LocalContentFocusRequester = compositionLocalOf { FocusRequester.Default }
@@ -1187,6 +1190,9 @@ open class MainActivity : ComponentActivity() {
                             focusedSplashTheme = null
                             hasSelectedProfileThisSession = false
                         }
+                        CompositionLocalProvider(
+                            LocalHandheldNavigation provides !isTelevision
+                        ) {
                         Box(modifier = Modifier.fillMaxSize()) {
                             if (!isTelevision) {
                                 MobileBottomNavScaffold(
@@ -1253,6 +1259,7 @@ open class MainActivity : ComponentActivity() {
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
+                        }
                         }
                     }
                 } 
