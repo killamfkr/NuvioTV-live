@@ -59,7 +59,7 @@ internal fun LayoutHomeLayoutSection(
         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
     ) {
         listOf(HomeLayout.MODERN, HomeLayout.GRID, HomeLayout.CLASSIC).forEachIndexed { index, layout ->
-            LayoutCard(
+            LayoutSettingsCard(
                 layout = layout,
                 isSelected = uiState.selectedLayout == layout,
                 onClick = { onEvent(LayoutSettingsEvent.SelectLayout(layout)) },
@@ -230,7 +230,7 @@ internal fun LayoutSidebarSection(
 }
 
 @Composable
-private fun LayoutCard(
+private fun LayoutSettingsCard(
     layout: HomeLayout,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -239,7 +239,7 @@ private fun LayoutCard(
     var isFocused by remember { mutableStateOf(false) }
     val animatePreview = isSelected || isFocused
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier.onFocusChanged { state ->
             val nowFocused = state.isFocused

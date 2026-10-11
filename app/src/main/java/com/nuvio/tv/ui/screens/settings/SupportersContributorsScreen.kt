@@ -386,7 +386,7 @@ private fun SupportersTabContent(
                             supporterFocusRequesters.getOrPut(supporter.key) { FocusRequester() }
                         }
                         val isFirstItem = supporter.key == uiState.supporters.firstOrNull()?.key
-                        SupporterCard(
+                        SupporterSettingsCard(
                             supporter = supporter,
                             focusRequester = requester,
                             leftFocusRequester = leftFocusRequester,
@@ -457,7 +457,7 @@ private fun SponsorsTabContent(
                             sponsorFocusRequesters.getOrPut(sponsor.id) { FocusRequester() }
                         }
                         val isFirstItem = sponsor.id == uiState.sponsors.firstOrNull()?.id
-                        SponsorCard(
+                        SponsorSettingsCard(
                             sponsor = sponsor,
                             focusRequester = requester,
                             leftFocusRequester = leftFocusRequester,
@@ -528,7 +528,7 @@ private fun ContributorsTabContent(
                             contributorFocusRequesters.getOrPut(contributor.id) { FocusRequester() }
                         }
                         val isFirstItem = contributor.id == uiState.contributors.firstOrNull()?.id
-                        ContributorCard(
+                        ContributorSettingsCard(
                             contributor = contributor,
                             focusRequester = requester,
                             leftFocusRequester = leftFocusRequester,
@@ -615,7 +615,7 @@ private fun TabErrorState(
 }
 
 @Composable
-private fun SupporterCard(
+private fun SupporterSettingsCard(
     supporter: SupporterMember,
     focusRequester: FocusRequester,
     leftFocusRequester: FocusRequester,
@@ -624,7 +624,7 @@ private fun SupporterCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -703,7 +703,7 @@ private fun SupporterCard(
 }
 
 @Composable
-private fun SponsorCard(
+private fun SponsorSettingsCard(
     sponsor: DevelopmentSponsor,
     focusRequester: FocusRequester,
     leftFocusRequester: FocusRequester,
@@ -712,7 +712,7 @@ private fun SponsorCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -772,7 +772,7 @@ private fun SponsorCard(
 }
 
 @Composable
-private fun ContributorCard(
+private fun ContributorSettingsCard(
     contributor: GitHubContributor,
     focusRequester: FocusRequester,
     leftFocusRequester: FocusRequester,
@@ -781,7 +781,7 @@ private fun ContributorCard(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -940,7 +940,7 @@ private fun RowScope.SupportersTabButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .weight(1f)

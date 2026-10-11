@@ -147,23 +147,23 @@ android {
         buildConfigField("String", "SPONSOR_NAMES", buildConfigString(sponsorNames))
         buildConfigField("String", "SENTRY_DSN", buildConfigString(sentryDsn))
 
-        // In-app updater (GitHub Releases) — override in local.properties for other forks.
-        buildConfigField(
-            "String",
-            "GITHUB_OWNER",
-            buildConfigString(localProperties.getProperty("GITHUB_OWNER", "killamfkr"))
-        )
-        buildConfigField(
-            "String",
-            "GITHUB_REPO",
-            buildConfigString(localProperties.getProperty("GITHUB_REPO", "NuvioTV-live"))
-        )
     }
 
     flavorDimensions += "distribution"
     productFlavors {
         create("full") {
             dimension = "distribution"
+            // Nuvio + IPTV fork: in-app updates from this GitHub repo (override via local.properties).
+            buildConfigField(
+                "String",
+                "GITHUB_OWNER",
+                buildConfigString(localProperties.getProperty("GITHUB_OWNER", "killamfkr"))
+            )
+            buildConfigField(
+                "String",
+                "GITHUB_REPO",
+                buildConfigString(localProperties.getProperty("GITHUB_REPO", "NuvioTV-live"))
+            )
             buildConfigField("boolean", "FEATURE_PLUGINS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_IN_APP_TRAILERS_ENABLED", "true")

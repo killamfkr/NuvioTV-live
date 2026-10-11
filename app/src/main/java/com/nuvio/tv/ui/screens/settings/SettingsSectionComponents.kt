@@ -168,8 +168,10 @@ internal fun SettingsResetButton(
     val flat = isFlatSettingsStyle()
     val shape = if (flat) settingsRowShape() else RoundedCornerShape(SettingsPillRadius)
     Button(
-        onClick = onClick,
-        modifier = modifier.onFocusChanged { if (it.isFocused) onFocused() },
+        onClick = settingsRemoteCardOnClick(onClick = onClick),
+        modifier = modifier
+            .settingsTouchClick(onClick = onClick)
+            .onFocusChanged { if (it.isFocused) onFocused() },
         shape = ButtonDefaults.shape(shape = shape),
         colors = ButtonDefaults.colors(
             containerColor = NuvioTheme.colors.Background,

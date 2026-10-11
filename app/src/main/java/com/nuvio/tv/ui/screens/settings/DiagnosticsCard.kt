@@ -221,7 +221,7 @@ internal fun LazyListScope.diagnosticsCardItems(
 private fun DiagnosticsSectionCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
+    SettingsCard(
         onClick = { /* read-only */ },
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.colors(

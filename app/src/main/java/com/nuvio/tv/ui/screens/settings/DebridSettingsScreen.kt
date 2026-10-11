@@ -911,7 +911,7 @@ private fun DebridTextListDialog(
         width = 560.dp,
         suppressFirstKeyUp = false
     ) {
-        Card(
+        SettingsCard(
             onClick = { inputFocusRequester.requestFocus() },
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.colors(
@@ -1501,7 +1501,7 @@ private fun DebridApiKeyDialog(
         width = 700.dp,
         suppressFirstKeyUp = false
     ) {
-        Card(
+        SettingsCard(
             onClick = { inputFocusRequester.requestFocus() },
             modifier = Modifier
                 .fillMaxWidth()

@@ -11,6 +11,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -60,6 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.C
 import androidx.media3.ui.AspectRatioFrameLayout
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.livetv.model.LiveChannel
 import com.nuvio.tv.livetv.player.LiveTrackOption
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -128,6 +131,22 @@ fun LiveTvPlayerScreen(
     }
 
     fun showBanner() { bannerVisible = true; bannerToken++ }
+
+    fun onPrimaryTap() {
+        if (listVisible || dialog != PlayerDialog.NONE) return
+        val archive = playback.catchupTitle != null
+        when {
+            playback.error != null && playback.reconnectAttempt > 8 -> viewModel.playback.retry()
+            archive -> {
+                viewModel.playback.togglePause()
+                showBanner()
+            }
+            bannerVisible -> bannerVisible = false
+            else -> showBanner()
+        }
+    }
+
+    val touchPlayer = DeviceFormFactor.prefersTouchGuide(context)
 
     // Picture quality (for the guide's badges) and frame rate (for Match frame rate).
     var videoFps by remember { mutableStateOf(-1f) }
@@ -310,6 +329,17 @@ fun LiveTvPlayerScreen(
                     else -> false
                 }
             }
+            .then(
+                if (touchPlayer) {
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { onPrimaryTap() }
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .focusable()
     ) {
         if (!embedded) LivePlayerSurface(

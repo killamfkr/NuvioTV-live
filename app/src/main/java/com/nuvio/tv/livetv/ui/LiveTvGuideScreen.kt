@@ -127,6 +127,7 @@ fun LiveTvGuideScreen(
 ) {
     val context = LocalContext.current
     val isHandheld = !DeviceFormFactor.isTelevision(context)
+    val touchGuide = DeviceFormFactor.prefersTouchGuide(context)
     // Full screen happens right here, TiviMate style: the same video view grows from the
     // preview window to the whole screen and back. The picture never moves to a different
     // view, which is what froze it (or left it loading) on some TVs.
@@ -828,7 +829,7 @@ fun LiveTvGuideScreen(
                             modifier = Modifier.width(channelColWidth).padding(start = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (isHandheld) {
+                            if (touchGuide) {
                                 Icon(
                                     imageVector = Icons.Default.Menu,
                                     contentDescription = "Groups",
@@ -856,7 +857,7 @@ fun LiveTvGuideScreen(
                                 maxLines = 2
                             )
                         }
-                        val timelineModifier = if (isHandheld) {
+                        val timelineModifier = if (touchGuide) {
                             Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
@@ -865,7 +866,7 @@ fun LiveTvGuideScreen(
                             Modifier.weight(1f).fillMaxHeight()
                         }
                         BoxWithConstraints(modifier = timelineModifier) {
-                            val w = if (isHandheld) handheldTimelineWidth else maxWidth
+                            val w = if (touchGuide) handheldTimelineWidth else maxWidth
                             Box(Modifier.width(w).fillMaxHeight()) {
                                 for (i in 0 until (WINDOW_MS / SLOT_MS).toInt()) {
                                     val t = windowStart + i * SLOT_MS
@@ -1063,7 +1064,7 @@ fun LiveTvGuideScreen(
                                     else -> false
                                 }
                             }
-                            .then(if (isHandheld) Modifier else Modifier.focusable())
+                            .focusable()
                     ) {
                         when {
                             !ui.hasSources -> EmptyGuideMessage(
@@ -1081,14 +1082,14 @@ fun LiveTvGuideScreen(
                             )
                             channels.isEmpty() -> EmptyGuideMessage(
                                 title = "No channels in this group",
-                                body = if (isHandheld) "Tap the menu icon to pick another group." else "Press left to pick another group.",
+                                body = if (touchGuide) "Tap the menu icon to pick another group." else "Press left to pick another group.",
                                 action = null
                             )
                             else -> {
                                 LazyColumn(
                                     state = listState,
                                     modifier = Modifier.fillMaxSize(),
-                                    userScrollEnabled = isHandheld
+                                    userScrollEnabled = touchGuide
                                 ) {
                                     itemsIndexed(channels, key = { _, c -> c.key }) { index, ch ->
                                         GuideRow(
@@ -1107,15 +1108,15 @@ fun LiveTvGuideScreen(
                                             visible = if (visibilityMode) ch.key !in pendingHidden else null,
                                             moving = reorderKey == ch.key,
                                             quality = if (settings.showQualityBadges) user.channelQuality[ch.key] else null,
-                                            timelineScroll = if (isHandheld) timelineScroll else null,
-                                            timelineWidth = if (isHandheld) handheldTimelineWidth else null,
-                                            onChannelClick = if (isHandheld) {
+                                            timelineScroll = if (touchGuide) timelineScroll else null,
+                                            timelineWidth = if (touchGuide) handheldTimelineWidth else null,
+                                            onChannelClick = if (touchGuide) {
                                                 { handheldTapChannel(index, ch) }
                                             } else null,
-                                            onProgramClick = if (isHandheld) {
+                                            onProgramClick = if (touchGuide) {
                                                 { program -> handheldTapProgram(index, program) }
                                             } else null,
-                                            onLongPress = if (isHandheld) {
+                                            onLongPress = if (touchGuide) {
                                                 { block -> handheldLongPress(index, ch, block) }
                                             } else null
                                         )
@@ -1123,7 +1124,7 @@ fun LiveTvGuideScreen(
                                 }
                                 // "Now" line across the program area (can be hidden in settings).
                                 if (settings.showNowLine && now in windowStart until windowStart + WINDOW_MS) {
-                                    val nowLineModifier = if (isHandheld) {
+                                    val nowLineModifier = if (touchGuide) {
                                         Modifier
                                             .fillMaxSize()
                                             .padding(start = channelColWidth)
@@ -1136,7 +1137,7 @@ fun LiveTvGuideScreen(
                                     BoxWithConstraints(
                                         modifier = nowLineModifier.pointerInteropFilter { false }
                                     ) {
-                                        val w = if (isHandheld) handheldTimelineWidth else maxWidth
+                                        val w = if (touchGuide) handheldTimelineWidth else maxWidth
                                         val x = w * ((now - windowStart) / WINDOW_MS.toFloat())
                                         Box(
                                             modifier = Modifier

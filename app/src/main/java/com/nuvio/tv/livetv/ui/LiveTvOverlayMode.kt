@@ -2,7 +2,9 @@ package com.nuvio.tv.livetv.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -47,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.livetv.data.CatchupUrlBuilder
 import com.nuvio.tv.livetv.model.ChannelGroup
 import com.nuvio.tv.livetv.model.EpgProgram
@@ -88,6 +92,7 @@ internal fun LiveTvOverlayMode(
     val user by viewModel.userState.collectAsStateWithLifecycle()
     val now by viewModel.now.collectAsStateWithLifecycle()
     val use24h = settings.use24HourClock
+    val touchOverlay = DeviceFormFactor.prefersTouchGuide(LocalContext.current)
 
     val channels = ui.channels
     val groups = remember(ui.groups) { ui.groups.filter { it.id != ChannelGroup.SEARCH } }
@@ -261,18 +266,95 @@ internal fun LiveTvOverlayMode(
         Row(modifier = Modifier.fillMaxHeight()) {
             when (level) {
                 OverlayLevel.GROUPS -> {
-                    GroupsPanel(groups, groupIndex, settings.showGroupCounts)
-                    ChannelsPanel(ui.groups.firstOrNull { it.id == ui.selectedGroupId }?.title ?: "Channels",
-                        channels, chIndex, focused = false, playback.channelKey, programs, now, user.favorites, settings.showChannelNumbers, settings.showChannelLogos)
+                    GroupsPanel(
+                        groups,
+                        groupIndex,
+                        settings.showGroupCounts,
+                        onRowClick = if (touchOverlay) {
+                            { i ->
+                                activity++
+                                selectGroupAt(i)
+                                level = OverlayLevel.CHANNELS
+                            }
+                        } else {
+                            null
+                        }
+                    )
+                    ChannelsPanel(
+                        ui.groups.firstOrNull { it.id == ui.selectedGroupId }?.title ?: "Channels",
+                        channels,
+                        chIndex,
+                        focused = false,
+                        playback.channelKey,
+                        programs,
+                        now,
+                        user.favorites,
+                        settings.showChannelNumbers,
+                        settings.showChannelLogos,
+                        onRowClick = null
+                    )
                 }
                 OverlayLevel.CHANNELS -> {
-                    ChannelsPanel(ui.groups.firstOrNull { it.id == ui.selectedGroupId }?.title ?: "Channels",
-                        channels, chIndex, focused = true, playback.channelKey, programs, now, user.favorites, settings.showChannelNumbers, settings.showChannelLogos)
+                    ChannelsPanel(
+                        ui.groups.firstOrNull { it.id == ui.selectedGroupId }?.title ?: "Channels",
+                        channels,
+                        chIndex,
+                        focused = true,
+                        playback.channelKey,
+                        programs,
+                        now,
+                        user.favorites,
+                        settings.showChannelNumbers,
+                        settings.showChannelLogos,
+                        onRowClick = if (touchOverlay) {
+                            { i ->
+                                activity++
+                                chIndex = i
+                                channels.getOrNull(i)?.let { ch ->
+                                    if (ch.key != playback.channelKey) viewModel.preview(ch)
+                                    onClose()
+                                }
+                            }
+                        } else {
+                            null
+                        }
+                    )
                     settledChannel?.let { SchedulePreview(it, programs[it.key].orEmpty(), now, use24h) }
                 }
                 OverlayLevel.SCHEDULE, OverlayLevel.DATES -> scheduleChannel?.let { ch ->
-                    SchedulePanel(ch, schedule, rowIndex, focused = level == OverlayLevel.SCHEDULE, playback.channelKey, now, use24h)
-                    DatesPanel(days, dateIndex, focused = level == OverlayLevel.DATES, today = startOfDay(now))
+                    SchedulePanel(
+                        ch,
+                        schedule,
+                        rowIndex,
+                        focused = level == OverlayLevel.SCHEDULE,
+                        playback.channelKey,
+                        now,
+                        use24h,
+                        onShowClick = if (touchOverlay) {
+                            { i ->
+                                activity++
+                                rowIndex = i
+                                activateShow()
+                            }
+                        } else {
+                            null
+                        }
+                    )
+                    DatesPanel(
+                        days,
+                        dateIndex,
+                        focused = level == OverlayLevel.DATES,
+                        today = startOfDay(now),
+                        onDateClick = if (touchOverlay) {
+                            { i ->
+                                activity++
+                                jumpToDate(i)
+                                level = OverlayLevel.SCHEDULE
+                            }
+                        } else {
+                            null
+                        }
+                    )
                 }
             }
         }
@@ -401,7 +483,8 @@ private fun ChannelsPanel(
     now: Long,
     favorites: List<String>,
     showNumbers: Boolean,
-    showLogos: Boolean
+    showLogos: Boolean,
+    onRowClick: ((Int) -> Unit)? = null
 ) {
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (index - 3).coerceAtLeast(0))
     keepVisible(state, index)
@@ -422,15 +505,27 @@ private fun ChannelsPanel(
                 val onSolid = isFocused && focused && LocalLiveSolidHighlight.current
                 val accent = if (onSolid) Color.White else NuvioTheme.colors.Secondary
                 val shape = RoundedCornerShape(8.dp)
+                val rowModifier = Modifier
+                    .fillMaxWidth()
+                    .height(62.dp)
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                    .clip(shape)
+                    .background(colors.background)
+                    .border(2.dp, colors.border, shape)
+                    .padding(horizontal = 8.dp)
+                    .let { base ->
+                        if (onRowClick != null) {
+                            base.combinedClickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onRowClick(i) }
+                            )
+                        } else {
+                            base
+                        }
+                    }
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(62.dp)
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                        .clip(shape)
-                        .background(colors.background)
-                        .border(2.dp, colors.border, shape)
-                        .padding(horizontal = 8.dp),
+                    modifier = rowModifier,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (showNumbers) LiveText(ch.number.toString(), modifier = Modifier.width(36.dp), color = NuvioTheme.colors.TextSecondary, size = 13.sp)
@@ -476,7 +571,12 @@ private fun ChannelsPanel(
 }
 
 @Composable
-private fun GroupsPanel(groups: List<ChannelGroup>, index: Int, showCounts: Boolean) {
+private fun GroupsPanel(
+    groups: List<ChannelGroup>,
+    index: Int,
+    showCounts: Boolean,
+    onRowClick: ((Int) -> Unit)? = null
+) {
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (index - 3).coerceAtLeast(0))
     keepVisible(state, index)
     Column(modifier = Modifier.width(250.dp).fillMaxHeight().background(PanelDark).padding(top = 20.dp)) {
@@ -484,15 +584,27 @@ private fun GroupsPanel(groups: List<ChannelGroup>, index: Int, showCounts: Bool
             itemsIndexed(groups, key = { _, g -> g.id }) { i, g ->
                 val colors = liveCellColors(focused = i == index, idle = Color.Transparent)
                 val shape = RoundedCornerShape(8.dp)
+                val rowModifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp)
+                    .padding(horizontal = 12.dp, vertical = 2.dp)
+                    .clip(shape)
+                    .background(colors.background)
+                    .border(2.dp, colors.border, shape)
+                    .padding(horizontal = 12.dp)
+                    .let { base ->
+                        if (onRowClick != null) {
+                            base.combinedClickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onRowClick(i) }
+                            )
+                        } else {
+                            base
+                        }
+                    }
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp)
-                        .padding(horizontal = 12.dp, vertical = 2.dp)
-                        .clip(shape)
-                        .background(colors.background)
-                        .border(2.dp, colors.border, shape)
-                        .padding(horizontal = 12.dp),
+                    modifier = rowModifier,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     LiveText(g.title, color = colors.text, size = 16.sp, modifier = Modifier.weight(1f), marquee = i == index)
@@ -547,7 +659,8 @@ private fun SchedulePanel(
     focused: Boolean,
     playingKey: String?,
     now: Long,
-    use24h: Boolean
+    use24h: Boolean,
+    onShowClick: ((Int) -> Unit)? = null
 ) {
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (index - 3).coerceAtLeast(0))
     keepVisible(state, index)
@@ -586,15 +699,27 @@ private fun SchedulePanel(
                             idleText = if (past) NuvioTheme.colors.TextSecondary else NuvioTheme.colors.TextPrimary
                         )
                         val shape = RoundedCornerShape(8.dp)
+                        val rowModifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .clip(shape)
+                            .background(colors.background)
+                            .border(2.dp, colors.border, shape)
+                            .padding(horizontal = 10.dp)
+                            .let { base ->
+                                if (onShowClick != null) {
+                                    base.combinedClickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = { onShowClick(i) }
+                                    )
+                                } else {
+                                    base
+                                }
+                            }
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp)
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                                .clip(shape)
-                                .background(colors.background)
-                                .border(2.dp, colors.border, shape)
-                                .padding(horizontal = 10.dp),
+                            modifier = rowModifier,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             LiveText(formatClock(p.startMs, use24h), color = colors.text, size = 14.sp, modifier = Modifier.width(80.dp))
@@ -628,7 +753,13 @@ private fun SchedulePanel(
 }
 
 @Composable
-private fun DatesPanel(days: List<Long>, index: Int, focused: Boolean, today: Long) {
+private fun DatesPanel(
+    days: List<Long>,
+    index: Int,
+    focused: Boolean,
+    today: Long,
+    onDateClick: ((Int) -> Unit)? = null
+) {
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (index - 3).coerceAtLeast(0))
     keepVisible(state, index)
     val fmt = remember { SimpleDateFormat("EEE,\nMMM d", Locale.getDefault()) }
@@ -645,7 +776,18 @@ private fun DatesPanel(days: List<Long>, index: Int, focused: Boolean, today: Lo
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                         .clip(shape)
                         .background(colors.background)
-                        .border(2.dp, colors.border, shape),
+                        .border(2.dp, colors.border, shape)
+                        .let { base ->
+                            if (onDateClick != null) {
+                                base.combinedClickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = { onDateClick(i) }
+                                )
+                            } else {
+                                base
+                            }
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     LiveText(

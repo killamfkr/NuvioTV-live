@@ -585,35 +585,48 @@ private fun AuthEmailLoginForm(
             imeAction = ImeAction.Done,
             onImeAction = submit
         )
-        Button(
-            onClick = submit,
-            enabled = canSignIn,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.colors(
-                containerColor = Color.White,
-                focusedContainerColor = Color.White,
-                contentColor = Color.Black,
-                focusedContentColor = Color.Black,
-                disabledContainerColor = Color.White.copy(alpha = 0.12f),
-                disabledContentColor = AuthTextPrimary.copy(alpha = 0.58f)
-            ),
-            shape = ButtonDefaults.shape(RoundedCornerShape(16.dp))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp),
-                contentAlignment = Alignment.Center
+        if (isHandheld) {
+            AuthHandheldButton(
+                text = if (uiState.isLoading) {
+                    stringResource(R.string.auth_email_signing_in)
+                } else {
+                    stringResource(R.string.auth_email_sign_in)
+                },
+                onClick = submit,
+                enabled = canSignIn,
+                filled = true
+            )
+        } else {
+            Button(
+                onClick = submit,
+                enabled = canSignIn,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.White,
+                    focusedContainerColor = Color.White,
+                    contentColor = Color.Black,
+                    focusedContentColor = Color.Black,
+                    disabledContainerColor = Color.White.copy(alpha = 0.12f),
+                    disabledContentColor = AuthTextPrimary.copy(alpha = 0.58f)
+                ),
+                shape = ButtonDefaults.shape(RoundedCornerShape(16.dp))
             ) {
-                Text(
-                    text = if (uiState.isLoading) {
-                        stringResource(R.string.auth_email_signing_in)
-                    } else {
-                        stringResource(R.string.auth_email_sign_in)
-                    },
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (uiState.isLoading) {
+                            stringResource(R.string.auth_email_signing_in)
+                        } else {
+                            stringResource(R.string.auth_email_sign_in)
+                        },
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
         AuthTermsAcknowledgement(isHandheld = isHandheld)

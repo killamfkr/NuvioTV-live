@@ -53,6 +53,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -85,10 +87,15 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import com.nuvio.tv.core.device.DeviceFormFactor
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material3.Icon
+import androidx.tv.material3.Text
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -215,6 +222,8 @@ fun SettingsScreen(
 
     val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
     val isHorizonStyle = NuvioTheme.settingsUiStyle == SettingsUiStyle.HORIZON
+    val isHandheldSettings = !DeviceFormFactor.isTelevision(LocalContext.current)
+    var mobileSettingsDetailOpen by rememberSaveable { mutableStateOf(false) }
     var selectedCategory by rememberSaveable {
         mutableStateOf(
             visibleSections.firstOrNull()?.category ?: SettingsCategory.APPEARANCE
@@ -366,10 +375,14 @@ fun SettingsScreen(
     LaunchedEffect(visibleSections) {
         if (visibleSections.none { it.category == selectedCategory }) {
             selectedCategory = visibleSections.firstOrNull()?.category ?: SettingsCategory.APPEARANCE
+            if (isHandheldSettings) {
+                mobileSettingsDetailOpen = false
+            }
         }
     }
 
     LaunchedEffect(Unit) {
+        if (isHandheldSettings) return@LaunchedEffect
         // Categories such as plugins and addons open a destination of their own, so Settings leaves
         // composition and comes back with nothing asking for the options pane: the rail is simply
         // the first thing able to take focus. Landing there loses the user's place for a trip they
@@ -408,15 +421,15 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(NuvioTheme.colors.Background)
             .padding(
-                start = NuvioTheme.spacing.xxl,
-                end = NuvioTheme.spacing.xxl,
-                top = if (showBuiltInHeader) NuvioTheme.spacing.xl else 68.dp,
-                bottom = NuvioTheme.spacing.xl
+                start = if (isHandheldSettings) NuvioTheme.spacing.md else NuvioTheme.spacing.xxl,
+                end = if (isHandheldSettings) NuvioTheme.spacing.md else NuvioTheme.spacing.xxl,
+                top = if (showBuiltInHeader) NuvioTheme.spacing.xl else if (isHandheldSettings) NuvioTheme.spacing.lg else 68.dp,
+                bottom = if (isHandheldSettings) NuvioTheme.spacing.md else NuvioTheme.spacing.xl
             )
     ) {
         SettingsWorkspaceSurface(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            classicContainer = !isHandheldSettings
         ) {
 
             val onSectionClick: (SettingsSectionSpec) -> Unit = { section ->
@@ -440,10 +453,113 @@ fun SettingsScreen(
                     selectedCategory = section.category
                     pendingContentFocusCategory = section.category
                     pendingContentFocusRequestId += 1L
+                    if (isHandheldSettings) {
+                        mobileSettingsDetailOpen = true
+                    }
                 }
             }
 
-            if (isHorizonStyle) {
+            if (isHandheldSettings) {
+                BackHandler(enabled = mobileSettingsDetailOpen) {
+                    when {
+                        selectedCategory == SettingsCategory.INTEGRATION &&
+                            integrationSection != IntegrationSettingsSection.Hub -> {
+                            integrationSection = IntegrationSettingsSection.Hub
+                        }
+                        else -> {
+                            mobileSettingsDetailOpen = false
+                            allowDetailAutofocus = false
+                        }
+                    }
+                }
+
+                if (!mobileSettingsDetailOpen) {
+                    val categoryTitle = stringResource(R.string.settings_category_list_title)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = categoryTitle,
+                            style = androidx.tv.material3.MaterialTheme.typography.headlineSmall,
+                            color = NuvioTheme.colors.TextPrimary,
+                            modifier = Modifier.padding(bottom = NuvioTheme.spacing.md)
+                        )
+                        LazyColumn(
+                            state = railListState,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            itemsIndexed(
+                                items = visibleSections,
+                                key = { _, section -> section.category }
+                            ) { index, section ->
+                                Column {
+                                    if (visibleCategories.startsNewGroup(index)) {
+                                        SettingsRailDivider()
+                                    }
+                                    SettingsRailButton(
+                                        title = section.title,
+                                        icon = section.icon,
+                                        rawIconRes = section.rawIconRes,
+                                        isSelected = false,
+                                        onClick = { onSectionClick(section) },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    val sectionTitle = visibleSections
+                        .firstOrNull { it.category == selectedCategory }
+                        ?.title
+                        ?: ""
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        SettingsMobileDetailToolbar(
+                            title = sectionTitle,
+                            onBack = {
+                                when {
+                                    selectedCategory == SettingsCategory.INTEGRATION &&
+                                        integrationSection != IntegrationSettingsSection.Hub -> {
+                                        integrationSection = IntegrationSettingsSection.Hub
+                                    }
+                                    else -> {
+                                        mobileSettingsDetailOpen = false
+                                        allowDetailAutofocus = false
+                                    }
+                                }
+                            }
+                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                        ) {
+                            SettingsDetailPane(
+                                selectedCategory = selectedCategory,
+                                isEssentialMode = isEssentialMode,
+                                allowDetailAutofocus = allowDetailAutofocus,
+                                contentFocusRequesters = contentFocusRequesters,
+                                experienceModeViewModel = experienceModeViewModel,
+                                integrationSection = integrationSection,
+                                onSelectIntegrationSection = { integrationSection = it },
+                                integrationHubFocusRequester = integrationHubFocusRequester,
+                                integrationDebridFocusRequester = integrationDebridFocusRequester,
+                                integrationTmdbFocusRequester = integrationTmdbFocusRequester,
+                                integrationMdbListFocusRequester = integrationMdbListFocusRequester,
+                                integrationAnimeSkipFocusRequester = integrationAnimeSkipFocusRequester,
+                                onNavigateToManageProfiles = onNavigateToManageProfiles,
+                                onNavigateToAddons = onNavigateToAddons,
+                                onNavigateToPlugins = onNavigateToPlugins,
+                                onNavigateToAuthQrSignIn = onNavigateToAuthQrSignIn,
+                                onNavigateToSupportersContributors = onNavigateToSupportersContributors,
+                                onNavigateToLicensesAttributions = onNavigateToLicensesAttributions
+                            )
+                        }
+                    }
+                }
+            } else if (isHorizonStyle) {
                 var topBarCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
                 var focusedTabBounds by remember { mutableStateOf<Rect?>(null) }
                 val density = LocalDensity.current
@@ -785,6 +901,34 @@ fun SettingsScreen(
             }
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsMobileDetailToolbar(
+    title: String,
+    onBack: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = NuvioTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.cd_back),
+                tint = NuvioTheme.colors.TextPrimary
+            )
+        }
+        Text(
+            text = title,
+            style = androidx.tv.material3.MaterialTheme.typography.titleLarge,
+            color = NuvioTheme.colors.TextPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

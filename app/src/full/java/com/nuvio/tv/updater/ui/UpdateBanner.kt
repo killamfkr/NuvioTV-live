@@ -6,6 +6,8 @@ import android.text.format.Formatter
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.Icon as M3Icon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +23,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Button as M3Button
+import androidx.compose.material3.ButtonDefaults as M3ButtonDefaults
+import androidx.compose.material3.IconButton as M3IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -44,6 +50,7 @@ import androidx.tv.material3.IconButtonDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.R
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.domain.model.AppTheme
 import com.nuvio.tv.ui.theme.NuvioTheme
 import com.nuvio.tv.ui.theme.ThemeColors
@@ -61,6 +68,8 @@ internal fun UpdateBanner(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val touchPreferred = DeviceFormFactor.prefersTouchGuide(context)
+    val horizontalPadding = if (touchPreferred) 16.dp else 32.dp
     val targetProgress = (if (state.isDownloading) state.downloadProgress ?: 0f else 0f)
         .coerceIn(0f, 1f)
     val progress by animateFloatAsState(
@@ -111,7 +120,7 @@ internal fun UpdateBanner(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 76.dp)
-                .padding(horizontal = 32.dp, vertical = 10.dp),
+                .padding(horizontal = horizontalPadding, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -151,45 +160,64 @@ internal fun UpdateBanner(
             }
 
             UpdateBannerIconButton(
+                touchPreferred = touchPreferred,
                 icon = Icons.Default.Info,
                 contentDescription = stringResource(R.string.update_release_notes),
                 onClick = onShowReleaseNotes,
                 enabled = update.notes.isNotBlank()
             )
 
-            Button(
-                onClick = {
-                    when {
-                        state.isDownloading -> Unit
-                        state.downloadedApkPath != null -> onInstall()
-                        else -> onDownload()
-                    }
-                },
-                enabled = state.isDownloading ||
-                    state.downloadedApkPath != null ||
-                    state.isUpdateAvailable,
-                colors = ButtonDefaults.colors(
-                    containerColor = NuvioTheme.colors.Secondary,
-                    focusedContainerColor = NuvioTheme.colors.SecondaryVariant,
-                    contentColor = NuvioTheme.colors.OnSecondary,
-                    focusedContentColor = NuvioTheme.colors.OnSecondaryVariant
-                ),
-                shape = ButtonDefaults.shape(RoundedCornerShape(50)),
-                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = when {
-                        state.isDownloading -> stringResource(R.string.update_downloading_ellipsis)
-                        state.downloadedApkPath != null -> stringResource(R.string.update_install)
-                        state.errorMessage != null -> stringResource(R.string.action_retry)
-                        else -> stringResource(R.string.update_download)
-                    },
-                    fontWeight = FontWeight.SemiBold
-                )
+            val primaryAction = {
+                when {
+                    state.isDownloading -> Unit
+                    state.downloadedApkPath != null -> onInstall()
+                    else -> onDownload()
+                }
+            }
+            val primaryEnabled = state.isDownloading ||
+                state.downloadedApkPath != null ||
+                state.isUpdateAvailable
+            val primaryLabel = when {
+                state.isDownloading -> stringResource(R.string.update_downloading_ellipsis)
+                state.downloadedApkPath != null -> stringResource(R.string.update_install)
+                state.errorMessage != null -> stringResource(R.string.action_retry)
+                else -> stringResource(R.string.update_download)
+            }
+            if (touchPreferred) {
+                M3Button(
+                    onClick = primaryAction,
+                    enabled = primaryEnabled,
+                    shape = RoundedCornerShape(50),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                    colors = M3ButtonDefaults.buttonColors(
+                        containerColor = NuvioTheme.colors.Secondary,
+                        contentColor = NuvioTheme.colors.OnSecondary,
+                        disabledContainerColor = NuvioTheme.colors.Secondary.copy(alpha = 0.45f),
+                        disabledContentColor = NuvioTheme.colors.OnSecondary.copy(alpha = 0.6f)
+                    )
+                ) {
+                    Text(text = primaryLabel, fontWeight = FontWeight.SemiBold)
+                }
+            } else {
+                Button(
+                    onClick = primaryAction,
+                    enabled = primaryEnabled,
+                    colors = ButtonDefaults.colors(
+                        containerColor = NuvioTheme.colors.Secondary,
+                        focusedContainerColor = NuvioTheme.colors.SecondaryVariant,
+                        contentColor = NuvioTheme.colors.OnSecondary,
+                        focusedContentColor = NuvioTheme.colors.OnSecondaryVariant
+                    ),
+                    shape = ButtonDefaults.shape(RoundedCornerShape(50)),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp)
+                ) {
+                    Text(text = primaryLabel, fontWeight = FontWeight.SemiBold)
+                }
             }
 
             if (!state.isDownloading) {
                 UpdateBannerIconButton(
+                    touchPreferred = touchPreferred,
                     icon = Icons.Default.Close,
                     contentDescription = stringResource(R.string.update_close),
                     onClick = onDismiss
@@ -201,11 +229,28 @@ internal fun UpdateBanner(
 
 @Composable
 private fun UpdateBannerIconButton(
+    touchPreferred: Boolean,
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
     enabled: Boolean = true
 ) {
+    if (touchPreferred) {
+        M3IconButton(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = Modifier.size(48.dp),
+            interactionSource = remember { MutableInteractionSource() }
+        ) {
+            M3Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = NuvioTheme.colors.TextPrimary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        return
+    }
     IconButton(
         onClick = onClick,
         enabled = enabled,

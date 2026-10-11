@@ -12,6 +12,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -73,7 +74,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.stringResource
+import com.nuvio.tv.core.device.DeviceFormFactor
 import androidx.tv.material3.Border
+import androidx.tv.material3.CardScale
+import androidx.tv.material3.CardShape
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Card
@@ -150,6 +154,55 @@ internal fun settingsRowColors(): CardColors = if (isFlatSettingsStyle()) {
     CardDefaults.colors(
         containerColor = NuvioTheme.colors.Background,
         focusedContainerColor = NuvioTheme.colors.Background
+    )
+}
+
+@Composable
+internal fun settingsTouchPreferred(): Boolean =
+    DeviceFormFactor.prefersTouchGuide(LocalContext.current)
+
+@Composable
+internal fun Modifier.settingsTouchClick(
+    enabled: Boolean = true,
+    onClick: () -> Unit
+): Modifier {
+    if (!settingsTouchPreferred() || !enabled) return this
+    return clickable(enabled = enabled, onClick = onClick)
+}
+
+@Composable
+internal fun settingsRemoteCardOnClick(
+    enabled: Boolean = true,
+    onClick: () -> Unit
+): () -> Unit {
+    val touch = settingsTouchPreferred()
+    return {
+        if (enabled && !touch) onClick()
+    }
+}
+
+/**
+ * TV Material [Card] whose [onClick] also works with touch (phones, touch-enabled panels).
+ */
+@Composable
+internal fun SettingsCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: CardColors = settingsRowColors(),
+    border: CardBorder = settingsRowBorder(),
+    shape: CardShape = CardDefaults.shape(shape = settingsRowShape()),
+    scale: CardScale = CardDefaults.scale(focusedScale = 1f, pressedScale = 1f),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        onClick = settingsRemoteCardOnClick(enabled, onClick),
+        modifier = modifier.settingsTouchClick(enabled, onClick),
+        colors = colors,
+        border = border,
+        shape = shape,
+        scale = scale,
+        content = content
     )
 }
 
@@ -358,7 +411,7 @@ internal fun SettingsRailButton(
         modifier
     }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = appliedModifier
             .padding(top = NuvioTheme.spacing.xxs, bottom = NuvioTheme.spacing.xxs)
@@ -501,7 +554,7 @@ internal fun SettingsTopBarTab(
         label = "topBarTabContentColor"
     )
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = appliedModifier
             .onGloballyPositioned { coordinates ->
@@ -718,7 +771,7 @@ internal fun SettingsToggleRow(
     val contentAlpha = if (enabled) 1f else 0.4f
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = {
             if (enabled) onToggle()
         },
@@ -808,7 +861,7 @@ internal fun SettingsActionRow(
     val contentAlpha = if (enabled) 1f else 0.4f
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = { if (enabled) onClick() },
         modifier = modifier
             .padding(top = NuvioTheme.spacing.xxs, bottom = NuvioTheme.spacing.xxs)
@@ -947,7 +1000,7 @@ internal fun <T> SettingsSingleChoiceDialog(
                     key = { index, option -> "$index-${option.value}" }
                 ) { index, option ->
                     val isSelected = option.value == selectedValue
-                    Card(
+                    SettingsCard(
                         onClick = { onOptionSelected(option.value) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1055,7 +1108,7 @@ internal fun <T> SettingsMultiChoiceDialog(
                         key = { index, option -> "$index-${option.value}" }
                     ) { index, option ->
                         val isSelected = selected.contains(option.value)
-                        Card(
+                        SettingsCard(
                             onClick = {
                                 if (isSelected) {
                                     selected.remove(option.value)
@@ -1145,8 +1198,9 @@ internal fun SettingsDialogActionButton(
     enabled: Boolean = true
 ) {
     Button(
-        onClick = onClick,
+        onClick = settingsRemoteCardOnClick(enabled, onClick),
         enabled = enabled,
+        modifier = Modifier.settingsTouchClick(enabled, onClick),
         colors = ButtonDefaults.colors(
             containerColor = if (primary) NuvioTheme.colors.FocusBackground else NuvioTheme.colors.BackgroundCard,
             contentColor = NuvioTheme.colors.TextPrimary
@@ -1171,7 +1225,7 @@ internal fun SettingsChoiceChip(
     var isFocused by remember { mutableStateOf(false) }
     val zen = isFlatSettingsStyle()
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = modifier.onFocusChanged { state ->
             val nowFocused = state.isFocused

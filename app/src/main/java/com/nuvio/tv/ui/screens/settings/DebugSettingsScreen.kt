@@ -89,7 +89,7 @@ fun DebugSettingsContent(
             }
 
             item(key = "debug_playback_error") {
-                DebugActionCard(
+                DebugActionSettingsCard(
                     title = stringResource(R.string.debug_playback_error_title),
                     subtitle = stringResource(R.string.debug_playback_error_subtitle),
                     onClick = { showErrorDialog = true }
@@ -226,7 +226,7 @@ fun DebugSettingsContent(
 
 @Composable
 private fun DebugProgressIndicatorCard() {
-    Card(
+    SettingsCard(
         onClick = { },
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.colors(
@@ -296,7 +296,7 @@ private fun DebugToggleCard(
     checked: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
-    Card(
+    SettingsCard(
         onClick = { onToggle(!checked) },
         modifier = Modifier
             .fillMaxWidth(),
@@ -351,14 +351,14 @@ private fun DebugToggleCard(
 }
 
 @Composable
-private fun DebugActionCard(
+private fun DebugActionSettingsCard(
     title: String,
     subtitle: String,
     onClick: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -403,7 +403,7 @@ private fun DebugDialogButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    Card(
+    SettingsCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()

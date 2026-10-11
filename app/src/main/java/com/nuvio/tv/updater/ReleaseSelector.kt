@@ -8,12 +8,15 @@ internal object ReleaseSelector {
         RegexOption.IGNORE_CASE
     )
 
+    private val utilityTagPattern = Regex("^(downloader|latest)$", RegexOption.IGNORE_CASE)
+
     fun eligibleReleases(
         releases: List<GitHubReleaseDto>,
         channel: UpdateChannel
     ): List<GitHubReleaseDto> = releases
         .asSequence()
         .filterNot(GitHubReleaseDto::draft)
+        .filterNot(::isUtilityRelease)
         .mapNotNull { release ->
             val version = releaseVersion(release) ?: return@mapNotNull null
             ReleaseCandidate(
@@ -26,6 +29,11 @@ internal object ReleaseSelector {
         .sortedByDescending(ReleaseCandidate::version)
         .map(ReleaseCandidate::release)
         .toList()
+
+    private fun isUtilityRelease(release: GitHubReleaseDto): Boolean {
+        val tag = VersionUtils.normalize(release.tagName)
+        return tag.isNotEmpty() && utilityTagPattern.matches(tag)
+    }
 
     private fun releaseVersion(release: GitHubReleaseDto): SemanticVersion? =
         VersionUtils.parse(release.tagName) ?: VersionUtils.parse(release.name)
