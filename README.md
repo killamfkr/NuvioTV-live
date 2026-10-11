@@ -1,259 +1,122 @@
 <div align="center">
 
-# Nuvio + IPTV
+# Nuvio Live
 
-**Everything in Nuvio, plus everything IPTV: a TiviMate-style Live TV guide, catch-up, and your provider's movies and series, all in one app for Google TV, Android TV, Fire TV, and Android phones.**
+**Nuvio for movies and series, Live TV and IPTV, and a full phone & tablet experience — one app for Google TV, Android TV, Fire TV, phones, and tablets.**
 
-[![Latest release](https://img.shields.io/github/v/release/homelessbrian/NuvioTV?include_prereleases&label=latest&style=for-the-badge)](https://github.com/homelessbrian/NuvioTV/releases)
-[![Downloads](https://img.shields.io/github/downloads/homelessbrian/NuvioTV/total?style=for-the-badge)](https://github.com/homelessbrian/NuvioTV/releases)
+[![Development branch](https://img.shields.io/badge/branch-dev-8A2BE2?style=for-the-badge)](https://github.com/killamfkr/NuvioTV-live/tree/dev)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Based on Nuvio](https://img.shields.io/badge/based%20on-NuvioMedia%2FNuvioTV-8A2BE2?style=for-the-badge)](https://github.com/NuvioMedia/NuvioTV)
+[![Based on Nuvio](https://img.shields.io/badge/core-NuvioMedia%2FNuvioTV-8A2BE2?style=for-the-badge)](https://github.com/NuvioMedia/NuvioTV)
 
-[What's new](#-whats-new) · [Download](#-installation) · [Features](#-features) · [Setup](#-getting-started) · [Remote controls](#-remote-controls) · [Report a bug](#-reporting-bugs-and-requesting-features)
+[Lineage & fork status](#-lineage-and-fork-status) · [What changed here](#-what-changed-in-nuvio-live) · [Build & install](#-build-and-install) · [Contributing](#-contributing)
 
 </div>
 
 ---
 
-## 📛 New name: Nuvio + IPTV
+## 📛 Name: Nuvio Live
 
-**Nuvio w/ Live TV is now Nuvio + IPTV.** The app has grown well beyond Live TV, with On Demand, catch-up, reminders and much more, so it now has a name that says what it does: **Nuvio, plus IPTV**.
+This repository is developed and released as **Nuvio Live**. The launcher label, sidebar title, and documentation use that name.
 
-**Nothing changes for you.** It's the same app, updated the usual way inside the app. Your playlists, favorites, settings and Google Drive sync all stay exactly as they are. You'll just see the new name under the app icon and on the loading screen.
-
----
-
-## 🆕 What's new
-
-**Now based on Nuvio 1.1.0-beta.4.**
-
-- **Live TV row on the home screen:**
-  - **What it shows:** your favorite channels with what's on now, in a slim row next to Continue watching.
-  - **Make it your own:** put it above or below Continue watching, pick what it shows, rename it, change its order and size, or hide it completely.
-- **Instant start:**
-  - **Live TV opens straight away,** with your channels and Favorites.
-  - **The TV guide is stored on the device like TiviMate's,** so it appears instantly however large it is, and uses much less memory.
-- **On Demand:**
-  - **Browse by genre** (filled in automatically from TMDB).
-  - **A Sort by menu.**
-  - **Duplicates merged:** with **a version picker** (4K, HD and so on) when you press Play.
-  - **Cleaner titles and better posters:** provider tags like "EN - " or "4K-D+ - " are removed.
-- **Catch-up:**
-  - **It keeps playing into the next show,** so shows that run over aren't cut off.
-  - **Watch from the beginning** works from the guide.
-  - **Fixed replays starting an hour off** on some providers.
-- **Fixes and polish:**
-  - **"Playback unavailable"** on titles only your provider has
-  - **A frozen picture** when going full screen
-  - **Easier Assign EPG**
-  - **Hold Back** works on all remotes
+**Development branch:** all ongoing work happens on **`dev`**. Treat `dev` as the main line for this project going forward.
 
 ---
 
-## ✨ Features
+## 🧭 Lineage and fork status
 
-### 📺 A proper TV guide
-- **TiviMate-style guide:** channels down the side, a timeline across, and a line marking "now" (which you can hide). It fits **8 or more channels** on screen.
-- **Group list:**
-  - **Opening it:** it slides out with a tap of Left.
-  - **Grouping:** optionally grouped by playlist.
-  - **Browse by channel name** (satellite-box style).
-- **Info panel** with the show's poster (or just the channel logo, if you prefer), time left, description, the playlist it comes from, and a live preview window.
-- **Make room for more channels:** compact rows, a smaller info panel, and hiding numbers, logos or names.
-- **Badges:** catch-up icons on channels that support it, and 4K / FHD / HD / SD badges on channels you've watched.
+Nuvio Live did not appear from scratch. It stacks three layers of history:
 
-### 🎬 Overlay mode (while watching)
-- Press **Left** in full screen for a see-through guide over the video: the group's channels, the highlighted channel's schedule, and the show's details.
-- **Left again** switches groups. **Right** opens the channel's full schedule, with a date picker.
+| Layer | Project | Role |
+|--------|---------|------|
+| **Core** | [NuvioMedia/NuvioTV](https://github.com/NuvioMedia/NuvioTV) | Official Nuvio app (addons, library, player, accounts, etc.). This tree is based on **Nuvio 1.1.0-beta.4**. |
+| **IPTV fork** | [homelessbrian/NuvioTV](https://github.com/homelessbrian/NuvioTV) (“Nuvio + IPTV”) | Live TV guide, M3U/Xtream, catch-up, On Demand from providers, Google Drive sync for IPTV, and related UI. |
+| **This repo** | [killamfkr/NuvioTV-live](https://github.com/killamfkr/NuvioTV-live) → **Nuvio Live** | Continued product work: **mobile & touch**, handheld layouts, and fixes that are not tracked upstream or on the homelessbrian fork. |
 
-### 📡 Your sources, your way
-- **Multiple M3U playlists** and **multiple XMLTV guides,** merged into one guide.
-- **Xtream Codes logins:**
-  - **Pick what to include:** TV channels, movies & series, or both.
-  - **Stream format:** Auto, TS or HLS.
-- **Smart guide matching:** real listings always beat "Programming" placeholders. Fine-tune any channel with **Assign EPG**.
-- **Catch-up:**
-  - **Watch past shows** with a seek bar, or **restart what's on now**.
-  - **Follow-on playback:** carries straight on into the next show.
-- **Channel name editor** (like TiviMate): strip "USA:", "HD", "24/7" and similar from channel names.
+### When this stopped being a fork of “Nuvio + IPTV”
 
-### 🗂️ Channel management
-- **Manage visibility** and **reorder** for channels *and* groups.
-- **Copy, rename and renumber** channels, **create your own groups,** and **number channels 1, 2, 3…** in each group.
-- **Favorites** and **Recently watched,** with sorting that works everywhere.
+**As of the Nuvio Live rename on `dev` (commit introducing this README and `app_name` = “Nuvio Live”), this repository is an independent continuation.** It does **not** aim to stay in sync with [homelessbrian/NuvioTV](https://github.com/homelessbrian/NuvioTV) releases.
 
-### 🎞️ On Demand
-- **What it is:** movies and series from your Xtream providers, with **categories or genres**, **Recently added**, **Search** and **Sort by**.
-- **Your posters, not the provider's:** posters and details come from your own addons. Matched titles open on Nuvio's normal details page.
-- **📡 On Demand** in Nuvio's stream list, with quality, codec and audio badges. Play on a title opened from On Demand plays your provider's copy straight away; long-press Play for every stream.
-- **Each title once:** duplicates are merged, and a picker lets you choose the version when there are several.
-
-### 🔔 Watching
-- **Zap** with Up/Down, type a channel number, or jump to the **last channel**.
-- **Reminders:** "Remind me" on any upcoming show, with a pop-up and a Watch button.
-- **Player menu:** audio, **closed captions**, screen size, stream info, **sleep timer**, find & stream, and watch from the beginning.
-- **Smooth playback:**
-  - **Match frame rate** and **audio passthrough** settings.
-  - **Auto-reconnect,** plus automatic recovery from frozen or stuck streams.
-
-### 🔒 Parental controls
-- **PIN locks:** a PIN that locks any group or category. Adult content locks automatically.
-
-### 🔎 Part of Nuvio, not bolted on
-- **In the side menu:** Live TV and On Demand sit in Nuvio's side menu, with their settings inside Nuvio's own Settings.
-- **Start page:** open the app on Home, Live TV, On Demand and more.
-- **Live TV in Nuvio search:**
-  - **From the menu:** search shows everything.
-  - **From Live TV:** search shows only Live TV.
-- **Find & stream in Nuvio:** see a movie in the guide, and stream it through your own addons and debrid.
-- **Google Drive sync:** your setup on every TV, combined correctly when you use more than one.
+- **Last shared IPTV-fork alignment:** code inherited from the homelessbrian-style Live TV integration on top of Nuvio **1.1.0-beta.4** (see `versionName` in `app/build.gradle.kts`).
+- **Branch where independence is declared:** **`dev`** — use this branch for builds, PRs, and releases for Nuvio Live.
+- **Relationship to official Nuvio:** still a **GPL-3.0 derivative** of NuvioMedia/NuvioTV. Report core Nuvio-only bugs upstream when they also occur in stock Nuvio; report Nuvio Live–specific issues in this repo.
 
 ---
 
-## 📥 Installation
+## ✨ What changed in Nuvio Live
 
-1. Open the **[latest release](https://github.com/homelessbrian/NuvioTV/releases)**.
-2. Download the APK for your device:
+Below is a practical changelog for **this fork** relative to “stock Nuvio + homelessbrian IPTV,” focused on what maintainers of this repo have added on **`dev`**.
 
-   | Device | APK |
-   |---|---|
-   | Android phones (most models from ~2018 onward) | `arm64-v8a` |
-   | Most Google TV / Android TV devices | `arm64-v8a` |
-   | Fire TV (all models), older or budget boxes | `armeabi-v7a` |
-   | Not sure (works everywhere) | `universal` |
+### 📱 Mobile and touch (phones & tablets)
 
-   On **phones and tablets**, use the same APK: the app shows a bottom navigation bar and the same **TiviMate-style TV guide** with touch scrolling (swipe channels, swipe the timeline, tap to play).
+- **Handheld navigation** — bottom/sidebar behavior tuned for touch; portrait and compact-width layouts.
+- **Touch on TV Material controls** — `TouchTvButton`, `TouchTvCard`, `TouchTvSurface`, `TouchTvIconButton`, and related helpers so settings, addons, plugins, library, search, account flows, and the VOD player control bar respond to tap as well as D-pad.
+- **Stream picker after Play** — dedicated mobile stream picker; full-width rows; reliable tap on addon streams.
+- **VOD player** — tap to show controls / play–pause; portrait-friendly layout; progress bar **tap and drag to seek** on touch devices.
+- **Detail & home** — play, continue watching, tabs, and row titles improved for small screens.
 
-3. Install it with a file manager or **Downloader**, allowing installs from unknown sources when asked.
+### 📺 Live TV & IPTV (from upstream fork layer)
 
-Requires **Android 7.0 or newer** (Fire OS 6 or later). It installs **alongside** the official Nuvio app.
+Retained from the IPTV integration (see upstream README on homelessbrian for feature detail):
 
-**Updating:** updates appear **inside the app**. Each new Nuvio release is followed by a matching Nuvio + IPTV version.
+- TiviMate-style **guide**, overlay mode, catch-up, reminders, channel management.
+- **M3U / Xtream**, multiple EPG sources, On Demand from providers, parental PIN, optional home row, Google Drive sync for IPTV settings.
 
----
+### 🔧 Engineering notes
 
-## 🚀 Getting started
+- **Package / updates:** `applicationId` variants and updater `GITHUB_OWNER` / `GITHUB_REPO` default to **`killamfkr`** / **`NuvioTV-live`** in `app/build.gradle.kts` (overridable via `local.properties`).
+- **CI:** PR checks include template validation and `fullDebug` build on pull requests to `dev`.
 
-1. Open **Settings → Live TV**.
-2. Choose **Add M3U playlist** or **Add Xtream Codes login**. For Xtream, pick **Include TV channels** and/or **Include movies & series**.
-3. Optionally **Add EPG source** for an extra TV guide.
-4. Open **Live TV** or **On Demand** from the side menu. The first load can take a minute on big providers; a small progress bubble shows what's happening.
-5. Optional, all in **Settings → Live TV**:
-   - set a **Start page**
-   - turn on the **home screen row**
-   - set a parental **PIN**
-   - turn on **Google Drive sync**
+For commit-level history, see the [log on `dev`](https://github.com/killamfkr/NuvioTV-live/commits/dev).
 
 ---
 
-## 🎮 Remote controls
+## 📥 Build and install
 
-### In the guide
-| Button | Action |
-|---|---|
-| **OK** on what's on now | Play in the preview · again for full screen |
-| **OK** on a later show | Show info · **Remind me** |
-| **OK** on an earlier show | Play from catch-up |
-| **◀** (tap) on what's on now | Open the groups |
-| **◀** (hold) | Scroll back through earlier shows (catch-up channels) |
-| **▲ / ▼** · **CH+ / CH−** | Channels · page up / down |
-| **0–9** | Jump to a channel number |
-| **Long-press OK** | Channel menu: favorites, **Remind me**, **Watch from the beginning**, hide, **Manage visibility**, **Reorder**, **Copy**, rename, renumber, **Assign EPG** |
-| **Hold Back** or **Play/Pause** | Back to full screen on what's playing |
-| **Back** | Back to "now" → the group list → the side menu |
+### From source (recommended for this fork)
 
-### Full screen
-| Button | Action |
-|---|---|
-| **▲ / ▼**, **CH+ / CH−** | Next / previous channel |
-| **OK** | Info bar (catch-up: pause / play) |
-| **◀** | Overlay mode (catch-up: skip back) |
-| **▶** | Catch-up: skip forward (hold to skip faster) |
-| **Long-press OK** or **Menu** | Audio, subtitles, screen size, stream info, sleep timer, watch from the beginning, find & stream |
-| **Back** | Back to the guide |
+1. Clone and check out **`dev`**:
+   ```bash
+   git clone https://github.com/killamfkr/NuvioTV-live.git
+   cd NuvioTV-live
+   git checkout dev
+   ```
+2. Open in Android Studio (or use the project’s Gradle tasks).
+3. Build **`fullDebug`** or **`fullRelease`** as needed for your device ABI.
 
-### On Demand
-| Button | Action |
-|---|---|
-| **▲ / ▼** in the categories | Browse; each category opens as you highlight it |
-| **▶** from the categories | Into the posters (the categories slide away) |
-| **◀** from the first column, or **Back** | Categories again |
-| **Long-press a category** | Manage visibility · Lock with PIN |
+### APK variants (typical)
+
+| Device | ABI hint |
+|--------|-----------|
+| Most phones, Google TV, Android TV (2018+) | `arm64-v8a` |
+| Fire TV, older boxes | `armeabi-v7a` |
+| Universal | `universal` |
+
+Requires **Android 7.0+** (Fire OS 6+). This fork may use a different `applicationId` suffix than Play Store Nuvio so it can install **alongside** official Nuvio where configured.
 
 ---
 
-## 🐞 Reporting bugs and requesting features
+## 🚀 Getting started (app)
 
-Please search [existing issues](https://github.com/homelessbrian/NuvioTV/issues) first.
-
-| | |
-|---|---|
-| 🐛 **Something isn't working** | [Report a bug](https://github.com/homelessbrian/NuvioTV/issues/new?template=live_tv_bug.yml) |
-| 📺 **An idea for a new feature** | [Request a feature](https://github.com/homelessbrian/NuvioTV/issues/new?template=live_tv_feature.yml) |
-| 🎨 **The look or layout could be better** | [Suggest a UI / UX improvement](https://github.com/homelessbrian/NuvioTV/issues/new?template=live_tv_ui.yml) |
-
-**If the app crashes,** scan the QR code on the crash screen with your phone and paste the text into your report.
-
-Problems with Nuvio's movies, shows, addons or accounts that also happen in the official app belong with [Nuvio](https://github.com/NuvioMedia/NuvioTV/issues).
+1. **Addons / accounts:** configure as in Nuvio (Stremio-style addons, Trakt, debrid, etc.).
+2. **Live TV:** **Settings → Live TV** — add M3U or Xtream, optional EPG; open **Live TV** or **On Demand** from the menu.
+3. **Phone / tablet:** use touch for menus; in playback, tap the video for controls and use the progress bar to seek.
 
 ---
 
-## ❓ FAQ
+## 🤝 Contributing
 
-<details>
-<summary><b>Why the new name?</b></summary>
-
-The app started as Nuvio with Live TV added. It now also has On Demand, catch-up, reminders, parental controls and more, so "Nuvio + IPTV" describes it better. Nothing about how it works or updates has changed.
-</details>
-
-<details>
-<summary><b>Does this include any channels or movies?</b></summary>
-
-No. It only plays what you add yourself: your own playlists, guides, Xtream logins, addons and debrid services.
-</details>
-
-<details>
-<summary><b>I don't see On Demand.</b></summary>
-
-Turn on movies & series for your Xtream login under **Settings → Live TV → On Demand**. On Demand appears in the side menu once the first import finishes.
-</details>
-
-<details>
-<summary><b>Some channels show "Programming" or the wrong listings.</b></summary>
-
-Long-press the channel and choose **Assign EPG**. Press Left to search, or pick a TV guide from the buttons at the top. If every channel is off by the same amount, use **Guide time shift**.
-</details>
-
-<details>
-<summary><b>Catch-up plays the wrong show (an hour off).</b></summary>
-
-Update to the latest version, then run **Update now** on that playlist once. Catch-up now uses your provider's time zone.
-</details>
-
-<details>
-<summary><b>Sound cuts out or stops on Fire TV with Echo speakers.</b></summary>
-
-Turn off **Audio passthrough** under **Settings → Live TV → Playback**.
-</details>
-
-<details>
-<summary><b>What does Google Drive sync store, and where?</b></summary>
-
-Your Live TV setup, in a private app folder in your own Google Drive that only this app can see. See the [privacy policy](https://homelessbrian.github.io/privacy.html).
-</details>
+- **Base branch:** open PRs against **`dev`**.
+- **Scope:** Nuvio Live–specific fixes and mobile/touch/Live TV improvements in this repo.
+- **Upstream:** respect [NuvioMedia/NuvioTV](https://github.com/NuvioMedia/NuvioTV) and GPL-3.0 obligations; do not imply endorsement by NuvioMedia.
 
 ---
 
-## 🙏 Credits
+## 🙏 Credits and legal
 
-- **[Nuvio](https://github.com/NuvioMedia/NuvioTV)** by the NuvioMedia team: Nuvio + IPTV is built on their work and follows their releases.
-- Guide and overlay design inspired by **TiviMate**.
-- Built with Kotlin, Jetpack Compose, TV Material 3 and Media3 / ExoPlayer.
+- **[Nuvio](https://github.com/NuvioMedia/NuvioTV)** — NuvioMedia team; core app and GPL-3.0 license.
+- **Live TV fork lineage** — community IPTV work popularized as “Nuvio + IPTV” ([homelessbrian/NuvioTV](https://github.com/homelessbrian/NuvioTV)); guide patterns inspired by TiviMate.
+- **Nuvio Live** — maintained on **`dev`** in this repository; **not affiliated with or endorsed by NuvioMedia**.
 
-Nuvio + IPTV is an unofficial fork and is **not affiliated with or endorsed by NuvioMedia or TiviMate**. Please report issues here, not to the Nuvio team.
+This app is a **client-side player**. It does not host media. Only use sources you are allowed to access. See Nuvio’s [legal / DMCA](https://github.com/NuvioMedia/NuvioTV#legal--dmca) guidance, which applies to the underlying core.
 
-## ⚖️ Legal
-
-This app is a client-side player. It does not host, store or distribute any media, and it ships with no channels, playlists or content sources. Only use sources you own or are authorized to access. See Nuvio's [legal and DMCA information](https://github.com/NuvioMedia/NuvioTV#legal--dmca), which applies here as well.
-
-Licensed under the **GNU General Public License v3.0**, like upstream Nuvio. See [LICENSE](LICENSE).
+Licensed under **GNU GPL v3.0** — see [LICENSE](LICENSE).

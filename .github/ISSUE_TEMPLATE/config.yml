@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 
 contact_links:
-  - name: 📖 Nuvio With Live TV
-    url: https://github.com/homelessbrian/NuvioTV
-    about: View the project, documentation, and current development status.
+  - name: 📖 Nuvio Live (README)
+    url: https://github.com/killamfkr/NuvioTV-live/blob/dev/README.md
+    about: Project overview, lineage, and development on the dev branch.
