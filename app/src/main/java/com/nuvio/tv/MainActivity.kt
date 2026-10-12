@@ -1,8 +1,13 @@
 package com.nuvio.tv
 
 import android.app.PictureInPictureParams
+import android.app.PendingIntent
+import android.app.RemoteAction
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.graphics.drawable.Icon
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
@@ -272,6 +277,15 @@ private data class MainUiPrefs(
 
 @AndroidEntryPoint
 open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator.Host {
+
+    private val pipMediaControlReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != ACTION_PIP_MEDIA_CONTROL) return
+            PlayerPictureInPictureCoordinator.onPlayPauseFromPip?.invoke()
+        }
+    }
+
+    private var pipMediaReceiverRegistered = false
 
     @Inject
     lateinit var themeDataStore: ThemeDataStore
@@ -1326,6 +1340,12 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         PlayerPictureInPictureCoordinator.updateInPictureInPicture(isInPictureInPictureMode)
+        if (isInPictureInPictureMode) {
+            registerPipMediaReceiver()
+            updatePictureInPictureActions(PlayerPictureInPictureCoordinator.eligibility.isPlaying)
+        } else {
+            unregisterPipMediaReceiver()
+        }
     }
 
     override fun enterPictureInPicture(aspectRatio: Float): Boolean {
@@ -1335,21 +1355,79 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
             Log.w("MainActivity", "PiP skipped: activity not started")
             return false
         }
-        val params = PictureInPictureParams.Builder()
-            .setAspectRatio(PlayerPictureInPictureCoordinator.aspectRatioToRational(aspectRatio))
-            .build()
+        PlayerPictureInPictureCoordinator.enteringPictureInPicture = true
+        val isPlaying = PlayerPictureInPictureCoordinator.eligibility.isPlaying
+        val params = buildPictureInPictureParams(aspectRatio, isPlaying)
         return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val entered = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 enterPictureInPictureMode(params)
             } else {
                 @Suppress("DEPRECATION")
                 enterPictureInPictureMode(params)
                 true
             }
+            if (!entered) {
+                PlayerPictureInPictureCoordinator.enteringPictureInPicture = false
+            }
+            entered
         } catch (e: IllegalStateException) {
             Log.w("MainActivity", "PiP enter failed", e)
+            PlayerPictureInPictureCoordinator.enteringPictureInPicture = false
             false
         }
+    }
+
+    override fun updatePictureInPictureActions(isPlaying: Boolean) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (!isInPictureInPictureMode) return
+        val aspectRatio = PlayerPictureInPictureCoordinator.eligibility.aspectRatio
+        setPictureInPictureParams(buildPictureInPictureParams(aspectRatio, isPlaying))
+    }
+
+    private fun buildPictureInPictureParams(aspectRatio: Float, isPlaying: Boolean): PictureInPictureParams {
+        return PictureInPictureParams.Builder()
+            .setAspectRatio(PlayerPictureInPictureCoordinator.aspectRatioToRational(aspectRatio))
+            .setActions(listOf(buildPipPlayPauseAction(isPlaying)))
+            .build()
+    }
+
+    private fun buildPipPlayPauseAction(isPlaying: Boolean): RemoteAction {
+        val intent = Intent(ACTION_PIP_MEDIA_CONTROL).setPackage(packageName)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            REQUEST_CODE_PIP_PLAY_PAUSE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val iconRes = if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
+        val label = if (isPlaying) {
+            getString(R.string.cd_pause)
+        } else {
+            getString(R.string.cd_play)
+        }
+        return RemoteAction(
+            Icon.createWithResource(this, iconRes),
+            label,
+            label,
+            pendingIntent
+        )
+    }
+
+    private fun registerPipMediaReceiver() {
+        if (pipMediaReceiverRegistered) return
+        val filter = IntentFilter(ACTION_PIP_MEDIA_CONTROL)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(pipMediaControlReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(pipMediaControlReceiver, filter)
+        }
+        pipMediaReceiverRegistered = true
+    }
+
+    private fun unregisterPipMediaReceiver() {
+        if (!pipMediaReceiverRegistered) return
+        runCatching { unregisterReceiver(pipMediaControlReceiver) }
+        pipMediaReceiverRegistered = false
     }
 
     override fun onUserLeaveHint() {
@@ -1452,11 +1530,18 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
     }
 
     override fun onDestroy() {
+        unregisterPipMediaReceiver()
         PlayerPictureInPictureCoordinator.host = null
         PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
+        PlayerPictureInPictureCoordinator.enteringPictureInPicture = false
         PlayerPictureInPictureCoordinator.updateInPictureInPicture(false)
         super.onDestroy()
         PluginRuntimeHooks.onActivityDestroy()
+    }
+
+    private companion object {
+        private const val ACTION_PIP_MEDIA_CONTROL = "com.nuvio.tv.action.PIP_MEDIA_CONTROL"
+        private const val REQUEST_CODE_PIP_PLAY_PAUSE = 42
     }
 }
 

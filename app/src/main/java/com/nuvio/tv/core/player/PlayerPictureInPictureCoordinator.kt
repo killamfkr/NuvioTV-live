@@ -11,8 +11,9 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 object PlayerPictureInPictureCoordinator {
 
-    fun interface Host {
+    interface Host {
         fun enterPictureInPicture(aspectRatio: Float): Boolean
+        fun updatePictureInPictureActions(isPlaying: Boolean)
     }
 
     data class Eligibility(
@@ -22,7 +23,8 @@ object PlayerPictureInPictureCoordinator {
         /** Playing or buffering — used when the user leaves the app (home / recents). */
         val readyForAutoEnter: Boolean = false,
         val enterOnUserLeave: Boolean = false,
-        val aspectRatio: Float = 16f / 9f
+        val aspectRatio: Float = 16f / 9f,
+        val isPlaying: Boolean = false
     )
 
     @Volatile
@@ -31,11 +33,23 @@ object PlayerPictureInPictureCoordinator {
     @Volatile
     var eligibility: Eligibility = Eligibility()
 
+    /** Set while [android.app.Activity.enterPictureInPictureMode] is in flight (before [inPictureInPicture] is true). */
+    @Volatile
+    var enteringPictureInPicture: Boolean = false
+
+    /** Wired from [com.nuvio.tv.ui.screens.player.PlayerScreen] while the player is active. */
+    var onPlayPauseFromPip: (() -> Unit)? = null
+
     private val _inPictureInPicture = MutableStateFlow(false)
     val inPictureInPicture: StateFlow<Boolean> = _inPictureInPicture.asStateFlow()
 
     fun updateInPictureInPicture(inPip: Boolean) {
         _inPictureInPicture.value = inPip
+        if (inPip) enteringPictureInPicture = false
+    }
+
+    fun isPictureInPictureActive(): Boolean {
+        return enteringPictureInPicture || _inPictureInPicture.value
     }
 
     fun tryEnterPictureInPicture(fromUserLeaveHint: Boolean = false): Boolean {

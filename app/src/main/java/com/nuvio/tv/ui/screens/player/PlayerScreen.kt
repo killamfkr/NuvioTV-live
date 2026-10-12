@@ -450,6 +450,15 @@ fun PlayerScreen(
         }
     }
 
+    DisposableEffect(Unit) {
+        PlayerPictureInPictureCoordinator.onPlayPauseFromPip = {
+            viewModel.onEvent(PlayerEvent.OnPlayPause)
+        }
+        onDispose {
+            PlayerPictureInPictureCoordinator.onPlayPauseFromPip = null
+        }
+    }
+
     // Bump UI thread priority to THREAD_PRIORITY_DISPLAY (-4) while the player is active.
     // The Linux scheduler favors the thread under CPU pressure (background addon prefetch,
     // Trakt sync, image decode), reducing dropped frames at scene cuts and during decoder
@@ -600,6 +609,11 @@ fun PlayerScreen(
             context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
     val inPictureInPicture by PlayerPictureInPictureCoordinator.inPictureInPicture.collectAsState()
+    LaunchedEffect(inPictureInPicture, uiState.isPlaying) {
+        if (inPictureInPicture) {
+            PlayerPictureInPictureCoordinator.host?.updatePictureInPictureActions(uiState.isPlaying)
+        }
+    }
     DisposableEffect(Unit) {
         onDispose {
             PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
@@ -631,7 +645,8 @@ fun PlayerScreen(
             readyForManualEnter = pipEligibleStream,
             readyForAutoEnter = pipAutoEnterReady,
             enterOnUserLeave = uiState.pictureInPictureEnabled,
-            aspectRatio = aspect
+            aspectRatio = aspect,
+            isPlaying = uiState.isPlaying || uiState.isBuffering
         )
         onDispose { }
     }

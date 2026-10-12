@@ -1,7 +1,9 @@
 package com.nuvio.tv.ui.screens.player
 
 import android.app.Activity
+import android.os.Build
 import android.os.SystemClock
+import com.nuvio.tv.core.player.PlayerPictureInPictureCoordinator
 import android.util.Log
 import com.nuvio.tv.R
 import kotlinx.coroutines.flow.update
@@ -88,6 +90,15 @@ internal fun PlayerRuntimeController.startInitialPlaybackIfNeeded() {
 
 internal fun PlayerRuntimeController.currentHostActivity(): Activity? {
     return hostActivityRef?.get()
+}
+
+/** PiP triggers [androidx.lifecycle.Lifecycle.Event.ON_PAUSE] but playback must continue. */
+internal fun PlayerRuntimeController.shouldKeepPlayingInPictureInPicture(): Boolean {
+    if (PlayerPictureInPictureCoordinator.isPictureInPictureActive()) return true
+    val activity = currentHostActivity()
+    return activity != null &&
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+        activity.isInPictureInPictureMode
 }
 
 private fun String.safeStartupHost(): String {

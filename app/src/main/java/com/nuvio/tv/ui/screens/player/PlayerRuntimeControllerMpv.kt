@@ -222,6 +222,8 @@ private fun String.safeMpvTraceHost(): String {
 }
 
 internal fun PlayerRuntimeController.pauseForLifecycle() {
+    if (shouldKeepPlayingInPictureInPicture()) return
+
     // Mark we're in background so onPlayerError can defer recovery to onResume.
     isInBackground = true
 
