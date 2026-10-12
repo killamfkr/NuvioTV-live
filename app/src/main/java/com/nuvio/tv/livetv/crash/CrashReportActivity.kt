@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import com.nuvio.tv.livetv.branding.LiveTvBranding
 import kotlin.system.exitProcess
 
 /**
@@ -30,7 +31,7 @@ class CrashReportActivity : Activity() {
         fun dp(v: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).toInt()
 
         val title = TextView(this).apply {
-            text = "Nuvio + IPTV stopped"
+            text = "${LiveTvBranding.APP_NAME} stopped"
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
             typeface = Typeface.DEFAULT_BOLD

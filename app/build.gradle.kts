@@ -160,7 +160,7 @@ android {
     productFlavors {
         create("full") {
             dimension = "distribution"
-            // Nuvio + IPTV fork: in-app updates from this GitHub repo (override via local.properties).
+            // Nuvio Live: in-app updates from this GitHub repo (override via local.properties).
             buildConfigField(
                 "String",
                 "GITHUB_OWNER",

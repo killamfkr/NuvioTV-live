@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and publish a Nuvio + IPTV fork release without GitHub Actions.
+# Build and publish a Nuvio Live fork release without GitHub Actions.
 # Requires: Java 17, Android SDK (sdk.dir in local.properties), signing + API keys
 # in local.properties (same fields as .github/workflows/release-livetv-update.yml).
 set -euo pipefail
@@ -93,7 +93,7 @@ if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
   exit 1
 fi
 
-BODY="Nuvio + IPTV update ${VERSION}."
+BODY="Nuvio Live update ${VERSION}."
 if [[ -n "$NOTES" ]]; then
   BODY="${BODY}
 
@@ -102,7 +102,7 @@ fi
 
 gh release create "$TAG" -R "$REPO" \
   --target "$(git rev-parse HEAD)" \
-  --title "Nuvio + IPTV ${VERSION}" \
+  --title "Nuvio Live ${VERSION}" \
   --prerelease \
   --notes "$BODY" \
   out/*.apk
@@ -113,7 +113,7 @@ mkdir -p dl
 cp "$APK" dl/NuvioPlusIPTV.apk
 if ! gh release view downloader -R "$REPO" >/dev/null 2>&1; then
   gh release create downloader -R "$REPO" \
-    --title "Nuvio + IPTV for Downloader (always the newest version)" \
+    --title "Nuvio Live for Downloader (always the newest version)" \
     --notes "Replaced on each release so one Downloader link always installs the latest build." \
     --latest=false --prerelease
 fi
