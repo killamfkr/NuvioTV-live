@@ -511,6 +511,12 @@
     <string name="livetv_touch_screen_size">Screen size</string>
     <string name="livetv_touch_options">Options</string>
     <string name="livetv_touch_channels">Channels</string>
+    <string name="livetv_update_notification_channel">Live TV updates</string>
+    <string name="livetv_update_notification_channel_desc">Shows progress while playlists and TV guides download in the background</string>
+    <string name="livetv_update_notification_title">Updating Live TV</string>
+    <string name="livetv_update_notification_starting">Checking for playlist and guide updates…</string>
+    <string name="livetv_update_notification_ondemand">Checking On Demand catalogs…</string>
+    <string name="livetv_update_notification_done">Live TV update finished</string>
     <string name="drive_device_code_instruction_handheld">Tap Open Google sign-in page, sign in, and allow access. You can also enter the code at google.com/device if you prefer.</string>
     <string name="experience_mode_essential">Essential</string>
     <string name="experience_mode_advanced">Advanced</string>

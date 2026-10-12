@@ -1,6 +1,7 @@
 package com.nuvio.tv.livetv.ui
 
 import com.nuvio.tv.livetv.data.LiveTvRepository
+import com.nuvio.tv.livetv.sync.rememberLiveTvNotificationPermissionGate
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
