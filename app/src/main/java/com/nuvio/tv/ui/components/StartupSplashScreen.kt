@@ -102,13 +102,9 @@ fun StartupSplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Nuvio Live logo (in the theme's colors) and what the app does.
-            BrandWordmark(
-                modifier = Modifier.height(48.dp),
-                contentDescription = com.nuvio.tv.livetv.branding.LiveTvBranding.APP_NAME,
-                drawableOverride = com.nuvio.tv.livetv.branding.LiveTvBranding.iptvWordmark(
-                    brandWordmarkRes ?: NuvioTheme.currentTheme.brandWordmarkResource
-                )
+            NuvioLiveWordmark(
+                wordmarkHeight = 48.dp,
+                brandWordmarkRes = brandWordmarkRes ?: NuvioTheme.currentTheme.brandWordmarkResource
             )
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(14.dp))
             androidx.tv.material3.Text(

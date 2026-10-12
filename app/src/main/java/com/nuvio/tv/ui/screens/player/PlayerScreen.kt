@@ -605,18 +605,22 @@ fun PlayerScreen(
             PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
         }
     }
-    val pipPlaybackActive = handheldPlayerUi &&
+    val pipStreamReady = handheldPlayerUi &&
         uiState.pictureInPictureEnabled &&
         pipFeatureAvailable &&
         uiState.error == null &&
         !uiState.playbackEnded &&
         !playbackTimeline.isLive &&
-        (uiState.isPlaying || uiState.isBuffering)
+        (uiState.duration > 0L || uiState.streamInfoData != null)
+    val pipAutoEnterReady = pipStreamReady && (uiState.isPlaying || uiState.isBuffering)
     DisposableEffect(
-        pipPlaybackActive,
+        pipStreamReady,
+        pipAutoEnterReady,
         uiState.pictureInPictureEnabled,
         uiState.isPlaying,
         uiState.isBuffering,
+        uiState.duration,
+        uiState.streamInfoData,
         uiState.streamInfoData?.videoWidth,
         uiState.streamInfoData?.videoHeight,
         handheldPlayerUi,
@@ -627,18 +631,14 @@ fun PlayerScreen(
         val aspect = if (width != null && height != null) width.toFloat() / height else 16f / 9f
         PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility(
             enabled = uiState.pictureInPictureEnabled && pipFeatureAvailable && handheldPlayerUi,
-            activePlayback = pipPlaybackActive,
+            readyForManualEnter = pipStreamReady,
+            readyForAutoEnter = pipAutoEnterReady,
             enterOnUserLeave = uiState.pictureInPictureEnabled,
             aspectRatio = aspect
         )
         onDispose { }
     }
-    val showPictureInPictureControl = handheldPlayerUi &&
-        uiState.pictureInPictureEnabled &&
-        pipFeatureAvailable &&
-        uiState.error == null &&
-        !uiState.playbackEnded &&
-        !playbackTimeline.isLive
+    val showPictureInPictureControl = pipStreamReady
 
     Box(
         modifier = Modifier
