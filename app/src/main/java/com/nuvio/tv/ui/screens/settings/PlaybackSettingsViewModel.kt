@@ -174,6 +174,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setOsdClockEnabled(enabled)
     }
 
+    suspend fun setPictureInPictureEnabled(enabled: Boolean) {
+        playerSettingsDataStore.setPictureInPictureEnabled(enabled)
+    }
+
     suspend fun setTransparentLetterbox(enabled: Boolean) {
         deviceLocalPlayerPreferences.setTransparentLetterbox(enabled)
     }

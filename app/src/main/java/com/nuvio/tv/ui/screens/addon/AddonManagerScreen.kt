@@ -12,10 +12,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,7 +28,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -69,12 +73,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -85,7 +91,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.IconButton
 import androidx.tv.material3.Border
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ClickableSurfaceDefaults
@@ -96,6 +104,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Switch
 import androidx.tv.material3.SwitchDefaults
 import androidx.tv.material3.Text
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.domain.model.Addon
 import com.nuvio.tv.domain.model.CatalogDescriptor
 import com.nuvio.tv.domain.model.ExperienceMode
@@ -248,22 +257,41 @@ fun AddonManagerScreen(
     }
 
     val addonListScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val isHandheldAddons = remember(context) { !DeviceFormFactor.isTelevision(context) }
+    val contentHorizontalPadding = if (isHandheldAddons) NuvioTheme.spacing.md else 36.dp
+    val contentVerticalPadding = if (isHandheldAddons) NuvioTheme.spacing.md else 28.dp
+    val cardInnerPadding = if (isHandheldAddons) NuvioTheme.spacing.md else 20.dp
 
     Box(
         modifier = Modifier
             .fillMaxSize()
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 28.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (isHandheldAddons) Modifier.navigationBarsPadding() else Modifier),
+            contentPadding = PaddingValues(
+                start = contentHorizontalPadding,
+                end = contentHorizontalPadding,
+                top = if (isHandheldAddons && !showBuiltInHeader) NuvioTheme.spacing.sm else contentVerticalPadding,
+                bottom = contentVerticalPadding
+            ),
+            verticalArrangement = Arrangement.spacedBy(if (isHandheldAddons) NuvioTheme.spacing.md else 20.dp)
         ) {
             item {
-                Text(
-                    text = stringResource(R.string.addon_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = if (showBuiltInHeader) NuvioTheme.colors.TextPrimary else Color.Transparent
-                )
+                if (isHandheldAddons) {
+                    AddonMobileDetailToolbar(
+                        title = stringResource(R.string.addon_title),
+                        onBack = onBackPress
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.addon_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = if (showBuiltInHeader) NuvioTheme.colors.TextPrimary else Color.Transparent
+                    )
+                }
             }
 
             if (viewModel.isReadOnly) {
@@ -292,24 +320,17 @@ fun AddonManagerScreen(
                         colors = CardDefaults.cardColors(containerColor = NuvioTheme.colors.BackgroundCard),
                         shape = RoundedCornerShape(NuvioTheme.radii.md)
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
+                        Column(modifier = Modifier.padding(cardInnerPadding)) {
                             Text(
                                 text = stringResource(R.string.addon_install_title),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textDirection = TextDirection.Content),
                                 color = NuvioTheme.colors.TextPrimary,
                             )
                             Spacer(modifier = Modifier.height(NuvioTheme.spacing.md))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Surface always stays in the tree for stable D-pad focus
+                            val installUrlSurface: @Composable (Modifier) -> Unit = { surfaceModifier ->
                                 TouchTvSurface(
                                     onClick = { isEditing = true },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .focusRequester(surfaceFocusRequester),
+                                    modifier = surfaceModifier.focusRequester(surfaceFocusRequester),
                                     colors = ClickableSurfaceDefaults.colors(
                                         containerColor = NuvioTheme.colors.BackgroundElevated,
                                         focusedContainerColor = NuvioTheme.colors.BackgroundElevated
@@ -373,7 +394,8 @@ fun AddonManagerScreen(
                                         }
                                     }
                                 }
-
+                            }
+                            val installButton: @Composable (Modifier) -> Unit = { buttonModifier ->
                                 TouchTvButton(
                                     onClick = {
                                         viewModel.installAddon()
@@ -382,7 +404,7 @@ fun AddonManagerScreen(
                                         installButtonFocusRequester.requestFocus()
                                     },
                                     enabled = !uiState.isInstalling,
-                                    modifier = Modifier.focusRequester(installButtonFocusRequester),
+                                    modifier = buttonModifier.focusRequester(installButtonFocusRequester),
                                     colors = ButtonDefaults.colors(
                                         containerColor = NuvioTheme.colors.BackgroundCard,
                                         contentColor = NuvioTheme.colors.TextPrimary,
@@ -391,7 +413,31 @@ fun AddonManagerScreen(
                                     ),
                                     shape = ButtonDefaults.shape(RoundedCornerShape(NuvioTheme.radii.md))
                                 ) {
-                                    Text(text = if (uiState.isInstalling) stringResource(R.string.addon_installing) else stringResource(R.string.addon_install_btn))
+                                    Text(
+                                        text = if (uiState.isInstalling) {
+                                            stringResource(R.string.addon_installing)
+                                        } else {
+                                            stringResource(R.string.addon_install_btn)
+                                        }
+                                    )
+                                }
+                            }
+                            if (isHandheldAddons) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
+                                ) {
+                                    installUrlSurface(Modifier.fillMaxWidth())
+                                    installButton(Modifier.fillMaxWidth())
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    installUrlSurface(Modifier.weight(1f))
+                                    installButton(Modifier)
                                 }
                             }
 
@@ -475,6 +521,8 @@ fun AddonManagerScreen(
                     AddonCard(
                         modifier = Modifier.bringIntoViewRequester(bringIntoViewRequester),
                         addon = addon,
+                        compactLayout = isHandheldAddons,
+                        cardInnerPadding = cardInnerPadding,
                         canMoveUp = index > 0,
                         canMoveDown = index < uiState.installedAddons.lastIndex,
                         onMoveUp = {
@@ -569,10 +617,13 @@ internal fun AddonMessageOverlay(
     message: String?,
     isError: Boolean
 ) {
+    val context = LocalContext.current
+    val handheld = remember(context) { !DeviceFormFactor.isTelevision(context) }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(NuvioTheme.spacing.xl),
+            .padding(NuvioTheme.spacing.xl)
+            .then(if (handheld) Modifier.navigationBarsPadding() else Modifier),
         contentAlignment = Alignment.BottomCenter
     ) {
         AnimatedVisibility(
@@ -646,7 +697,10 @@ private fun ManageFromPhoneCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.QrCode2,
                     contentDescription = null,
@@ -654,7 +708,7 @@ private fun ManageFromPhoneCard(
                     tint = if (isFocused) NuvioTheme.colors.Secondary else NuvioTheme.colors.TextSecondary
                 )
                 Spacer(modifier = Modifier.width(NuvioTheme.spacing.lg))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.addon_manage_from_phone_title),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textDirection = TextDirection.Content),
@@ -707,7 +761,10 @@ private fun CatalogOrderEntryCard(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.Reorder,
                     contentDescription = null,
@@ -715,7 +772,7 @@ private fun CatalogOrderEntryCard(onClick: () -> Unit) {
                     tint = if (isFocused) NuvioTheme.colors.Secondary else NuvioTheme.colors.TextSecondary
                 )
                 Spacer(modifier = Modifier.width(NuvioTheme.spacing.lg))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.addon_reorder_title),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textDirection = TextDirection.Content),
@@ -768,7 +825,10 @@ private fun CollectionsEntryCard(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.FolderOpen,
                     contentDescription = null,
@@ -776,7 +836,7 @@ private fun CollectionsEntryCard(onClick: () -> Unit) {
                     tint = if (isFocused) NuvioTheme.colors.Secondary else NuvioTheme.colors.TextSecondary
                 )
                 Spacer(modifier = Modifier.width(NuvioTheme.spacing.lg))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.collections_card_title),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textDirection = TextDirection.Content),
@@ -978,16 +1038,26 @@ internal fun ConfirmAddonChangesDialog(
 
     BackHandler { onReject() }
 
+    val context = LocalContext.current
+    val handheld = remember(context) { !DeviceFormFactor.isTelevision(context) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.8f)),
         contentAlignment = Alignment.Center
     ) {
-        TouchTvSurface(
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = NuvioTheme.spacing.md)
+        ) {
+            val dialogWidth = if (handheld) maxWidth else 560.dp
+            TouchTvSurface(
             onClick = { },
             modifier = Modifier
-                .width(560.dp)
+                .widthIn(max = dialogWidth)
+                .fillMaxWidth(if (handheld) 1f else 0.92f)
                 .heightIn(max = 640.dp),
             colors = ClickableSurfaceDefaults.colors(
                 containerColor = NuvioTheme.colors.SurfaceVariant
@@ -1246,6 +1316,7 @@ internal fun ConfirmAddonChangesDialog(
                 }
             }
         }
+        }
     }
 }
 
@@ -1254,6 +1325,8 @@ internal fun ConfirmAddonChangesDialog(
 private fun AddonCard(
     modifier: Modifier = Modifier,
     addon: Addon,
+    compactLayout: Boolean = false,
+    cardInnerPadding: Dp = 20.dp,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     onMoveUp: () -> Unit,
@@ -1283,7 +1356,12 @@ private fun AddonCard(
             shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(NuvioTheme.radii.md)),
             scale = ClickableSurfaceDefaults.scale(focusedScale = 1f)
         ) {
-            AddonCardContent(addon = addon, isReadOnly = true)
+            AddonCardContent(
+                addon = addon,
+                isReadOnly = true,
+                compactLayout = compactLayout,
+                cardInnerPadding = cardInnerPadding
+            )
         }
     } else {
         val internalToggleFocusRequester = remember { FocusRequester() }
@@ -1302,6 +1380,8 @@ private fun AddonCard(
             AddonCardContent(
                 addon = addon,
                 isReadOnly = false,
+                compactLayout = compactLayout,
+                cardInnerPadding = cardInnerPadding,
                 canMoveUp = canMoveUp,
                 canMoveDown = canMoveDown,
                 onMoveUp = onMoveUp,
@@ -1320,6 +1400,8 @@ private fun AddonCard(
 private fun AddonCardContent(
     addon: Addon,
     isReadOnly: Boolean,
+    compactLayout: Boolean = false,
+    cardInnerPadding: Dp = 20.dp,
     canMoveUp: Boolean = false,
     canMoveDown: Boolean = false,
     onMoveUp: () -> Unit = {},
@@ -1329,43 +1411,51 @@ private fun AddonCardContent(
     showReorder: Boolean = true,
     toggleFocusRequester: FocusRequester? = null
 ) {
-    Column(modifier = Modifier.padding(20.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = addon.displayName,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textDirection = TextDirection.Content),
-                    color = NuvioTheme.colors.TextPrimary,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (addon.version.isNotBlank()) {
-                        Text(
-                            text = "v${addon.version}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = NuvioTheme.colors.TextSecondary
-                        )
-                    }
-                    if (!addon.enabled) {
-                        Text(
-                            text = stringResource(R.string.addons_badge_disabled),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = NuvioTheme.colors.TextSecondary
-                        )
-                    }
+    val actionScroll = rememberScrollState()
+    Column(modifier = Modifier.padding(cardInnerPadding)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = addon.displayName,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textDirection = TextDirection.Content),
+                color = NuvioTheme.colors.TextPrimary,
+                maxLines = if (compactLayout) 3 else 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (addon.version.isNotBlank()) {
+                    Text(
+                        text = "v${addon.version}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = NuvioTheme.colors.TextSecondary
+                    )
+                }
+                if (!addon.enabled) {
+                    Text(
+                        text = stringResource(R.string.addons_badge_disabled),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = NuvioTheme.colors.TextSecondary
+                    )
                 }
             }
-            if (!isReadOnly) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+        }
+        if (!isReadOnly) {
+            if (compactLayout) {
+                Spacer(modifier = Modifier.height(NuvioTheme.spacing.sm))
+            }
+            Row(
+                modifier = if (compactLayout) {
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(actionScroll)
+                } else {
+                    Modifier.align(Alignment.End)
+                },
+                horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                     TouchTvSurface(
                         onClick = { onEnabledChange(!addon.enabled) },
                         modifier = Modifier
@@ -1437,7 +1527,6 @@ private fun AddonCardContent(
                     ) {
                         Text(text = stringResource(R.string.addon_remove))
                     }
-                }
             }
         }
 
@@ -1466,6 +1555,34 @@ private fun AddonCardContent(
             text = stringResource(R.string.addon_catalogs_types, addon.catalogs.size, addon.rawTypes.joinToString()),
             style = MaterialTheme.typography.bodySmall,
             color = NuvioTheme.colors.TextTertiary
+        )
+    }
+}
+
+@Composable
+private fun AddonMobileDetailToolbar(
+    title: String,
+    onBack: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = NuvioTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.cd_back),
+                tint = NuvioTheme.colors.TextPrimary
+            )
+        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = NuvioTheme.colors.TextPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

@@ -10,6 +10,8 @@ import com.nuvio.tv.ui.theme.NuvioMotion
 import com.nuvio.tv.ui.theme.NuvioTheme
 import com.nuvio.tv.ui.theme.accentBrush
 
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -69,6 +71,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Speed
@@ -133,6 +136,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
+import com.nuvio.tv.core.player.PlayerPictureInPictureCoordinator
 import com.nuvio.tv.core.player.PlayerWindowBackdrop
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
 import com.nuvio.tv.data.local.InternalPlayerEngine
@@ -589,6 +593,52 @@ fun PlayerScreen(
             !postPlayRecommendationState.isVisible &&
             uiState.error == null
     )
+
+    val playbackTimeline by viewModel.playbackTimeline.collectAsState()
+    val pipFeatureAvailable = remember(context) {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+    }
+    val inPictureInPicture by PlayerPictureInPictureCoordinator.inPictureInPicture.collectAsState()
+    DisposableEffect(Unit) {
+        onDispose {
+            PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
+        }
+    }
+    val pipPlaybackActive = handheldPlayerUi &&
+        uiState.pictureInPictureEnabled &&
+        pipFeatureAvailable &&
+        uiState.error == null &&
+        !uiState.playbackEnded &&
+        !playbackTimeline.isLive &&
+        (uiState.isPlaying || uiState.isBuffering)
+    DisposableEffect(
+        pipPlaybackActive,
+        uiState.pictureInPictureEnabled,
+        uiState.isPlaying,
+        uiState.isBuffering,
+        uiState.streamInfoData?.videoWidth,
+        uiState.streamInfoData?.videoHeight,
+        handheldPlayerUi,
+        pipFeatureAvailable
+    ) {
+        val width = uiState.streamInfoData?.videoWidth?.takeIf { it > 0 }
+        val height = uiState.streamInfoData?.videoHeight?.takeIf { it > 0 }
+        val aspect = if (width != null && height != null) width.toFloat() / height else 16f / 9f
+        PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility(
+            enabled = uiState.pictureInPictureEnabled && pipFeatureAvailable && handheldPlayerUi,
+            activePlayback = pipPlaybackActive,
+            enterOnUserLeave = uiState.pictureInPictureEnabled,
+            aspectRatio = aspect
+        )
+        onDispose { }
+    }
+    val showPictureInPictureControl = handheldPlayerUi &&
+        uiState.pictureInPictureEnabled &&
+        pipFeatureAvailable &&
+        uiState.error == null &&
+        !uiState.playbackEnded &&
+        !playbackTimeline.isLive
 
     Box(
         modifier = Modifier
@@ -1366,7 +1416,8 @@ fun PlayerScreen(
 
         // Controls overlay
         AnimatedVisibility(
-            visible = uiState.showControls && uiState.error == null &&
+            visible = !inPictureInPicture &&
+                uiState.showControls && uiState.error == null &&
                 !uiState.showLoadingOverlay && !uiState.showPauseOverlay &&
                 !uiState.showStreamInfoOverlay &&
                 !uiState.showSubtitleStylePanel &&
@@ -1450,7 +1501,12 @@ fun PlayerScreen(
                 },
                 onHideControls = { viewModel.hideControls() },
                 onBack = { exitPlayer() },
-                skipButtonVisible = skipButtonActuallyVisible
+                skipButtonVisible = skipButtonActuallyVisible,
+                showPictureInPictureButton = showPictureInPictureControl,
+                onEnterPictureInPicture = {
+                    viewModel.hideControls()
+                    PlayerPictureInPictureCoordinator.tryEnterPictureInPicture()
+                }
             )
         }
 
@@ -2228,7 +2284,9 @@ private fun PlayerControlsOverlay(
     onHideControls: () -> Unit,
     onBack: () -> Unit,
     reportCodeVisible: Boolean,
-    skipButtonVisible: Boolean = false
+    skipButtonVisible: Boolean = false,
+    showPictureInPictureButton: Boolean = false,
+    onEnterPictureInPicture: () -> Unit = {}
 ) {
     val customPlayPainter = rememberRawSvgPainter(R.raw.ic_player_play)
     val customPausePainter = rememberRawSvgPainter(R.raw.ic_player_pause)
@@ -2514,6 +2572,16 @@ private fun PlayerControlsOverlay(
                                 onDownKey = onHideControls,
                                 onFocused = onResetHideTimer
                             )
+                            if (showPictureInPictureButton) {
+                                ControlButton(
+                                    icon = Icons.Default.PictureInPicture,
+                                    contentDescription = stringResource(R.string.cd_picture_in_picture),
+                                    onClick = onEnterPictureInPicture,
+                                    upFocusRequester = progressUpTarget,
+                                    onDownKey = onHideControls,
+                                    onFocused = onResetHideTimer
+                                )
+                            }
                             ControlButton(
                                 icon = Icons.AutoMirrored.Filled.OpenInNew,
                                 contentDescription = stringResource(R.string.cd_open_external_player),
