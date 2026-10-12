@@ -869,6 +869,26 @@ class LiveTvViewModel @Inject constructor(
         return channels.firstOrNull { it.key == key }
     }
 
+    suspend fun shouldShowAutoUpdatePrompt(): Boolean {
+        if (prefs.isAutoUpdatePromptShown()) return false
+        if (prefs.currentSettings().autoUpdateSources) return false
+        return prefs.currentPlaylists().any { it.liveEnabled }
+    }
+
+    fun completeAutoUpdatePrompt(enableBackgroundUpdates: Boolean) {
+        viewModelScope.launch {
+            prefs.setAutoUpdatePromptShown()
+            if (enableBackgroundUpdates) {
+                prefs.updateSettings { it.copy(autoUpdateSources = true) }
+                repository.refreshStaleIfEnabled()
+            }
+        }
+    }
+
+    fun dismissAutoUpdatePromptOnly() {
+        viewModelScope.launch { prefs.setAutoUpdatePromptShown() }
+    }
+
     /** The last watched channel, once per app launch, when "auto-play last channel" is on. */
     suspend fun autoPlayCandidate(): LiveChannel? {
         if (session.autoPlayedThisLaunch) return null

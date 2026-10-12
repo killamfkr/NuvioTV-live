@@ -72,6 +72,8 @@ class LiveTvPreferences @Inject constructor(
         val bannerSeconds = intPreferencesKey("banner_seconds")
         val playlistRefresh = intPreferencesKey("playlist_refresh_hours")
         val epgRefresh = intPreferencesKey("epg_refresh_hours")
+        val autoUpdateSources = booleanPreferencesKey("auto_update_sources")
+        val autoUpdatePromptShown = booleanPreferencesKey("auto_update_prompt_shown")
         val epgPast = intPreferencesKey("epg_past_hours")
         val epgFuture = intPreferencesKey("epg_future_days")
         val clock24 = booleanPreferencesKey("clock_24h")
@@ -170,6 +172,7 @@ class LiveTvPreferences @Inject constructor(
             infoBannerSeconds = p[Keys.bannerSeconds] ?: d.infoBannerSeconds,
             playlistRefreshHours = p[Keys.playlistRefresh] ?: d.playlistRefreshHours,
             epgRefreshHours = p[Keys.epgRefresh] ?: d.epgRefreshHours,
+            autoUpdateSources = p[Keys.autoUpdateSources] ?: d.autoUpdateSources,
             epgPastHours = p[Keys.epgPast] ?: d.epgPastHours,
             epgFutureDays = p[Keys.epgFuture] ?: d.epgFutureDays,
             use24HourClock = p[Keys.clock24] ?: d.use24HourClock,
@@ -267,6 +270,13 @@ class LiveTvPreferences @Inject constructor(
         store.edit { p -> writeSettings(p, next) }
     }
 
+    suspend fun isAutoUpdatePromptShown(): Boolean =
+        store.data.first()[Keys.autoUpdatePromptShown] == true
+
+    suspend fun setAutoUpdatePromptShown() {
+        store.edit { it[Keys.autoUpdatePromptShown] = true }
+    }
+
     private fun writeSettings(p: MutablePreferences, s: LiveTvSettings) {
         p[Keys.showInSidebar] = s.showInSidebar
         p[Keys.showNames] = s.showChannelNames
@@ -286,6 +296,7 @@ class LiveTvPreferences @Inject constructor(
         p[Keys.bannerSeconds] = s.infoBannerSeconds
         p[Keys.playlistRefresh] = s.playlistRefreshHours
         p[Keys.epgRefresh] = s.epgRefreshHours
+        p[Keys.autoUpdateSources] = s.autoUpdateSources
         p[Keys.epgPast] = s.epgPastHours
         p[Keys.epgFuture] = s.epgFutureDays
         p[Keys.clock24] = s.use24HourClock

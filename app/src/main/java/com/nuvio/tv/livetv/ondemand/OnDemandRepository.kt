@@ -154,7 +154,9 @@ class OnDemandRepository @Inject constructor(
                 }
                 _version.value++
             }
-            refresh(force = false)
+            if (prefs.currentSettings().autoUpdateSources) {
+                refresh(force = false)
+            }
             startGenreFill()
         }
     }

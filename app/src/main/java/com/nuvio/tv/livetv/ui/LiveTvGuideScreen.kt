@@ -205,6 +205,10 @@ fun LiveTvGuideScreen(
     // Parental controls: the group waiting for its PIN (and whether that removes the lock).
     var pinGroup by remember { mutableStateOf<ChannelGroup?>(null) }
     var pinWrong by remember { mutableStateOf(false) }
+    var showAutoUpdatePrompt by remember { mutableStateOf(false) }
+    LaunchedEffect(ui.hasSources) {
+        if (ui.hasSources && viewModel.shouldShowAutoUpdatePrompt()) showAutoUpdatePrompt = true
+    }
     var pinRemovesLock by remember { mutableStateOf(false) }
     val playlistNames by viewModel.playlistNames.collectAsStateWithLifecycle()
     val collapsedPlaylists by viewModel.collapsedPlaylists.collectAsStateWithLifecycle()
@@ -1377,6 +1381,24 @@ fun LiveTvGuideScreen(
                 onSearch = { menuTarget = null; LiveTvSearchBridge.liveOnly.value = true; onOpenNuvioSearch() },
                 onRefresh = { menuTarget = null; viewModel.refresh() },
                 onSettings = { menuTarget = null; onOpenSettings() }
+            )
+        }
+        if (showAutoUpdatePrompt) {
+            AutoUpdateSourcesPrompt(
+                playlistHours = settings.playlistRefreshHours,
+                epgHours = settings.epgRefreshHours,
+                onEnable = {
+                    showAutoUpdatePrompt = false
+                    viewModel.completeAutoUpdatePrompt(enableBackgroundUpdates = true)
+                },
+                onNotNow = {
+                    showAutoUpdatePrompt = false
+                    viewModel.dismissAutoUpdatePromptOnly()
+                },
+                onNever = {
+                    showAutoUpdatePrompt = false
+                    viewModel.completeAutoUpdatePrompt(enableBackgroundUpdates = false)
+                }
             )
         }
         infoTarget?.let { target ->
@@ -3194,6 +3216,34 @@ internal fun LiveTextField(
 
 /** While Left is held in the guide, one step back through earlier shows per this many ms. */
 private const val HELD_STEP_MS = 320L
+
+@Composable
+private fun AutoUpdateSourcesPrompt(
+    playlistHours: Int,
+    epgHours: Int,
+    onEnable: () -> Unit,
+    onNotNow: () -> Unit,
+    onNever: () -> Unit
+) {
+    val first = remember { FocusRequester() }
+    LiveDialog(onDismiss = onNotNow, width = 520.dp) {
+        LiveText("Update IPTV in the background?", size = 22.sp, weight = FontWeight.Bold)
+        Spacer(Modifier.height(10.dp))
+        LiveText(
+            "Refresh channel lists about every $playlistHours hours and TV guides about every $epgHours hours while the app is open. " +
+                "Saved data is used on launch unless an update is due — not a full download every time you open Nuvio.",
+            color = NuvioTheme.colors.TextSecondary,
+            size = 15.sp
+        )
+        Spacer(Modifier.height(16.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            MenuItem("Yes, update automatically", Modifier.focusRequester(first), onEnable)
+            MenuItem("Not now", onClick = onNotNow)
+            MenuItem("No, I'll refresh manually", onClick = onNever)
+        }
+    }
+    LaunchedEffect(Unit) { delay(80); runCatching { first.requestFocus() } }
+}
 
 /** Asks the Live TV guide to go full screen (from the home row, reminders, search…). */
 object LiveTvFullscreen {

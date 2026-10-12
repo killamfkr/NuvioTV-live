@@ -136,15 +136,13 @@ fun LiveTvPlayerScreen(
 
     fun onPrimaryTap() {
         if (listVisible || dialog != PlayerDialog.NONE) return
-        val archive = playback.catchupTitle != null
         when {
             playback.error != null && playback.reconnectAttempt > 8 -> viewModel.playback.retry()
-            archive -> {
+            bannerVisible -> bannerVisible = false
+            else -> {
                 viewModel.playback.togglePause()
                 showBanner()
             }
-            bannerVisible -> bannerVisible = false
-            else -> showBanner()
         }
     }
 
@@ -288,11 +286,10 @@ fun LiveTvPlayerScreen(
                             dialog = PlayerDialog.OPTIONS
                         } else when {
                             playback.error != null && playback.reconnectAttempt > 8 -> viewModel.playback.retry()
-                            // Catch-up: OK pauses and resumes, and shows the seek bar.
-                            archive -> { viewModel.playback.togglePause(); showBanner() }
-                            // OK shows the info bar; OK again hides it.
-                            bannerVisible -> bannerVisible = false
-                            else -> showBanner()
+                            else -> {
+                                viewModel.playback.togglePause()
+                                showBanner()
+                            }
                         }
                         return@onPreviewKeyEvent true
                     }
@@ -317,7 +314,10 @@ fun LiveTvPlayerScreen(
                     e.key == Key.Info -> { showBanner(); true }
                     e.key == Key.Menu -> { dialog = PlayerDialog.OPTIONS; true }
                     e.key == Key.MediaPlayPause || e.key == Key.MediaPlay || e.key == Key.MediaPause -> {
-                        viewModel.playback.togglePause(); true
+                        viewModel.playback.togglePause(); showBanner(); true
+                    }
+                    code == AndroidKeyEvent.KEYCODE_VOLUME_MUTE -> {
+                        viewModel.playback.toggleMute(); showBanner(); true
                     }
                     code == AndroidKeyEvent.KEYCODE_LAST_CHANNEL -> {
                         viewModel.previousChannel()?.let { viewModel.preview(it) }
@@ -411,6 +411,8 @@ fun LiveTvPlayerScreen(
                     channel = ch,
                     title = watchingTitle ?: ch.name,
                     isArchive = playback.catchupTitle != null,
+                    paused = !playback.isPlaying && !playback.isBuffering && playback.error == null,
+                    muted = playback.isMuted,
                     meta = listOfNotNull(
                         nowProgram?.let { formatRange(it.startMs, it.stopMs, use24h) },
                         nowProgram?.let { minutesLeftLabel(it.stopMs, now) },
@@ -490,8 +492,12 @@ fun LiveTvPlayerScreen(
                 isFavorite = ch.key in user.favorites,
                 aspectLabel = context.getString(aspectModeOf(settings.aspectMode).labelResId),
                 archive = playback.catchupTitle != null,
+                paused = !playback.isPlaying && !playback.isBuffering,
+                muted = playback.isMuted,
                 canRestart = playback.catchupTitle == null && viewModel.canWatchFromStart(ch),
                 onRestart = { dialog = PlayerDialog.NONE; viewModel.watchFromStart(ch); showBanner() },
+                onPause = { dialog = PlayerDialog.NONE; viewModel.playback.togglePause(); showBanner() },
+                onMute = { dialog = PlayerDialog.NONE; viewModel.playback.toggleMute(); showBanner() },
                 onDismiss = { dialog = PlayerDialog.NONE; scope.launch { delay(60); runCatching { rootFocus.requestFocus() } } },
                 onAudio = { dialog = PlayerDialog.AUDIO },
                 onSubtitles = { dialog = PlayerDialog.SUBTITLES },
@@ -571,6 +577,8 @@ private fun InfoBanner(
     channel: LiveChannel,
     title: String,
     isArchive: Boolean,
+    paused: Boolean = false,
+    muted: Boolean = false,
     meta: String,
     progress: Float?,
     description: String?,
@@ -621,7 +629,12 @@ private fun InfoBanner(
                 // What you're watching: big and bold, with the clock on the right.
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LiveText(
-                        (if (isArchive) "Archive · " else "") + title,
+                        buildString {
+                            if (paused) append("❚❚  ")
+                            if (muted) append("Muted · ")
+                            if (isArchive) append("Archive · ")
+                            append(title)
+                        },
                         modifier = Modifier.weight(1f),
                         size = 32.sp,
                         weight = FontWeight.Bold,
@@ -668,8 +681,12 @@ private fun PlayerOptionsDialog(
     isFavorite: Boolean,
     aspectLabel: String,
     archive: Boolean,
+    paused: Boolean,
+    muted: Boolean,
     canRestart: Boolean,
     onRestart: () -> Unit,
+    onPause: () -> Unit,
+    onMute: () -> Unit,
     onDismiss: () -> Unit,
     onAudio: () -> Unit,
     onSubtitles: () -> Unit,
@@ -696,7 +713,9 @@ private fun PlayerOptionsDialog(
         ) {
             if (archive) MenuItem("Back to live", Modifier.focusRequester(first), onBackToLive)
             if (canRestart) MenuItem("Watch from the beginning", Modifier.focusRequester(first), onRestart)
-            MenuItem("Audio track", if (archive || canRestart) Modifier else Modifier.focusRequester(first), onAudio)
+            MenuItem(if (paused) "Play" else "Pause", if (archive || canRestart) Modifier else Modifier.focusRequester(first), onPause)
+            MenuItem(if (muted) "Unmute" else "Mute", onClick = onMute)
+            MenuItem("Audio track", onClick = onAudio)
             currentTitle?.let { t -> MenuItem("Find & stream \"$t\" in Nuvio", onClick = { onFind(t) }) }
             MenuItem("Subtitles", onClick = onSubtitles)
             MenuItem("Screen size: $aspectLabel", onClick = onAspect)

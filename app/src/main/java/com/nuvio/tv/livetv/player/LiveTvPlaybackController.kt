@@ -36,6 +36,7 @@ data class LivePlaybackState(
     val channelKey: String? = null,
     val isBuffering: Boolean = false,
     val isPlaying: Boolean = false,
+    val isMuted: Boolean = false,
     val error: String? = null,
     val reconnectAttempt: Int = 0,
     val videoWidth: Int = 0,
@@ -203,6 +204,7 @@ class LiveTvPlaybackController @Inject constructor(
         _player?.clearMediaItems()
         currentChannel = null
         currentUrl = null
+        volumeBeforeMute = 1f
         _state.value = LivePlaybackState()
     }
 
@@ -294,9 +296,23 @@ class LiveTvPlaybackController @Inject constructor(
         p.play()
     }
 
+    private var volumeBeforeMute = 1f
+
     fun togglePause() {
         val p = _player ?: return
         if (p.isPlaying) p.pause() else p.play()
+    }
+
+    fun toggleMute() {
+        val p = _player ?: return
+        if (_state.value.isMuted) {
+            p.volume = volumeBeforeMute.coerceIn(0f, 1f)
+            _state.value = _state.value.copy(isMuted = false)
+        } else {
+            volumeBeforeMute = p.volume.coerceAtLeast(0.01f)
+            p.volume = 0f
+            _state.value = _state.value.copy(isMuted = true)
+        }
     }
 
     fun seekBy(ms: Long) {

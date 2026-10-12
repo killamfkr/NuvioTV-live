@@ -537,6 +537,16 @@ fun LiveTvSettingsContent(
             // ------------------------------------------------------------ guide data
             item(key = "guide_data") {
                 SettingsGroupCard(title = "Guide data", subtitle = "How often listings update, how far they reach, and timing fixes") {
+                    SettingsToggleRow(
+                        "Update IPTV automatically",
+                        "When on, channel lists and TV guides refresh on the schedule below while the app is open (not a full re-download every launch). Off: use saved data until you tap Refresh all.",
+                        s.autoUpdateSources,
+                        {
+                            val enabling = !s.autoUpdateSources
+                            update { it.copy(autoUpdateSources = enabling) }
+                            if (enabling) viewModel.refreshAll()
+                        }
+                    )
                     SettingsActionRow(
                         "Update playlists every", "How often channel lists are downloaded again from your providers",
                         hoursLabel(s.playlistRefreshHours), onClick = { dialog = LiveDialog.PlaylistRefresh }
