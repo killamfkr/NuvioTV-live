@@ -9,6 +9,9 @@ package com.nuvio.tv.ui.screens.player
  * the feel of a single tap.
  */
 object PlayerScrubRates {
+    /** Double-tap skip on handheld fullscreen video. */
+    const val STEP_HANDHELD_DOUBLE_TAP_MS = 15_000L
+
     const val STEP_SHORT_MS = 10_000L
     const val STEP_MEDIUM_MS = 20_000L
     const val STEP_LONG_MS = 30_000L
