@@ -12,7 +12,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.PictureInPictureModeChangedInfo
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
@@ -376,11 +375,6 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
         installSplashScreen()
         super.onCreate(savedInstanceState)
         PlayerPictureInPictureCoordinator.host = this
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            addOnPictureInPictureModeChangedListener { info ->
-                PlayerPictureInPictureCoordinator.isInPictureInPicture = info.isInPictureInPicture
-            }
-        }
         // Live TV fork: start reading the saved channel list and guide as the app opens (before
         // any screen, even the profile picker), so Live TV is ready when you get to it.
         lifecycleScope.launch { runCatching { com.nuvio.tv.livetv.startup.LiveTvPreload.start(this@MainActivity) } }
@@ -1329,6 +1323,11 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
         }
     }
 
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        PlayerPictureInPictureCoordinator.setInPictureInPicture(isInPictureInPictureMode)
+    }
+
     override fun enterPictureInPicture(aspectRatio: Float): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) return false
@@ -1445,7 +1444,7 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
     override fun onDestroy() {
         PlayerPictureInPictureCoordinator.host = null
         PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
-        PlayerPictureInPictureCoordinator.isInPictureInPicture = false
+        PlayerPictureInPictureCoordinator.setInPictureInPicture(false)
         super.onDestroy()
         PluginRuntimeHooks.onActivityDestroy()
     }

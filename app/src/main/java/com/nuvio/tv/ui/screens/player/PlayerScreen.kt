@@ -14,7 +14,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.view.KeyEvent
-import androidx.activity.ComponentActivity
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RawRes
@@ -139,8 +138,6 @@ import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
 import com.nuvio.tv.core.player.PlayerPictureInPictureCoordinator
 import com.nuvio.tv.core.player.PlayerWindowBackdrop
-import androidx.activity.PictureInPictureModeChangedInfo
-import androidx.core.util.Consumer
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
 import com.nuvio.tv.data.local.InternalPlayerEngine
 import com.nuvio.tv.data.local.LibassRenderType
@@ -602,22 +599,9 @@ fun PlayerScreen(
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
             context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
-    var inPictureInPicture by remember {
-        mutableStateOf(PlayerPictureInPictureCoordinator.isInPictureInPicture)
-    }
-    DisposableEffect(context) {
-        val activity = context as? ComponentActivity
-        val listener = Consumer<PictureInPictureModeChangedInfo> { info ->
-            inPictureInPicture = info.isInPictureInPicture
-            PlayerPictureInPictureCoordinator.isInPictureInPicture = info.isInPictureInPicture
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            activity?.addOnPictureInPictureModeChangedListener(listener)
-        }
+    val inPictureInPicture by PlayerPictureInPictureCoordinator.inPictureInPicture.collectAsState()
+    DisposableEffect(Unit) {
         onDispose {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                activity?.removeOnPictureInPictureModeChangedListener(listener)
-            }
             PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
         }
     }

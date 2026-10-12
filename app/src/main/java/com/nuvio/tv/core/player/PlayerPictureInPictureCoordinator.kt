@@ -1,6 +1,9 @@
 package com.nuvio.tv.core.player
 
 import android.util.Rational
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Activity ↔ player bridge for handheld picture-in-picture. The player screen updates
@@ -27,6 +30,14 @@ object PlayerPictureInPictureCoordinator {
 
     @Volatile
     var isInPictureInPicture: Boolean = false
+
+    private val _inPictureInPicture = MutableStateFlow(false)
+    val inPictureInPicture: StateFlow<Boolean> = _inPictureInPicture.asStateFlow()
+
+    fun setInPictureInPicture(inPip: Boolean) {
+        isInPictureInPicture = inPip
+        _inPictureInPicture.value = inPip
+    }
 
     fun tryEnterPictureInPicture(fromUserLeaveHint: Boolean = false): Boolean {
         val e = eligibility
