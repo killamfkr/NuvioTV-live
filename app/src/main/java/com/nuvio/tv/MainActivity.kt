@@ -390,6 +390,7 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
         installSplashScreen()
         super.onCreate(savedInstanceState)
         PlayerPictureInPictureCoordinator.host = this
+        com.nuvio.tv.livetv.sync.LiveTvForegroundGate.install()
         // Live TV fork: start reading the saved channel list and guide as the app opens (before
         // any screen, even the profile picker), so Live TV is ready when you get to it.
         lifecycleScope.launch { runCatching { com.nuvio.tv.livetv.startup.LiveTvPreload.start(this@MainActivity) } }

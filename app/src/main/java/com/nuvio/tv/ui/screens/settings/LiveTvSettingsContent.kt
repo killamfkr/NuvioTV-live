@@ -539,7 +539,7 @@ fun LiveTvSettingsContent(
                 SettingsGroupCard(title = "Guide data", subtitle = "How often listings update, how far they reach, and timing fixes") {
                     SettingsToggleRow(
                         "Update IPTV automatically",
-                        "When on, channel lists and TV guides refresh on the schedule below while the app is open (not a full re-download every launch). Off: use saved data until you tap Refresh all.",
+                        "When on, channel lists and TV guides refresh on the schedule below only while Nuvio is open (never in the background or when closed). Off: use saved data until you tap Refresh all.",
                         s.autoUpdateSources,
                         {
                             val enabling = !s.autoUpdateSources

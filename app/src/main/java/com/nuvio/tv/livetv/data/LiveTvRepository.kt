@@ -12,6 +12,7 @@ import com.nuvio.tv.livetv.model.LiveTvLoadReport as LIVE_REPORT
 import com.nuvio.tv.livetv.model.CatchupInfo
 import com.nuvio.tv.livetv.model.LiveTvSettings
 import com.nuvio.tv.livetv.model.PlaylistSource
+import com.nuvio.tv.livetv.sync.LiveTvForegroundGate
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -101,13 +102,19 @@ class LiveTvRepository @Inject constructor(
             // Checking for playlist / guide updates uses the network and a lot of processing,
             // so when this starts with the app it waits a little, out of Nuvio's way.
             if (updateCheckDelayMs > 0) delay(updateCheckDelayMs)
-            refreshStaleIfEnabled()
+            scheduleStaleRefreshIfEnabled()
         }
     }
 
-    /** Runs a scheduled playlist / EPG check when automatic updates are enabled in settings. */
+    /** Runs a scheduled playlist / EPG check when automatic updates are enabled and the app is open. */
     fun refreshStaleIfEnabled() {
-        scope.launch { refreshStaleIfEnabledInternal() }
+        scheduleStaleRefreshIfEnabled()
+    }
+
+    private fun scheduleStaleRefreshIfEnabled() {
+        LiveTvForegroundGate.runWhenForeground {
+            scope.launch { refreshStaleIfEnabledInternal() }
+        }
     }
 
     fun refreshAll(force: Boolean = true) {
@@ -128,6 +135,7 @@ class LiveTvRepository @Inject constructor(
 
     private suspend fun refreshStaleIfEnabledInternal() {
         if (!prefs.currentSettings().autoUpdateSources) return
+        if (!LiveTvForegroundGate.canRunScheduledRefresh()) return
         refreshInternal(forcePlaylists = false, forceEpg = false)
     }
 
@@ -269,7 +277,9 @@ class LiveTvRepository @Inject constructor(
         forceIds: Set<String> = emptySet()
     ) = mutex.withLock {
         val settings = prefs.currentSettings()
-        if (!forcePlaylists && !forceEpg && forceIds.isEmpty() && !settings.autoUpdateSources) return
+        val scheduledOnly = !forcePlaylists && !forceEpg && forceIds.isEmpty()
+        if (scheduledOnly && !settings.autoUpdateSources) return
+        if (scheduledOnly && !LiveTvForegroundGate.canRunScheduledRefresh()) return
         val now = System.currentTimeMillis()
         val playlists = prefs.currentPlaylists().filter { it.liveEnabled }
         var changed = false
