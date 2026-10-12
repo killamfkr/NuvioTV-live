@@ -1339,8 +1339,13 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
             .setAspectRatio(PlayerPictureInPictureCoordinator.aspectRatioToRational(aspectRatio))
             .build()
         return try {
-            enterPictureInPictureMode(params)
-            true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                enterPictureInPictureMode(params)
+            } else {
+                @Suppress("DEPRECATION")
+                enterPictureInPictureMode(params)
+                true
+            }
         } catch (e: IllegalStateException) {
             Log.w("MainActivity", "PiP enter failed", e)
             false
