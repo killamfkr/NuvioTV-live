@@ -1331,13 +1331,18 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
     override fun enterPictureInPicture(aspectRatio: Float): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) return false
+        if (!lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+            Log.w("MainActivity", "PiP skipped: activity not started")
+            return false
+        }
         val params = PictureInPictureParams.Builder()
             .setAspectRatio(PlayerPictureInPictureCoordinator.aspectRatioToRational(aspectRatio))
             .build()
         return try {
             enterPictureInPictureMode(params)
             true
-        } catch (_: IllegalStateException) {
+        } catch (e: IllegalStateException) {
+            Log.w("MainActivity", "PiP enter failed", e)
             false
         }
     }

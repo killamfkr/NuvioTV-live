@@ -17,7 +17,10 @@ object PlayerPictureInPictureCoordinator {
 
     data class Eligibility(
         val enabled: Boolean = false,
-        val activePlayback: Boolean = false,
+        /** Stream is loaded enough for the user to tap PiP (paused is OK). */
+        val readyForManualEnter: Boolean = false,
+        /** Playing or buffering — used when the user leaves the app (home / recents). */
+        val readyForAutoEnter: Boolean = false,
         val enterOnUserLeave: Boolean = false,
         val aspectRatio: Float = 16f / 9f
     )
@@ -37,8 +40,12 @@ object PlayerPictureInPictureCoordinator {
 
     fun tryEnterPictureInPicture(fromUserLeaveHint: Boolean = false): Boolean {
         val e = eligibility
-        if (!e.enabled || !e.activePlayback) return false
-        if (fromUserLeaveHint && !e.enterOnUserLeave) return false
+        if (!e.enabled) return false
+        if (fromUserLeaveHint) {
+            if (!e.enterOnUserLeave || !e.readyForAutoEnter) return false
+        } else if (!e.readyForManualEnter) {
+            return false
+        }
         return host?.enterPictureInPicture(e.aspectRatio) == true
     }
 

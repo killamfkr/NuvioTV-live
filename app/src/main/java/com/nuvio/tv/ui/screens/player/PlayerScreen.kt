@@ -605,15 +605,16 @@ fun PlayerScreen(
             PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
         }
     }
-    val pipPlaybackActive = handheldPlayerUi &&
+    val pipEligibleStream = handheldPlayerUi &&
         uiState.pictureInPictureEnabled &&
         pipFeatureAvailable &&
         uiState.error == null &&
         !uiState.playbackEnded &&
-        !playbackTimeline.isLive &&
-        (uiState.isPlaying || uiState.isBuffering)
+        !playbackTimeline.isLive
+    val pipAutoEnterReady = pipEligibleStream && (uiState.isPlaying || uiState.isBuffering)
     DisposableEffect(
-        pipPlaybackActive,
+        pipEligibleStream,
+        pipAutoEnterReady,
         uiState.pictureInPictureEnabled,
         uiState.isPlaying,
         uiState.isBuffering,
@@ -627,18 +628,14 @@ fun PlayerScreen(
         val aspect = if (width != null && height != null) width.toFloat() / height else 16f / 9f
         PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility(
             enabled = uiState.pictureInPictureEnabled && pipFeatureAvailable && handheldPlayerUi,
-            activePlayback = pipPlaybackActive,
+            readyForManualEnter = pipEligibleStream,
+            readyForAutoEnter = pipAutoEnterReady,
             enterOnUserLeave = uiState.pictureInPictureEnabled,
             aspectRatio = aspect
         )
         onDispose { }
     }
-    val showPictureInPictureControl = handheldPlayerUi &&
-        uiState.pictureInPictureEnabled &&
-        pipFeatureAvailable &&
-        uiState.error == null &&
-        !uiState.playbackEnded &&
-        !playbackTimeline.isLive
+    val showPictureInPictureControl = pipEligibleStream
 
     Box(
         modifier = Modifier

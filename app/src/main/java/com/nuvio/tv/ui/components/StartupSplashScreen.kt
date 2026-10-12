@@ -18,15 +18,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nuvio.tv.ui.theme.brandWordmarkResource
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.nuvio.tv.R
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.brandWordmarkResource
 
 @Composable
 fun StartupSplashScreen(
@@ -102,13 +100,9 @@ fun StartupSplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Nuvio Live logo (in the theme's colors) and what the app does.
-            BrandWordmark(
-                modifier = Modifier.height(48.dp),
-                contentDescription = com.nuvio.tv.livetv.branding.LiveTvBranding.APP_NAME,
-                drawableOverride = com.nuvio.tv.livetv.branding.LiveTvBranding.iptvWordmark(
-                    brandWordmarkRes ?: NuvioTheme.currentTheme.brandWordmarkResource
-                )
+            NuvioLiveWordmark(
+                wordmarkHeight = 48.dp,
+                brandWordmarkRes = brandWordmarkRes ?: NuvioTheme.currentTheme.brandWordmarkResource
             )
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(14.dp))
             androidx.tv.material3.Text(
