@@ -5,7 +5,6 @@ import android.util.JsonToken
 import android.util.Log
 import com.nuvio.tv.livetv.data.LiveTvPreferences
 import com.nuvio.tv.livetv.data.LiveTvRepository
-import com.nuvio.tv.livetv.sync.LiveTvForegroundGate
 import com.nuvio.tv.livetv.model.PlaylistSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -156,9 +155,7 @@ class OnDemandRepository @Inject constructor(
                 _version.value++
             }
             if (prefs.currentSettings().autoUpdateSources) {
-                LiveTvForegroundGate.runWhenForeground {
-                    scope.launch { refresh(force = false) }
-                }
+                scope.launch { refresh(force = false) }
             }
             startGenreFill()
         }
@@ -175,7 +172,7 @@ class OnDemandRepository @Inject constructor(
 
     /** Imports providers that are due (or all, when [force]); drops ones that were turned off. */
     suspend fun refresh(force: Boolean) = mutex.withLock {
-        if (!force && !LiveTvForegroundGate.canRunScheduledRefresh()) return
+        if (!force && !prefs.currentSettings().autoUpdateSources) return
         val playlists = prefs.playlists.first().filter { it.enabled && it.isXtream && it.importVod }
         val keep = playlists.map { it.id }.toSet()
         runCatching { db.removeExcept(keep) }

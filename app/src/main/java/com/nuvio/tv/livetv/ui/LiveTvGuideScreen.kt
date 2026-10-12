@@ -3230,8 +3230,8 @@ private fun AutoUpdateSourcesPrompt(
         LiveText("Update IPTV in the background?", size = 22.sp, weight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
         LiveText(
-            "Refresh channel lists about every $playlistHours hours and TV guides about every $epgHours hours only while Nuvio is open. " +
-                "Nothing downloads in the background or when the app is closed. Saved data is used on launch unless an update is due.",
+            "Refresh channel lists about every $playlistHours hours and TV guides about every $epgHours hours, including when Nuvio is closed. " +
+                "While the app is open, saved data is used on launch unless an update is due.",
             color = NuvioTheme.colors.TextSecondary,
             size = 15.sp
         )
