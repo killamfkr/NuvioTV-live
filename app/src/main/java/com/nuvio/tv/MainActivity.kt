@@ -1325,7 +1325,7 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        PlayerPictureInPictureCoordinator.setInPictureInPicture(isInPictureInPictureMode)
+        PlayerPictureInPictureCoordinator.updateInPictureInPicture(isInPictureInPictureMode)
     }
 
     override fun enterPictureInPicture(aspectRatio: Float): Boolean {
@@ -1444,7 +1444,7 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
     override fun onDestroy() {
         PlayerPictureInPictureCoordinator.host = null
         PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
-        PlayerPictureInPictureCoordinator.setInPictureInPicture(false)
+        PlayerPictureInPictureCoordinator.updateInPictureInPicture(false)
         super.onDestroy()
         PluginRuntimeHooks.onActivityDestroy()
     }

@@ -28,14 +28,10 @@ object PlayerPictureInPictureCoordinator {
     @Volatile
     var eligibility: Eligibility = Eligibility()
 
-    @Volatile
-    var isInPictureInPicture: Boolean = false
-
     private val _inPictureInPicture = MutableStateFlow(false)
     val inPictureInPicture: StateFlow<Boolean> = _inPictureInPicture.asStateFlow()
 
-    fun setInPictureInPicture(inPip: Boolean) {
-        isInPictureInPicture = inPip
+    fun updateInPictureInPicture(inPip: Boolean) {
         _inPictureInPicture.value = inPip
     }
 
