@@ -129,7 +129,11 @@ fun TouchTvCard(
         scale = scale,
         glow = glow
     ) {
-        androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxWidth()) {
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .tvCardContentTouchClick(enabled = enabled, onClick = onClick)
+        ) {
             content()
         }
     }

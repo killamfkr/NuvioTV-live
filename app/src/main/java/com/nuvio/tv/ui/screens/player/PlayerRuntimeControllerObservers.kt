@@ -662,7 +662,10 @@ internal fun PlayerRuntimeController.fetchSkipIntervals(id: String?, season: Int
         return
     }
 
-    val imdbId = effectiveId.split(":").firstOrNull()?.takeIf { it.startsWith("tt") } ?: return
+    val imdbId = effectiveId.split(":").firstOrNull()?.takeIf { it.startsWith("tt") }
+        ?: id.takeIf { it.startsWith("tt") }
+        ?: metaImdbId
+        ?: return
     if (season == null || episode == null) return
 
     val key = "$imdbId:$season:$episode"
