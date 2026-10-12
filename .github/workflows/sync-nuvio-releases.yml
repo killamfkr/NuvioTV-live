@@ -186,11 +186,11 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
           target_commitish: ${{ steps.merge.outputs.sha }}
-          name: Nuvio + IPTV ${{ env.TAG }}
+          name: Nuvio Live ${{ env.TAG }}
           prerelease: ${{ needs.check.outputs.prerelease == 'true' }}
           files: out/*.apk
           body: |
-            Nuvio + IPTV, based on Nuvio ${{ env.TAG }}: everything in Nuvio, plus Live TV with a TiviMate-style guide and On Demand from your IPTV provider.
+            Nuvio Live, based on Nuvio ${{ env.TAG }}: everything in Nuvio, plus Live TV with a TiviMate-style guide and On Demand from your IPTV provider.
 
             Nuvio's changes in this version: https://github.com/${{ env.UPSTREAM }}/releases/tag/${{ env.TAG }}
 
@@ -209,8 +209,8 @@ jobs:
           cp "$APK" dl/NuvioPlusIPTV.apk
           if ! gh release view downloader -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create downloader -R "$GITHUB_REPOSITORY" \
-              --title "Nuvio + IPTV for Downloader (always the newest version)" \
-              --notes "This file is replaced with the newest version every release, so one link (and one Downloader code) always installs the latest Nuvio + IPTV. Updates after that happen inside the app." \
+              --title "Nuvio Live for Downloader (always the newest version)" \
+              --notes "This file is replaced with the newest version every release, so one link (and one Downloader code) always installs the latest Nuvio Live. Updates after that happen inside the app." \
               --latest=false --prerelease
           fi
           gh release upload downloader dl/NuvioPlusIPTV.apk -R "$GITHUB_REPOSITORY" --clobber

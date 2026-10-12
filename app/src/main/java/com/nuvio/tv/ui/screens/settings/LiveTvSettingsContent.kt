@@ -1132,7 +1132,7 @@ fun LiveTvSettingsContent(
                         LiveGuideAppearance.HULU ->
                             "Dark grid, Hulu green highlights, LIVE badges, and solid focus cells"
                         LiveGuideAppearance.CLASSIC ->
-                            "Original Nuvio + IPTV guide that follows your theme colors"
+                            "Original Nuvio Live guide that follows your theme colors"
                     }
                 )
             },
