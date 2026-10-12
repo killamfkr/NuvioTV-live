@@ -117,6 +117,7 @@ import com.nuvio.tv.ui.components.StartupDestination
 import com.nuvio.tv.ui.components.shouldShowStartupSplash
 import com.nuvio.tv.ui.components.startupDestinationForRoute
 import com.nuvio.tv.core.runtime.PluginRuntimeHooks
+import com.nuvio.tv.livetv.ui.LiveTvFullscreen
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -1589,11 +1590,16 @@ private fun LegacySidebarScaffold(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val drawerItemFocusRequesters = rememberDrawerItemFocusRequesters(drawerItems)
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
-    val showSidebar = currentRoute in rootRoutes
+    val liveTvFullscreen by LiveTvFullscreen.active.collectAsState()
+    val showSidebar = currentRoute in rootRoutes && !liveTvFullscreen
 
     LaunchedEffect(currentRoute) {
         longPressBackHeld.value = false
         drawerState.setValue(DrawerValue.Closed)
+    }
+
+    LaunchedEffect(liveTvFullscreen) {
+        if (liveTvFullscreen) drawerState.setValue(DrawerValue.Closed)
     }
 
     val sidebarTokens = NuvioComponents.tokens.sidebar
@@ -1611,12 +1617,12 @@ private fun LegacySidebarScaffold(
     var legacyDrawerInteractionVersion by remember { mutableStateOf(0) }
 
 
-    BackHandler(enabled = currentRoute in rootRoutes && drawerState.currentValue == DrawerValue.Closed) {
+    BackHandler(enabled = showSidebar && drawerState.currentValue == DrawerValue.Closed) {
         pendingSidebarFocusRequest = true
         drawerState.setValue(DrawerValue.Open)
     }
 
-    BackHandler(enabled = currentRoute in rootRoutes && drawerState.currentValue == DrawerValue.Open) {
+    BackHandler(enabled = showSidebar && drawerState.currentValue == DrawerValue.Open) {
         if (longPressBackHeld.value) return@BackHandler
         onExitApp()
     }
@@ -1994,7 +2000,8 @@ private fun ModernSidebarScaffold(
     onNavigate: (String) -> Unit,
     onExitApp: () -> Unit
 ) {
-    val showSidebar = currentRoute in rootRoutes
+    val liveTvFullscreen by LiveTvFullscreen.active.collectAsState()
+    val showSidebar = currentRoute in rootRoutes && !liveTvFullscreen
     val sidebarTokens = NuvioComponents.tokens.sidebar
     val collapsedSidebarWidth = if (sidebarCollapsed) NuvioTheme.spacing.none else sidebarTokens.collapsedWidth
     val openSidebarWidth = sidebarTokens.expandedWidth
@@ -2049,13 +2056,13 @@ private fun ModernSidebarScaffold(
         }
     }
 
-    BackHandler(enabled = currentRoute in rootRoutes && !isSidebarExpanded && !sidebarCollapsePending) {
+    BackHandler(enabled = showSidebar && !isSidebarExpanded && !sidebarCollapsePending) {
         isSidebarExpanded = true
         sidebarCollapsePending = false
         pendingSidebarFocusRequest = true
     }
 
-    BackHandler(enabled = currentRoute in rootRoutes && isSidebarExpanded && !sidebarCollapsePending) {
+    BackHandler(enabled = showSidebar && isSidebarExpanded && !sidebarCollapsePending) {
         if (longPressBackHeld.value) return@BackHandler
         onExitApp()
     }
