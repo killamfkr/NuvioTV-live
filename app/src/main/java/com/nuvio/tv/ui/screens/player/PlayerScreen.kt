@@ -193,7 +193,6 @@ fun PlayerScreen(
     val uiState by viewModel.uiState.collectAsState()
     val postPlayRecommendationState by viewModel.postPlayRecommendationUiState.collectAsState()
     val handheldPlayerUi = rememberHandheldPlayerUi()
-    val playerVideoTouchInteraction = remember { MutableInteractionSource() }
     val effectiveAutoplayEnabled by viewModel.effectiveAutoplayEnabled.collectAsState(initial = false)
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -1064,26 +1063,9 @@ fun PlayerScreen(
                 playerView?.setAssOverlayVisibility(vis)
             }
 
-            Box(
-                modifier = playerSurfaceModifier.then(
-                    if (handheldFullscreenSurface && !playerVideoTouchBlocked) {
-                        Modifier.clickable(
-                            interactionSource = playerVideoTouchInteraction,
-                            indication = null,
-                            onClick = {
-                                viewModel.onUserInteraction()
-                                if (!uiState.showControls) {
-                                    viewModel.onEvent(PlayerEvent.OnToggleControls)
-                                } else {
-                                    viewModel.onEvent(PlayerEvent.OnPlayPause)
-                                }
-                            }
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
-            ) {
+            val handheldVideoGesturesEnabled =
+                handheldFullscreenSurface && !playerVideoTouchBlocked
+            Box(modifier = playerSurfaceModifier) {
                 if (uiState.internalPlayerEngine == InternalPlayerEngine.MVP_PLAYER) {
                     MpvPlayerSurface(
                         viewModel = viewModel,
@@ -1110,6 +1092,27 @@ fun PlayerScreen(
                             modifier = Modifier.fillMaxSize()
                         )
                     }
+                }
+
+                if (handheldVideoGesturesEnabled) {
+                    HandheldPlayerVideoGestureLayer(
+                        skipEnabled = !playbackTimeline.isLive && uiState.error == null,
+                        onSingleTap = {
+                            viewModel.onUserInteraction()
+                            if (!uiState.showControls) {
+                                viewModel.onEvent(PlayerEvent.OnToggleControls)
+                            } else {
+                                viewModel.onEvent(PlayerEvent.OnPlayPause)
+                            }
+                        },
+                        onSeekByMs = { deltaMs ->
+                            viewModel.onUserInteraction()
+                            viewModel.onEvent(PlayerEvent.OnSeekBy(deltaMs))
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zIndex(1.5f),
+                    )
                 }
 
                 if (postPlayRecommendationState.canReturnToPlayer) {
