@@ -139,7 +139,7 @@ import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
 import com.nuvio.tv.core.player.PlayerPictureInPictureCoordinator
 import com.nuvio.tv.core.player.PlayerWindowBackdrop
-import android.app.PictureInPictureModeChangedInfo
+import androidx.activity.PictureInPictureModeChangedInfo
 import androidx.core.util.Consumer
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
 import com.nuvio.tv.data.local.InternalPlayerEngine
@@ -633,13 +633,13 @@ fun PlayerScreen(
         uiState.pictureInPictureEnabled,
         uiState.isPlaying,
         uiState.isBuffering,
-        uiState.videoWidth,
-        uiState.videoHeight,
+        uiState.streamInfoData?.videoWidth,
+        uiState.streamInfoData?.videoHeight,
         handheldPlayerUi,
         pipFeatureAvailable
     ) {
-        val width = uiState.videoWidth?.takeIf { it > 0 }
-        val height = uiState.videoHeight?.takeIf { it > 0 }
+        val width = uiState.streamInfoData?.videoWidth?.takeIf { it > 0 }
+        val height = uiState.streamInfoData?.videoHeight?.takeIf { it > 0 }
         val aspect = if (width != null && height != null) width.toFloat() / height else 16f / 9f
         PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility(
             enabled = uiState.pictureInPictureEnabled && pipFeatureAvailable && handheldPlayerUi,
