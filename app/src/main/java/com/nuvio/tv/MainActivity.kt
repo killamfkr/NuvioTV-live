@@ -1,9 +1,12 @@
 package com.nuvio.tv
 
+import android.app.PictureInPictureParams
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -140,6 +143,7 @@ import com.nuvio.tv.core.auth.AuthManager
 import com.nuvio.tv.core.auth.DeviceSessionRegistration
 import com.nuvio.tv.core.deeplink.DeepLinkHandler
 import com.nuvio.tv.core.deeplink.DeepLinkParser
+import com.nuvio.tv.core.player.PlayerPictureInPictureCoordinator
 import com.nuvio.tv.core.player.PlayerWindowBackdrop
 import com.nuvio.tv.core.profile.ProfileManager
 import com.nuvio.tv.core.sync.ProfileSyncService
@@ -267,7 +271,7 @@ private data class MainUiPrefs(
 )
 
 @AndroidEntryPoint
-open class MainActivity : ComponentActivity() {
+open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator.Host {
 
     @Inject
     lateinit var themeDataStore: ThemeDataStore
@@ -370,6 +374,12 @@ open class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        PlayerPictureInPictureCoordinator.host = this
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            addOnPictureInPictureModeChangedListener { info ->
+                PlayerPictureInPictureCoordinator.isInPictureInPicture = info.isInPictureInPicture
+            }
+        }
         // Live TV fork: start reading the saved channel list and guide as the app opens (before
         // any screen, even the profile picker), so Live TV is ready when you get to it.
         lifecycleScope.launch { runCatching { com.nuvio.tv.livetv.startup.LiveTvPreload.start(this@MainActivity) } }
@@ -1318,6 +1328,25 @@ open class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun enterPictureInPicture(aspectRatio: Float): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) return false
+        val params = PictureInPictureParams.Builder()
+            .setAspectRatio(PlayerPictureInPictureCoordinator.aspectRatioToRational(aspectRatio))
+            .build()
+        return try {
+            enterPictureInPictureMode(params)
+            true
+        } catch (_: IllegalStateException) {
+            false
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        PlayerPictureInPictureCoordinator.tryEnterPictureInPicture(fromUserLeaveHint = true)
+    }
+
     override fun onResume() {
         super.onResume()
         if (::jankStats.isInitialized) jankStats.isTrackingEnabled = true
@@ -1413,6 +1442,9 @@ open class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        PlayerPictureInPictureCoordinator.host = null
+        PlayerPictureInPictureCoordinator.eligibility = PlayerPictureInPictureCoordinator.Eligibility()
+        PlayerPictureInPictureCoordinator.isInPictureInPicture = false
         super.onDestroy()
         PluginRuntimeHooks.onActivityDestroy()
     }
