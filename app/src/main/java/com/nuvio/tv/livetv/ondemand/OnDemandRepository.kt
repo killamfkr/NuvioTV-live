@@ -154,7 +154,9 @@ class OnDemandRepository @Inject constructor(
                 }
                 _version.value++
             }
-            refresh(force = false)
+            if (prefs.currentSettings().autoUpdateSources) {
+                scope.launch { refresh(force = false) }
+            }
             startGenreFill()
         }
     }
@@ -170,6 +172,7 @@ class OnDemandRepository @Inject constructor(
 
     /** Imports providers that are due (or all, when [force]); drops ones that were turned off. */
     suspend fun refresh(force: Boolean) = mutex.withLock {
+        if (!force && !prefs.currentSettings().autoUpdateSources) return
         val playlists = prefs.playlists.first().filter { it.enabled && it.isXtream && it.importVod }
         val keep = playlists.map { it.id }.toSet()
         runCatching { db.removeExcept(keep) }

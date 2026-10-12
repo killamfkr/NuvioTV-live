@@ -176,6 +176,13 @@ data class LiveTvSettings(
     val infoBannerSeconds: Int = 5,
     val playlistRefreshHours: Int = 24,
     val epgRefreshHours: Int = 12,
+    /**
+     * When on, playlists, TV guide, and On Demand catalogs refresh on a schedule (see the
+     * hour settings below), including in the background when the app is closed. While open,
+     * only sources that are due are updated — not a full re-download every launch.
+     * Off: use saved data until you tap Refresh in Live TV settings.
+     */
+    val autoUpdateSources: Boolean = false,
     val epgPastHours: Int = 24,
     val epgFutureDays: Int = 3,
     val use24HourClock: Boolean = false,

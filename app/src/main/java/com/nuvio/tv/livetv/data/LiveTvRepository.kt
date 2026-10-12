@@ -101,8 +101,18 @@ class LiveTvRepository @Inject constructor(
             // Checking for playlist / guide updates uses the network and a lot of processing,
             // so when this starts with the app it waits a little, out of Nuvio's way.
             if (updateCheckDelayMs > 0) delay(updateCheckDelayMs)
-            refreshStale()
+            refreshStaleIfEnabled()
         }
+    }
+
+    /** Runs a scheduled playlist / EPG check when automatic updates are enabled in settings. */
+    fun refreshStaleIfEnabled() {
+        scope.launch { refreshStaleIfEnabledInternal() }
+    }
+
+    /** Called from [com.nuvio.tv.livetv.sync.LiveTvBackgroundRefreshWorker] while the app is closed. */
+    suspend fun runScheduledBackgroundRefresh() {
+        refreshStaleIfEnabledInternal()
     }
 
     fun refreshAll(force: Boolean = true) {
@@ -121,7 +131,10 @@ class LiveTvRepository @Inject constructor(
         scope.launch { refreshInternal(forcePlaylists = false, forceEpg = true) }
     }
 
-    private suspend fun refreshStale() = refreshInternal(forcePlaylists = false, forceEpg = false)
+    private suspend fun refreshStaleIfEnabledInternal() {
+        if (!prefs.currentSettings().autoUpdateSources) return
+        refreshInternal(forcePlaylists = false, forceEpg = false)
+    }
 
     // ---------------------------------------------------------------- sources CRUD
 
@@ -261,6 +274,7 @@ class LiveTvRepository @Inject constructor(
         forceIds: Set<String> = emptySet()
     ) = mutex.withLock {
         val settings = prefs.currentSettings()
+        if (!forcePlaylists && !forceEpg && forceIds.isEmpty() && !settings.autoUpdateSources) return
         val now = System.currentTimeMillis()
         val playlists = prefs.currentPlaylists().filter { it.liveEnabled }
         var changed = false

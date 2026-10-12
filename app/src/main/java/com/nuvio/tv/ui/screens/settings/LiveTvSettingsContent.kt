@@ -44,6 +44,7 @@ import com.nuvio.tv.livetv.model.LiveTvSettings
 import com.nuvio.tv.livetv.model.PlaylistSource
 import com.nuvio.tv.livetv.model.ZapMode
 import com.nuvio.tv.livetv.ui.LiveGuideAppearance
+import com.nuvio.tv.livetv.sync.rememberLiveTvNotificationPermissionGate
 import com.nuvio.tv.livetv.ui.LiveTvSettingsViewModel
 import com.nuvio.tv.livetv.ui.TextInputDialog
 import com.nuvio.tv.ui.components.NuvioDialog
@@ -166,6 +167,11 @@ fun LiveTvSettingsContent(
     var driveExpanded by remember { mutableStateOf(false) }
 
     fun update(t: (LiveTvSettings) -> LiveTvSettings) = viewModel.update(t)
+
+    val enableAutoUpdateWithPermission = rememberLiveTvNotificationPermissionGate {
+        update { it.copy(autoUpdateSources = true) }
+        viewModel.refreshAll()
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -537,6 +543,18 @@ fun LiveTvSettingsContent(
             // ------------------------------------------------------------ guide data
             item(key = "guide_data") {
                 SettingsGroupCard(title = "Guide data", subtitle = "How often listings update, how far they reach, and timing fixes") {
+                    SettingsToggleRow(
+                        "Update IPTV automatically",
+                        "When on, channel lists and TV guides refresh on the schedule below, including in the background when the app is closed. You may be asked to allow notifications so update progress can be shown. Off: use saved data until you tap Refresh all.",
+                        s.autoUpdateSources,
+                        {
+                            if (s.autoUpdateSources) {
+                                update { it.copy(autoUpdateSources = false) }
+                            } else {
+                                enableAutoUpdateWithPermission()
+                            }
+                        }
+                    )
                     SettingsActionRow(
                         "Update playlists every", "How often channel lists are downloaded again from your providers",
                         hoursLabel(s.playlistRefreshHours), onClick = { dialog = LiveDialog.PlaylistRefresh }
