@@ -1417,16 +1417,16 @@ open class MainActivity : ComponentActivity(), PlayerPictureInPictureCoordinator
         if (pipMediaReceiverRegistered) return
         val filter = IntentFilter(ACTION_PIP_MEDIA_CONTROL)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(pipMediaReceiver, filter, RECEIVER_NOT_EXPORTED)
+            registerReceiver(pipMediaControlReceiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(pipMediaReceiver, filter)
+            registerReceiver(pipMediaControlReceiver, filter)
         }
         pipMediaReceiverRegistered = true
     }
 
     private fun unregisterPipMediaReceiver() {
         if (!pipMediaReceiverRegistered) return
-        runCatching { unregisterReceiver(pipMediaReceiver) }
+        runCatching { unregisterReceiver(pipMediaControlReceiver) }
         pipMediaReceiverRegistered = false
     }
 
