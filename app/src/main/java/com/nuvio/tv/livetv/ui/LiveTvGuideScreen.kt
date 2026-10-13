@@ -156,8 +156,14 @@ fun LiveTvGuideScreen(
         viewModel.playback.attach()
         onDispose { viewModel.playback.detach() }
     }
+    // Only stop preview playback when the user turns the preview window off — not when the
+    // guide opens with preview already disabled (that would kill a channel started from the
+    // home screen row before full screen opens).
+    var lastShowPreview by remember { mutableStateOf<Boolean?>(null) }
     LaunchedEffect(settings.showPreview) {
-        if (!settings.showPreview) viewModel.playback.stop()
+        val was = lastShowPreview
+        lastShowPreview = settings.showPreview
+        if (was == true && !settings.showPreview) viewModel.playback.stop()
     }
 
     val gridFocus = remember { FocusRequester() }
@@ -209,6 +215,10 @@ fun LiveTvGuideScreen(
     var showAutoUpdatePrompt by remember { mutableStateOf(false) }
     LaunchedEffect(ui.hasSources) {
         if (ui.hasSources && viewModel.shouldShowAutoUpdatePrompt()) showAutoUpdatePrompt = true
+    }
+    val enableBackgroundUpdatesWithPermission = rememberLiveTvNotificationPermissionGate {
+        showAutoUpdatePrompt = false
+        viewModel.completeAutoUpdatePrompt(enableBackgroundUpdates = true)
     }
     var pinRemovesLock by remember { mutableStateOf(false) }
     val playlistNames by viewModel.playlistNames.collectAsStateWithLifecycle()
@@ -1388,10 +1398,7 @@ fun LiveTvGuideScreen(
             AutoUpdateSourcesPrompt(
                 playlistHours = settings.playlistRefreshHours,
                 epgHours = settings.epgRefreshHours,
-                onEnable = {
-                    showAutoUpdatePrompt = false
-                    viewModel.completeAutoUpdatePrompt(enableBackgroundUpdates = true)
-                },
+                onEnable = { enableBackgroundUpdatesWithPermission() },
                 onNotNow = {
                     showAutoUpdatePrompt = false
                     viewModel.dismissAutoUpdatePromptOnly()
@@ -3232,7 +3239,7 @@ private fun AutoUpdateSourcesPrompt(
         Spacer(Modifier.height(10.dp))
         LiveText(
             "Refresh channel lists about every $playlistHours hours and TV guides about every $epgHours hours, including when Nuvio is closed. " +
-                "While the app is open, saved data is used on launch unless an update is due.",
+                "You may be asked to allow notifications so you can see update progress. While the app is open, saved data is used on launch unless an update is due.",
             color = NuvioTheme.colors.TextSecondary,
             size = 15.sp
         )
