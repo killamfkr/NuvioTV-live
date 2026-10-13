@@ -128,8 +128,7 @@ fun LiveTvPlayerScreen(
     // channel, so full screen always knows what it's showing.
     val displayList by viewModel.displayChannels.collectAsStateWithLifecycle()
     val current: LiveChannel? = remember(displayList, playback.channelKey) {
-        playback.channelKey?.let { k -> displayList.firstOrNull { it.key == k } }
-            ?: viewModel.playback.playingChannel?.takeIf { it.key == playback.channelKey }
+        viewModel.channelByKey(playback.channelKey)
     }
 
     fun showBanner() { bannerVisible = true; bannerToken++ }
