@@ -840,7 +840,7 @@ fun LiveTvSettingsContent(
             onDismiss = close,
             onSave = { v, _ -> if (v[1].isNotBlank()) viewModel.addXtream(v[0], v[1], v[2], v[3]); close() },
             toggleLive = "Include TV channels" to true,
-            toggle2 = "Include movies & series (On Demand)" to true,
+            toggle2 = "Include movies & series (On Demand)" to false,
             onSaveAll = { v, _, vod, live ->
                 if (v[1].isNotBlank()) viewModel.addXtream(v[0], v[1], v[2], v[3], importVod = vod, importLive = live)
                 close()

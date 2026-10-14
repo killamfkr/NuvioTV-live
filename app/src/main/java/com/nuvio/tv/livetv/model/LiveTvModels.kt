@@ -19,7 +19,7 @@ data class PlaylistSource(
     val lastError: String? = null,
     val channelCount: Int = 0,
     /** Xtream: also import the provider's movies and series (On Demand). */
-    val importVod: Boolean = true,
+    val importVod: Boolean = false,
     /** Xtream: import the live TV channels (off = On Demand only). */
     val importLive: Boolean = true,
     /** Xtream live stream format: "auto" (what the provider allows), "ts" or "m3u8". */
@@ -183,8 +183,8 @@ data class LiveTvSettings(
      * Off: use saved data until you tap Refresh in Live TV settings.
      */
     val autoUpdateSources: Boolean = false,
-    val epgPastHours: Int = 24,
-    val epgFutureDays: Int = 3,
+    val epgPastHours: Int = 12,
+    val epgFutureDays: Int = 2,
     val use24HourClock: Boolean = false,
     val autoReconnect: Boolean = true,
     val channelSort: ChannelSort = ChannelSort.PLAYLIST,

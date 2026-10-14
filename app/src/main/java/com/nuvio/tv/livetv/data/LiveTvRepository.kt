@@ -150,7 +150,7 @@ class LiveTvRepository @Inject constructor(
         server: String,
         username: String,
         password: String,
-        importVod: Boolean = true,
+        importVod: Boolean = false,
         importLive: Boolean = true
     ): String {
         val id = UUID.randomUUID().toString()
@@ -964,6 +964,7 @@ class LiveTvRepository @Inject constructor(
         for ((order, target) in targets.withIndex()) {
             val file = epgFile(target.fileId)
             if (!file.exists()) continue
+            compressEpgOnDisk(file)
             val pinnedHere = overrides.filterValues { it.sourceId == target.fileId }
             val idHits = HashMap<String, MutableSet<LiveChannel>>()
             val nameHits = HashMap<String, MutableSet<LiveChannel>>()
@@ -1159,6 +1160,7 @@ class LiveTvRepository @Inject constructor(
                 tmp.copyTo(target, overwrite = true)
                 tmp.delete()
             }
+            compressEpgOnDisk(target)
             markChanged(target)
             true
         }
@@ -1352,6 +1354,30 @@ class LiveTvRepository @Inject constructor(
         502, 503, 504, 520, 521, 522, 523, 524 -> "HTTP $code: the provider's server didn't respond, try again later"
         884 -> "HTTP 884: the provider blocked this app (try setting a user agent)"
         else -> "HTTP $code"
+    }
+
+    /** Gzip large plain XMLTV files in place (smaller on disk; [openMaybeGzip] still reads them). */
+    private fun compressEpgOnDisk(file: File) {
+        if (!file.exists() || file.length() < 96 * 1024) return
+        runCatching {
+            file.inputStream().use { raw ->
+                val peek = ByteArray(2)
+                if (raw.read(peek) != 2) return@runCatching
+                if (peek[0] == 0x1f.toByte() && peek[1] == 0x8b.toByte()) return@runCatching
+            }
+            val tmp = File(file.parentFile, file.name + ".gztmp")
+            file.inputStream().use { input ->
+                java.util.zip.GZIPOutputStream(tmp.outputStream()).use { gzip -> input.copyTo(gzip, 64 * 1024) }
+            }
+            if (tmp.length() >= file.length()) {
+                tmp.delete()
+                return@runCatching
+            }
+            if (!tmp.renameTo(file)) {
+                tmp.copyTo(file, overwrite = true)
+                tmp.delete()
+            }
+        }.onFailure { Log.w(TAG, "Couldn't compress guide file ${file.name}", it) }
     }
 
     private fun openMaybeGzip(file: File): InputStream {
