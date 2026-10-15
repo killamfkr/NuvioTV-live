@@ -55,7 +55,7 @@ class LiveTvSettingsViewModel @Inject constructor(
     fun addPlaylist(name: String, url: String, userAgent: String) =
         viewModelScope.launch { repository.addPlaylist(name, url, userAgent) }
 
-    fun addXtream(name: String, server: String, user: String, pass: String, importVod: Boolean = true, importLive: Boolean = true) =
+    fun addXtream(name: String, server: String, user: String, pass: String, importVod: Boolean = false, importLive: Boolean = true) =
         viewModelScope.launch {
             repository.addXtream(name, server, user, pass, importVod, importLive)
             onDemand.refreshSoon()

@@ -68,13 +68,14 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
                     stmt.bindString(1, ch)
                     stmt.bindLong(2, p.startMs)
                     stmt.bindLong(3, p.stopMs)
-                    stmt.bindString(4, p.title)
-                    p.description?.let { stmt.bindString(5, it) } ?: stmt.bindNull(5)
-                    p.category?.let { stmt.bindString(6, it) } ?: stmt.bindNull(6)
-                    p.episode?.let { stmt.bindString(7, it) } ?: stmt.bindNull(7)
-                    p.icon?.let { stmt.bindString(8, it) } ?: stmt.bindNull(8)
+                    stmt.bindString(4, p.title.take(500))
+                    compactDescription(p.description)?.let { stmt.bindString(5, it) } ?: stmt.bindNull(5)
+                    p.category?.take(200)?.let { stmt.bindString(6, it) } ?: stmt.bindNull(6)
+                    p.episode?.take(200)?.let { stmt.bindString(7, it) } ?: stmt.bindNull(7)
+                    p.icon?.take(1000)?.let { stmt.bindString(8, it) } ?: stmt.bindNull(8)
                     p.year?.let { stmt.bindLong(9, it.toLong()) } ?: stmt.bindNull(9)
-                    if (p.people.isEmpty()) stmt.bindNull(10) else stmt.bindString(10, p.people.joinToString("\u001F"))
+                    val people = compactPeople(p.people)
+                    if (people.isEmpty()) stmt.bindNull(10) else stmt.bindString(10, people)
                     stmt.executeInsert()
                 }
             }
@@ -204,3 +205,17 @@ class EpgDatabase @Inject constructor(@ApplicationContext context: Context) :
 
 /** Longest single listing assumed when reading a time window (longer ones are very rare). */
 private const val MAX_SHOW_MS = 12L * 60 * 60 * 1000
+
+/** Keeps the guide database smaller; full text is rarely shown in the UI. */
+private fun compactDescription(raw: String?): String? {
+    val s = raw?.trim()?.take(DESC_STORE_MAX)?.takeIf { it.isNotEmpty() } ?: return null
+    return s
+}
+
+private fun compactPeople(people: List<String>): String {
+    if (people.isEmpty()) return ""
+    return people.take(PEOPLE_STORE_MAX).joinToString("\u001F") { it.trim().take(120) }
+}
+
+private const val DESC_STORE_MAX = 400
+private const val PEOPLE_STORE_MAX = 12
