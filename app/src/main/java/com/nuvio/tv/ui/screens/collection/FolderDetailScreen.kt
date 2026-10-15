@@ -77,6 +77,7 @@ import com.nuvio.tv.ui.components.ContentCard
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.R
 import androidx.compose.ui.res.stringResource
+import com.nuvio.tv.core.device.DeviceFormFactor
 import com.nuvio.tv.ui.components.PosterCardDefaults
 import com.nuvio.tv.ui.components.PosterCardStyle
 import com.nuvio.tv.ui.components.LocalCardDepthStyle
@@ -169,6 +170,7 @@ fun FolderDetailScreen(
         ) {
             when (uiState.viewMode) {
                 FolderViewMode.TABBED_GRID -> TabbedGridContent(
+                    modifier = Modifier.weight(1f),
                     uiState = uiState,
                     folder = folder,
                     tabFocusState = tabFocusStates[uiState.selectedTabIndex] ?: FolderDetailGridFocusState(),
@@ -191,6 +193,7 @@ fun FolderDetailScreen(
                 FolderViewMode.ROWS -> {
                     FolderHeader(folder = folder)
                     RowsContent(
+                        modifier = Modifier.weight(1f),
                         uiState = uiState,
                         focusState = rowsFocusState,
                         onNavigateToDetail = onNavigateToDetail,
@@ -267,6 +270,7 @@ private fun FolderHeader(folder: com.nuvio.tv.domain.model.CollectionFolder) {
 @OptIn(ExperimentalTvMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 private fun TabbedGridContent(
+    modifier: Modifier = Modifier,
     uiState: FolderDetailUiState,
     folder: com.nuvio.tv.domain.model.CollectionFolder,
     tabFocusState: FolderDetailGridFocusState,
@@ -280,112 +284,48 @@ private fun TabbedGridContent(
     val tabFocusRequesters = remember(uiState.tabs.size) { uiState.tabs.indices.map { FocusRequester() } }
     var gridHasFocus by remember { mutableStateOf(false) }
     var gridScrollToTopTrigger by remember { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val isHandheld = !DeviceFormFactor.isTelevision(context)
+    val headerHorizontalPadding = if (isHandheld) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
+    val gridHorizontalPadding = if (isHandheld) NuvioTheme.spacing.md else NuvioTheme.spacing.xxxl
 
     // Grid Back: focus on grid -> move focus to active tab (grid stays scrolled).
     BackHandler(enabled = gridHasFocus && uiState.tabs.size > 1) {
         tabFocusRequesters.getOrNull(uiState.selectedTabIndex)?.let { runCatching { it.requestFocus() } }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = NuvioTheme.spacing.xxxl, end = NuvioTheme.spacing.xxxl, top = NuvioTheme.spacing.sm, bottom = NuvioTheme.spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
-    ) {
-        if (!folder.coverImageUrl.isNullOrBlank()) {
-            val iconWidth: androidx.compose.ui.unit.Dp
-            val iconHeight: androidx.compose.ui.unit.Dp
-            when (folder.tileShape) {
-                com.nuvio.tv.domain.model.PosterShape.POSTER -> { iconWidth = NuvioTheme.spacing.xxl; iconHeight = NuvioTheme.spacing.xxxl }
-                com.nuvio.tv.domain.model.PosterShape.LANDSCAPE -> { iconWidth = 64.dp; iconHeight = 36.dp }
-                com.nuvio.tv.domain.model.PosterShape.SQUARE -> { iconWidth = NuvioTheme.spacing.xxxl; iconHeight = NuvioTheme.spacing.xxxl }
-            }
-            AsyncImage(
-                model = folder.coverImageUrl,
-                contentDescription = folder.title,
-                modifier = Modifier
-                    .width(iconWidth)
-                    .height(iconHeight)
-                    .clip(RoundedCornerShape(NuvioTheme.radii.sm)),
-                contentScale = ContentScale.FillBounds
-            )
-        } else if (!folder.coverEmoji.isNullOrBlank()) {
-            Text(
-                text = folder.coverEmoji,
-                style = MaterialTheme.typography.headlineLarge
-            )
-        }
-        Text(
-            text = folder.title,
-            style = MaterialTheme.typography.headlineMedium.copy(
-                textDirection = folder.title.contentTextDirection()
-            ),
-            color = NuvioTheme.colors.TextPrimary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.widthIn(max = 300.dp)
+    Column(modifier = modifier.fillMaxWidth()) {
+        FolderTabbedGridHeader(
+            folder = folder,
+            uiState = uiState,
+            isHandheld = isHandheld,
+            headerHorizontalPadding = headerHorizontalPadding,
+            tabFocusRequesters = tabFocusRequesters,
+            onSelectTab = onSelectTab,
+            onTabActivated = { gridScrollToTopTrigger++ }
         )
 
-        if (uiState.tabs.size > 1) {
-            TabRow(
-                selectedTabIndex = uiState.selectedTabIndex,
-                modifier = Modifier
-                    .focusRestorer {
-                        tabFocusRequesters.getOrNull(uiState.selectedTabIndex) ?: FocusRequester.Default
-                    }
-            ) {
-                uiState.tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = index == uiState.selectedTabIndex,
-                        onFocus = { onSelectTab(index) },
-                        onClick = {
-                            onSelectTab(index)
-                            gridScrollToTopTrigger++
-                        },
-                        modifier = if (index < tabFocusRequesters.size) {
-                            Modifier.focusRequester(tabFocusRequesters[index])
-                        } else Modifier
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(horizontal = NuvioTheme.spacing.lg, vertical = NuvioTheme.spacing.sm),
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            Text(
-                                text = if (tab.isAllTab) stringResource(R.string.collections_tab_all) else tab.label,
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                            if (uiState.catalogTypeSuffixEnabled && tab.typeLabel.isNotBlank()) {
-                                val localizedType = when {
-                                    tab.isAllTab -> stringResource(R.string.collections_tab_combined)
-                                    tab.rawType.lowercase() == "movie" -> stringResource(R.string.type_movie)
-                                    tab.rawType.lowercase() == "series" -> stringResource(R.string.type_series)
-                                    else -> tab.typeLabel
-                                }
-                                Text(
-                                    text = localizedType,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = NuvioTheme.colors.TextTertiary
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+        val currentTab = uiState.tabs.getOrNull(uiState.selectedTabIndex)
+        if (currentTab == null) return@Column
 
-    val currentTab = uiState.tabs.getOrNull(uiState.selectedTabIndex)
-    if (currentTab == null) return
-
-    when {
+        when {
         currentTab.isLoading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 LoadingIndicator()
             }
         }
         currentTab.error != null -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = currentTab.error,
                     color = NuvioTheme.colors.TextSecondary
@@ -470,15 +410,16 @@ private fun TabbedGridContent(
                 state = gridState,
                 columns = GridCells.Adaptive(minSize = posterCardStyle.width),
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxWidth()
                     .onFocusChanged { gridHasFocus = it.hasFocus }
                     .focusRestorer {
                         lastFocusedItemKey?.let { itemFocusRequesters[it] } ?: FocusRequester.Default
                     }
                     .dpadRepeatThrottle(),
                 contentPadding = PaddingValues(
-                    start = NuvioTheme.spacing.xxxl,
-                    end = NuvioTheme.spacing.xxxl,
+                    start = gridHorizontalPadding,
+                    end = gridHorizontalPadding,
                     top = NuvioTheme.spacing.lg,
                     bottom = NuvioTheme.spacing.xxxl
                 ),
@@ -567,12 +508,151 @@ private fun TabbedGridContent(
                 }
             }
         }
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
+@Composable
+private fun FolderTabbedGridHeader(
+    folder: com.nuvio.tv.domain.model.CollectionFolder,
+    uiState: FolderDetailUiState,
+    isHandheld: Boolean,
+    headerHorizontalPadding: androidx.compose.ui.unit.Dp,
+    tabFocusRequesters: List<FocusRequester>,
+    onSelectTab: (Int) -> Unit,
+    onTabActivated: () -> Unit
+) {
+    val headerPadding = Modifier
+        .fillMaxWidth()
+        .padding(
+            start = headerHorizontalPadding,
+            end = headerHorizontalPadding,
+            top = NuvioTheme.spacing.sm,
+            bottom = NuvioTheme.spacing.sm
+        )
+
+    @Composable
+    fun FolderTitleRow(titleMaxWidth: androidx.compose.ui.unit.Dp? = null) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
+        ) {
+            if (!folder.coverImageUrl.isNullOrBlank()) {
+                val iconWidth: androidx.compose.ui.unit.Dp
+                val iconHeight: androidx.compose.ui.unit.Dp
+                when (folder.tileShape) {
+                    com.nuvio.tv.domain.model.PosterShape.POSTER -> {
+                        iconWidth = NuvioTheme.spacing.xxl
+                        iconHeight = NuvioTheme.spacing.xxxl
+                    }
+                    com.nuvio.tv.domain.model.PosterShape.LANDSCAPE -> {
+                        iconWidth = 64.dp
+                        iconHeight = 36.dp
+                    }
+                    com.nuvio.tv.domain.model.PosterShape.SQUARE -> {
+                        iconWidth = NuvioTheme.spacing.xxxl
+                        iconHeight = NuvioTheme.spacing.xxxl
+                    }
+                }
+                AsyncImage(
+                    model = folder.coverImageUrl,
+                    contentDescription = folder.title,
+                    modifier = Modifier
+                        .width(iconWidth)
+                        .height(iconHeight)
+                        .clip(RoundedCornerShape(NuvioTheme.radii.sm)),
+                    contentScale = ContentScale.FillBounds
+                )
+            } else if (!folder.coverEmoji.isNullOrBlank()) {
+                Text(
+                    text = folder.coverEmoji,
+                    style = MaterialTheme.typography.headlineLarge
+                )
+            }
+            Text(
+                text = folder.title,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    textDirection = folder.title.contentTextDirection()
+                ),
+                color = NuvioTheme.colors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = if (titleMaxWidth != null) Modifier.widthIn(max = titleMaxWidth) else Modifier.weight(1f, fill = false)
+            )
+        }
+    }
+
+    @Composable
+    fun FolderTabsRow(tabRowModifier: Modifier = Modifier) {
+        if (uiState.tabs.size <= 1) return
+        TabRow(
+            selectedTabIndex = uiState.selectedTabIndex,
+            modifier = tabRowModifier
+                .focusRestorer {
+                    tabFocusRequesters.getOrNull(uiState.selectedTabIndex) ?: FocusRequester.Default
+                }
+        ) {
+            uiState.tabs.forEachIndexed { index, tab ->
+                Tab(
+                    selected = index == uiState.selectedTabIndex,
+                    onFocus = { onSelectTab(index) },
+                    onClick = {
+                        onSelectTab(index)
+                        onTabActivated()
+                    },
+                    modifier = if (index < tabFocusRequesters.size) {
+                        Modifier.focusRequester(tabFocusRequesters[index])
+                    } else Modifier
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = NuvioTheme.spacing.lg, vertical = NuvioTheme.spacing.sm),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = if (tab.isAllTab) stringResource(R.string.collections_tab_all) else tab.label,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        if (uiState.catalogTypeSuffixEnabled && tab.typeLabel.isNotBlank()) {
+                            val localizedType = when {
+                                tab.isAllTab -> stringResource(R.string.collections_tab_combined)
+                                tab.rawType.lowercase() == "movie" -> stringResource(R.string.type_movie)
+                                tab.rawType.lowercase() == "series" -> stringResource(R.string.type_series)
+                                else -> tab.typeLabel
+                            }
+                            Text(
+                                text = localizedType,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = NuvioTheme.colors.TextTertiary
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (isHandheld) {
+        Column(modifier = headerPadding, verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)) {
+            FolderTitleRow()
+            FolderTabsRow(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(
+            modifier = headerPadding,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)
+        ) {
+            FolderTitleRow(titleMaxWidth = 300.dp)
+            FolderTabsRow()
+        }
     }
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun RowsContent(
+    modifier: Modifier = Modifier.fillMaxSize(),
     uiState: FolderDetailUiState,
     focusState: HomeScreenFocusState,
     onNavigateToDetail: (String, String, String) -> Unit,
@@ -700,8 +780,7 @@ private fun RowsContent(
 
     LazyColumn(
         state = columnListState,
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .focusRestorer()
             .dpadVerticalFastScroll(
                 scrollableState = columnListState,
@@ -975,6 +1054,7 @@ private fun FollowLayoutContent(
         HomeLayout.GRID -> {
             Column(modifier = Modifier.fillMaxSize()) {
                 TabbedGridContent(
+                    modifier = Modifier.weight(1f),
                     uiState = uiState,
                     folder = uiState.folder ?: return,
                     tabFocusState = FolderDetailGridFocusState(),

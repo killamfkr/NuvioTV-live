@@ -392,7 +392,20 @@ class FolderDetailViewModel @Inject constructor(
             tab.catalogRow?.takeIf { !it.isLoading }
         }
 
-        if (loadedRows.isEmpty()) return
+        if (loadedRows.isEmpty()) {
+            if (!anyLoading) {
+                _uiState.update { s ->
+                    if (!hasAllTab || s.tabs.isEmpty()) return@update s
+                    val allTab = s.tabs.first()
+                    if (!allTab.isAllTab || !allTab.isLoading) return@update s
+                    val tabs = s.tabs.toMutableList()
+                    val sourceError = sourceTabs.firstNotNullOfOrNull { it.error?.takeIf { e -> e.isNotBlank() } }
+                    tabs[0] = allTab.copy(isLoading = false, error = sourceError)
+                    s.copy(tabs = tabs)
+                }
+            }
+            return
+        }
 
         val currentAllRow = state.tabs.getOrNull(0)?.catalogRow
 
