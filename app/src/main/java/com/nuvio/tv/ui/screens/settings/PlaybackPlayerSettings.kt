@@ -8,6 +8,7 @@ import com.nuvio.tv.data.local.AutoSkipSegmentType
 import com.nuvio.tv.data.local.InternalPlayerEngine
 import com.nuvio.tv.data.local.PlayerPreference
 import com.nuvio.tv.core.device.DeviceFormFactor
+import com.nuvio.tv.core.player.rememberPlaybackNotificationPermissionGate
 import com.nuvio.tv.data.local.PlayerSettings
 import androidx.compose.ui.platform.LocalContext
 
@@ -137,6 +138,10 @@ internal fun PlaybackPlayerInterfaceSection(
 ) {
     val internalPlayer = settings.playerPreference != PlayerPreference.EXTERNAL
     val handheld = !DeviceFormFactor.isTelevision(LocalContext.current)
+    val exoEngine = settings.internalPlayerEngine != InternalPlayerEngine.MVP_PLAYER
+    val enableBackgroundPlayback = rememberPlaybackNotificationPermissionGate {
+        onUpdate { setBackgroundPlaybackEnabled(true) }
+    }
 
     SettingsToggleRow(
         title = stringResource(R.string.playback_loading_overlay),
@@ -171,6 +176,19 @@ internal fun PlaybackPlayerInterfaceSection(
         checked = settings.parentalGuideEnabled,
         onToggle = { onUpdate { setParentalGuideEnabled(!settings.parentalGuideEnabled) } },
         enabled = internalPlayer
+    )
+    SettingsToggleRow(
+        title = stringResource(R.string.playback_background_playback),
+        subtitle = stringResource(R.string.playback_background_playback_sub),
+        checked = settings.backgroundPlaybackEnabled,
+        onToggle = {
+            if (settings.backgroundPlaybackEnabled) {
+                onUpdate { setBackgroundPlaybackEnabled(false) }
+            } else {
+                enableBackgroundPlayback()
+            }
+        },
+        enabled = internalPlayer && exoEngine
     )
     if (handheld) {
         SettingsToggleRow(

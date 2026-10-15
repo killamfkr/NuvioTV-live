@@ -178,6 +178,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setPictureInPictureEnabled(enabled)
     }
 
+    suspend fun setBackgroundPlaybackEnabled(enabled: Boolean) {
+        playerSettingsDataStore.setBackgroundPlaybackEnabled(enabled)
+    }
+
     suspend fun setTransparentLetterbox(enabled: Boolean) {
         deviceLocalPlayerPreferences.setTransparentLetterbox(enabled)
     }

@@ -243,6 +243,8 @@ data class PlayerSettings(
     val osdClockEnabled: Boolean = true,
     /** Handheld: allow picture-in-picture from player controls and when leaving the app. */
     val pictureInPictureEnabled: Boolean = true,
+    /** Keep playing in the background with a notification and lock-screen controls (ExoPlayer). */
+    val backgroundPlaybackEnabled: Boolean = true,
     val skipIntroEnabled: Boolean = true,
     val parentalGuideEnabled: Boolean = true,
     val autoSkipSegmentTypes: Set<AutoSkipSegmentType> = emptySet(),
@@ -509,6 +511,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val playbackIssueReportsEnabledKey = booleanPreferencesKey("playback_issue_reports_enabled")
     private val pauseOverlayEnabledKey = booleanPreferencesKey("pause_overlay_enabled")
     private val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
+    private val backgroundPlaybackEnabledKey = booleanPreferencesKey("background_playback_enabled")
     private val osdClockEnabledKey = booleanPreferencesKey("osd_clock_enabled")
     private val skipIntroEnabledKey = booleanPreferencesKey("skip_intro_enabled")
     private val parentalGuideEnabledKey = booleanPreferencesKey("parental_guide_enabled")
@@ -895,6 +898,7 @@ class PlayerSettingsDataStore @Inject constructor(
                 pauseOverlayEnabled = prefs[pauseOverlayEnabledKey] ?: true,
                 osdClockEnabled = prefs[osdClockEnabledKey] ?: true,
                 pictureInPictureEnabled = prefs[pictureInPictureEnabledKey] ?: true,
+                backgroundPlaybackEnabled = prefs[backgroundPlaybackEnabledKey] ?: true,
                 skipIntroEnabled = prefs[skipIntroEnabledKey] ?: true,
                 parentalGuideEnabled = prefs[parentalGuideEnabledKey] ?: true,
                 autoSkipSegmentTypes = prefs[autoSkipSegmentTypesKey]
@@ -1204,6 +1208,12 @@ class PlayerSettingsDataStore @Inject constructor(
     suspend fun setPictureInPictureEnabled(enabled: Boolean) {
         store().edit { prefs ->
             prefs[pictureInPictureEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setBackgroundPlaybackEnabled(enabled: Boolean) {
+        store().edit { prefs ->
+            prefs[backgroundPlaybackEnabledKey] = enabled
         }
     }
 

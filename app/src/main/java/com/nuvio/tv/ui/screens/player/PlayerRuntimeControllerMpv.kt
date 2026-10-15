@@ -223,6 +223,11 @@ private fun String.safeMpvTraceHost(): String {
 
 internal fun PlayerRuntimeController.pauseForLifecycle() {
     if (shouldKeepPlayingInPictureInPicture()) return
+    if (shouldKeepPlayingInBackground()) {
+        isInBackground = true
+        enterBackgroundPlayback()
+        return
+    }
 
     // Mark we're in background so onPlayerError can defer recovery to onResume.
     isInBackground = true
@@ -259,6 +264,10 @@ internal fun PlayerRuntimeController.pauseForLifecycle() {
 }
 
 internal fun PlayerRuntimeController.resumeForLifecycle() {
+    val wasBackgroundPlayback = com.nuvio.tv.core.player.BackgroundPlayback.isActive()
+    if (wasBackgroundPlayback) {
+        com.nuvio.tv.core.player.BackgroundPlayback.stop(context)
+    }
     isInBackground = false
 
     // If the codec crashed while in background, the player was released to free
@@ -279,8 +288,10 @@ internal fun PlayerRuntimeController.resumeForLifecycle() {
 
     val player = _exoPlayer
     if (player != null && !isUsingMpvEngine()) {
-        // Restore automatic audio focus handling that was disabled in pauseForLifecycle().
-        player.setAudioAttributes(player.audioAttributes, true)
+        if (!wasBackgroundPlayback) {
+            // Restore automatic audio focus handling that was disabled in pauseForLifecycle().
+            player.setAudioAttributes(player.audioAttributes, true)
+        }
 
         // Re-create the MediaSession so media controls work in the foreground.
         if (currentMediaSession == null) {
@@ -292,6 +303,24 @@ internal fun PlayerRuntimeController.resumeForLifecycle() {
             }
         }
     }
+}
+
+internal fun PlayerRuntimeController.shouldKeepPlayingInBackground(): Boolean {
+    if (!backgroundPlaybackEnabled || isUsingMpvEngine()) return false
+    val player = _exoPlayer ?: return false
+    if (!player.canAdvertiseSession()) return false
+    return player.isPlaying || player.playWhenReady
+}
+
+private fun PlayerRuntimeController.enterBackgroundPlayback() {
+    val player = _exoPlayer ?: return
+    try {
+        currentMediaSession?.release()
+        currentMediaSession = null
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    com.nuvio.tv.core.player.BackgroundPlayback.start(context, player)
 }
 
 internal fun PlayerRuntimeController.updateMpvAvailableTracks() {
