@@ -90,6 +90,7 @@ data class PlayerUiState(
     val pauseOverlayEnabled: Boolean = true,
     val osdClockEnabled: Boolean = true,
     val pictureInPictureEnabled: Boolean = true,
+    val backgroundPlaybackEnabled: Boolean = true,
     val transparentLetterbox: Boolean = false,
     val playerStatsHudEnabled: Boolean = false,
     val playerStatsHudButtonAvailable: Boolean = false,

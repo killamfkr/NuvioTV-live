@@ -22,6 +22,7 @@ internal fun PlayerRuntimeController.releasePlayer(flushPlaybackState: Boolean) 
     audioRouteChangeJob?.cancel()
     audioRouteChangeJob = null
 
+    com.nuvio.tv.core.player.BackgroundPlayback.stop(context)
     try {
         currentMediaSession?.release()
         currentMediaSession = null

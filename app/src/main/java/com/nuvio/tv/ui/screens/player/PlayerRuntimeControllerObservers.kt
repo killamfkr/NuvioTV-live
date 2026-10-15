@@ -344,6 +344,7 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
                     pauseOverlayEnabled = settings.pauseOverlayEnabled,
                     osdClockEnabled = settings.osdClockEnabled,
                     pictureInPictureEnabled = settings.pictureInPictureEnabled,
+                    backgroundPlaybackEnabled = settings.backgroundPlaybackEnabled,
                     internalPlayerEngine = resolvedInternalPlayerEngine,
                     frameRateMatchingMode = settings.frameRateMatchingMode,
                     tunnelingEnabled = settings.effectiveTunnelingEnabled &&
@@ -471,6 +472,11 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
 
             val wasEnabled = skipIntroEnabled
             skipIntroEnabled = settings.skipIntroEnabled
+            val wasBackgroundPlayback = backgroundPlaybackEnabled
+            backgroundPlaybackEnabled = settings.backgroundPlaybackEnabled
+            if (wasBackgroundPlayback && !settings.backgroundPlaybackEnabled) {
+                com.nuvio.tv.core.player.BackgroundPlayback.stop(context)
+            }
             parentalGuideEnabled = settings.parentalGuideEnabled
             autoSkipSegmentTypes = settings.autoSkipSegmentTypes
             playerSettingsInitialized = true

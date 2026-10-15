@@ -17,6 +17,8 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.nuvio.tv.core.player.BackgroundPlayback
+import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import com.nuvio.tv.livetv.data.LiveTvRepository
 import com.nuvio.tv.livetv.model.LiveChannel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,7 +61,8 @@ data class LiveTrackOption(
 @OptIn(UnstableApi::class)
 @Singleton
 class LiveTvPlaybackController @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val playerSettings: PlayerSettingsDataStore
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -277,10 +280,22 @@ class LiveTvPlaybackController @Inject constructor(
     }
 
     private var pausedForBackground = false
+    private var backgroundPlaybackEnabled = true
+
+    init {
+        scope.launch {
+            playerSettings.playerSettings.collect { backgroundPlaybackEnabled = it.backgroundPlaybackEnabled }
+        }
+    }
 
     /** The app left the screen (Home button, another app): stop the sound. */
     fun onAppBackground() {
         val p = _player ?: return
+        if (backgroundPlaybackEnabled && p.playWhenReady) {
+            pausedForBackground = false
+            BackgroundPlayback.start(context, p)
+            return
+        }
         if (p.playWhenReady) {
             pausedForBackground = true
             p.pause()
@@ -289,6 +304,9 @@ class LiveTvPlaybackController @Inject constructor(
 
     /** Back in the app: carry on, jumping to the live edge for live channels. */
     fun onAppForeground() {
+        if (BackgroundPlayback.isActive()) {
+            BackgroundPlayback.stop(context)
+        }
         if (!pausedForBackground) return
         pausedForBackground = false
         val p = _player ?: return
@@ -694,6 +712,7 @@ class LiveTvPlaybackController @Inject constructor(
     }
 
     private fun release() {
+        BackgroundPlayback.stop(context)
         reconnectJob?.cancel()
         stallJob?.cancel()
         stallJob = null
