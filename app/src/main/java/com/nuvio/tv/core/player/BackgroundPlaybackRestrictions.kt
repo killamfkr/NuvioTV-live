@@ -67,7 +67,7 @@ object BackgroundPlaybackRestrictions {
             if (runCatching { context.startActivity(appData) }.isSuccess) return
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val saver = Intent(Settings.ACTION_DATA_SAVER_SETTINGS).apply {
+            val saver = Intent(ACTION_DATA_SAVER_SETTINGS).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             if (runCatching { context.startActivity(saver) }.isSuccess) return

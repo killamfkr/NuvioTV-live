@@ -26,7 +26,7 @@ class NuvioMediaPlaybackService : MediaSessionService() {
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this)
                 .setChannelId(CHANNEL_ID)
-                .setChannelNameResourceId(R.string.playback_background_notification_channel)
+                .setChannelName(R.string.playback_background_notification_channel)
                 .build()
         )
     }
