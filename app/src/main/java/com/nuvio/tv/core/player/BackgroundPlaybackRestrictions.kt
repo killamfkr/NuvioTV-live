@@ -14,6 +14,8 @@ import androidx.core.content.getSystemService
  */
 object BackgroundPlaybackRestrictions {
 
+    private const val ACTION_DATA_SAVER_SETTINGS = "android.settings.DATA_SAVER_SETTINGS"
+
     data class Status(
         val batteryUnrestricted: Boolean,
         val backgroundDataUnrestricted: Boolean
