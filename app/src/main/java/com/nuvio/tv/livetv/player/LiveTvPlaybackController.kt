@@ -712,6 +712,7 @@ class LiveTvPlaybackController @Inject constructor(
     }
 
     private fun release() {
+        BackgroundPlayback.stop(context)
         reconnectJob?.cancel()
         stallJob?.cancel()
         stallJob = null

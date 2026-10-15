@@ -190,6 +190,7 @@ internal fun PlaybackPlayerInterfaceSection(
         },
         enabled = internalPlayer && exoEngine
     )
+    PlaybackBackgroundRestrictionsSection(settings)
     if (handheld) {
         SettingsToggleRow(
             title = stringResource(R.string.playback_picture_in_picture),
