@@ -97,11 +97,7 @@
         <service
             android:name=".core.player.NuvioMediaPlaybackService"
             android:exported="false"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="androidx.media3.session.MediaSessionService" />
-            </intent-filter>
-        </service>
+            android:foregroundServiceType="mediaPlayback" />
 
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"

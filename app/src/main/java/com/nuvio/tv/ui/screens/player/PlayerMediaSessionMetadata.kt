@@ -59,6 +59,23 @@ internal fun PlayerRuntimeController.buildMediaSessionMetadata(): MediaMetadata 
  * - When switching episodes
  * - When TMDB enrichment updates the title / artwork
  */
+/** Updates the ExoPlayer [MediaItem] metadata (notification / lock screen), even without an in-app session. */
+internal fun PlayerRuntimeController.applyPlayerMediaMetadata() {
+    val metadata = buildMediaSessionMetadata()
+    val mediaId = currentFilename?.takeIf { it.isNotBlank() }
+    val player = _exoPlayer ?: return
+    try {
+        val current = player.currentMediaItem ?: return
+        val updated = current.buildUpon()
+            .apply { mediaId?.let(::setMediaId) }
+            .setMediaMetadata(metadata)
+            .build()
+        player.replaceMediaItem(player.currentMediaItemIndex, updated)
+    } catch (e: Exception) {
+        Log.w(PlayerRuntimeController.TAG, "Failed to apply player metadata", e)
+    }
+}
+
 internal fun PlayerRuntimeController.updateMediaSessionMetadata() {
     val session = currentMediaSession ?: return
     val metadata = buildMediaSessionMetadata()

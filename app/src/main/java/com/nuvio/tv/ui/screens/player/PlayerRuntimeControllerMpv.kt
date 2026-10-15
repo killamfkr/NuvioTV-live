@@ -314,6 +314,11 @@ internal fun PlayerRuntimeController.shouldKeepPlayingInBackground(): Boolean {
 
 private fun PlayerRuntimeController.enterBackgroundPlayback() {
     val player = _exoPlayer ?: return
+    applyPlayerMediaMetadata()
+    player.setAudioAttributes(player.audioAttributes, true)
+    if (!player.isPlaying && player.playWhenReady) {
+        player.play()
+    }
     try {
         currentMediaSession?.release()
         currentMediaSession = null
