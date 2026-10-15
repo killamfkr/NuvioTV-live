@@ -136,9 +136,6 @@ class NuvioMediaPlaybackService : Service() {
         override fun getCurrentContentText(player: Player): CharSequence? =
             player.mediaMetadata.artist?.takeIf { it.isNotBlank() }
 
-        override fun getCurrentContentSubtitle(player: Player): CharSequence? =
-            player.mediaMetadata.artist?.takeIf { it.isNotBlank() }
-
         override fun getCurrentLargeIcon(
             player: Player,
             callback: PlayerNotificationManager.BitmapCallback
