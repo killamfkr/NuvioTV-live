@@ -17,11 +17,12 @@ object BackgroundPlayback {
     fun isActive(): Boolean = active
 
     fun start(context: Context, player: Player) {
+        val appContext = context.applicationContext
         BackgroundPlaybackHolder.player = player
-        val intent = Intent(context, NuvioMediaPlaybackService::class.java).apply {
+        val intent = Intent(appContext, NuvioMediaPlaybackService::class.java).apply {
             action = NuvioMediaPlaybackService.ACTION_ATTACH
         }
-        ContextCompat.startForegroundService(context, intent)
+        ContextCompat.startForegroundService(appContext, intent)
         active = true
     }
 
