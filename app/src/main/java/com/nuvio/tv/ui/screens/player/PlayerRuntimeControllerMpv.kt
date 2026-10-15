@@ -319,13 +319,17 @@ private fun PlayerRuntimeController.enterBackgroundPlayback() {
     if (!player.isPlaying && player.playWhenReady) {
         player.play()
     }
-    try {
-        currentMediaSession?.release()
-        currentMediaSession = null
-    } catch (e: Exception) {
-        e.printStackTrace()
+    val activitySession = currentMediaSession
+    com.nuvio.tv.core.player.BackgroundPlayback.start(context, player) {
+        try {
+            activitySession?.release()
+            if (currentMediaSession === activitySession) {
+                currentMediaSession = null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
-    com.nuvio.tv.core.player.BackgroundPlayback.start(context, player)
 }
 
 internal fun PlayerRuntimeController.updateMpvAvailableTracks() {

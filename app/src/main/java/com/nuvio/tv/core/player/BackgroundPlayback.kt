@@ -16,9 +16,10 @@ object BackgroundPlayback {
 
     fun isActive(): Boolean = active
 
-    fun start(context: Context, player: Player) {
+    fun start(context: Context, player: Player, onForegroundReady: (() -> Unit)? = null) {
         val appContext = context.applicationContext
         BackgroundPlaybackHolder.player = player
+        BackgroundPlaybackHolder.onForegroundReady = onForegroundReady
         val intent = Intent(appContext, NuvioMediaPlaybackService::class.java).apply {
             action = NuvioMediaPlaybackService.ACTION_ATTACH
         }
@@ -28,20 +29,33 @@ object BackgroundPlayback {
 
     fun stop(context: Context) {
         if (!active) return
-        markInactive()
-        val intent = Intent(context, NuvioMediaPlaybackService::class.java).apply {
+        active = false
+        BackgroundPlaybackHolder.onForegroundReady = null
+        val intent = Intent(context.applicationContext, NuvioMediaPlaybackService::class.java).apply {
             action = NuvioMediaPlaybackService.ACTION_DETACH
         }
-        runCatching { context.startService(intent) }
+        runCatching { context.applicationContext.startService(intent) }
     }
 
     internal fun markInactive() {
         active = false
         BackgroundPlaybackHolder.player = null
+        BackgroundPlaybackHolder.onForegroundReady = null
     }
 }
 
 internal object BackgroundPlaybackHolder {
     @Volatile
     var player: Player? = null
+
+    @Volatile
+    var onForegroundReady: (() -> Unit)? = null
+
+    fun completeForegroundHandoff() {
+        val callback = onForegroundReady
+        if (callback != null) {
+            onForegroundReady = null
+            runCatching { callback.invoke() }
+        }
+    }
 }

@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -48,6 +49,7 @@ class NuvioMediaPlaybackService : Service() {
             .apply {
                 setUseStopAction(true)
                 setUsePlayPauseActions(true)
+                setShowPlayButtonIfPlaybackIsSuppressed(true)
             }
     }
 
@@ -80,11 +82,38 @@ class NuvioMediaPlaybackService : Service() {
             return
         }
         attachedPlayer = player
+        promoteToForeground(buildPlaceholderNotification())
+        BackgroundPlaybackHolder.completeForegroundHandoff()
         releaseMediaSession()
         val session = MediaSession.Builder(this, SafeMediaSessionPlayer(player)).build()
         mediaSession = session
         playerNotificationManager?.setMediaSessionToken(session.platformToken)
         playerNotificationManager?.setPlayer(player)
+    }
+
+    private fun buildPlaceholderNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.playback_background_playback_sub))
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .build()
+    }
+
+    private fun promoteToForeground(notification: Notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun detachAndStop() {
@@ -148,19 +177,15 @@ class NuvioMediaPlaybackService : Service() {
             notification: Notification,
             ongoing: Boolean
         ) {
-            if (!ongoing) {
-                ServiceCompat.stopForeground(this@NuvioMediaPlaybackService, ServiceCompat.STOP_FOREGROUND_REMOVE)
-                return
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(
-                    notificationId,
-                    notification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                )
-            } else {
-                startForeground(notificationId, notification)
-            }
+            if (!BackgroundPlayback.isActive()) return
+            val player = attachedPlayer
+            val keepForeground = ongoing ||
+                (player != null && player.playWhenReady &&
+                    player.playbackState != Player.STATE_IDLE &&
+                    player.playbackState != Player.STATE_ENDED)
+            if (!keepForeground) return
+            promoteToForeground(notification)
+            BackgroundPlaybackHolder.completeForegroundHandoff()
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
