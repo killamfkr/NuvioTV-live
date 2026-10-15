@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.os.Build
+import android.os.IBinder
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
@@ -16,16 +17,17 @@ import androidx.core.app.ServiceCompat
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import androidx.media3.ui.PlayerNotificationManager
 import com.nuvio.tv.R
 import com.nuvio.tv.ui.screens.player.SafeMediaSessionPlayer
 
 /**
  * Foreground playback while Nuvio is in the background: media notification, lock-screen controls,
- * and a real foreground service so the process is not killed.
+ * Android Auto now-playing transport, and a real foreground service so the process is not killed.
  */
 @OptIn(UnstableApi::class)
-class NuvioMediaPlaybackService : Service() {
+class NuvioMediaPlaybackService : MediaSessionService() {
 
     private var playerNotificationManager: PlayerNotificationManager? = null
     private var mediaSession: MediaSession? = null
@@ -49,19 +51,23 @@ class NuvioMediaPlaybackService : Service() {
             .apply {
                 setUseStopAction(true)
                 setUsePlayPauseActions(true)
+                setUseNextAction(false)
+                setUsePreviousAction(false)
                 setShowPlayButtonIfPlaybackIsSuppressed(true)
             }
     }
+
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
+
+    override fun onBind(intent: Intent?): IBinder? = super.onBind(intent)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_ATTACH -> attachPlayer()
             ACTION_DETACH -> detachAndStop()
         }
-        return START_STICKY
+        return Service.START_STICKY
     }
-
-    override fun onBind(intent: Intent?) = null
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         // Keep playing when the user swipes the app away from recents.
@@ -85,10 +91,28 @@ class NuvioMediaPlaybackService : Service() {
         promoteToForeground(buildPlaceholderNotification())
         BackgroundPlaybackHolder.completeForegroundHandoff()
         releaseMediaSession()
-        val session = MediaSession.Builder(this, SafeMediaSessionPlayer(player)).build()
+        val sessionActivity = createSessionActivityPendingIntent()
+        val session = MediaSession.Builder(this, SafeMediaSessionPlayer(player))
+            .setId(SESSION_ID)
+            .apply {
+                if (sessionActivity != null) {
+                    setSessionActivity(sessionActivity)
+                }
+            }
+            .build()
         mediaSession = session
         playerNotificationManager?.setMediaSessionToken(session.platformToken)
         playerNotificationManager?.setPlayer(player)
+    }
+
+    private fun createSessionActivityPendingIntent(): PendingIntent? {
+        val launch = packageManager.getLaunchIntentForPackage(packageName) ?: return null
+        return PendingIntent.getActivity(
+            this,
+            0,
+            launch,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     private fun buildPlaceholderNotification(): Notification {
@@ -96,6 +120,7 @@ class NuvioMediaPlaybackService : Service() {
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.playback_background_playback_sub))
             .setSmallIcon(R.drawable.ic_launcher)
+            .setContentIntent(createSessionActivityPendingIntent())
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -152,18 +177,12 @@ class NuvioMediaPlaybackService : Service() {
                 ?: getString(R.string.app_name)
         }
 
-        override fun createCurrentContentIntent(player: Player): PendingIntent? {
-            val launch = packageManager.getLaunchIntentForPackage(packageName) ?: return null
-            return PendingIntent.getActivity(
-                this@NuvioMediaPlaybackService,
-                0,
-                launch,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        }
+        override fun createCurrentContentIntent(player: Player): PendingIntent? =
+            createSessionActivityPendingIntent()
 
         override fun getCurrentContentText(player: Player): CharSequence? =
             player.mediaMetadata.artist?.takeIf { it.isNotBlank() }
+                ?: player.mediaMetadata.albumTitle?.takeIf { it.isNotBlank() }
 
         override fun getCurrentLargeIcon(
             player: Player,
@@ -198,6 +217,7 @@ class NuvioMediaPlaybackService : Service() {
 
     companion object {
         private const val TAG = "NuvioMediaPlayback"
+        private const val SESSION_ID = "NuvioBackgroundPlayback"
         const val CHANNEL_ID = "nuvio_media_playback"
         private const val NOTIFICATION_ID = 4102
         const val ACTION_ATTACH = "com.nuvio.tv.action.MEDIA_PLAYBACK_ATTACH"
